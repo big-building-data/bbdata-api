@@ -1,6 +1,5 @@
-package ch.derlin.bbdata.api.output.entities.object_groups
+package ch.derlin.bbdata.output.api.object_groups
 
-import ch.derlin.bbdata.api.output.entities.object_groups.ObjectGroup
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 

@@ -42,6 +42,9 @@ dependencies {
     implementation("org.jadira.usertype:usertype.core:7.0.0.CR1")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda")
     implementation("joda-time:joda-time")
+
+    // for XML support
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
 }
 
 tasks.withType<Test> {

@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.api.output
+package ch.derlin.bbdata.output
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest

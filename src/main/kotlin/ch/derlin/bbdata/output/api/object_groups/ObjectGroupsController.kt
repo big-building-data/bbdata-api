@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.api.output.entities.object_groups
+package ch.derlin.bbdata.output.api.object_groups
 
 /**
  * date: 20.11.19

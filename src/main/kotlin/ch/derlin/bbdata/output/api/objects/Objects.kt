@@ -1,6 +1,8 @@
-package ch.derlin.bbdata.api.output.entities.objects
+package ch.derlin.bbdata.output.api.objects
 
-import ch.derlin.bbdata.api.output.entities.object_groups.ObjectGroup
+import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
+import com.fasterxml.jackson.annotation.JsonIdentityReference
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.joda.time.DateTime
 import javax.persistence.*
 import javax.validation.constraints.NotNull
@@ -36,9 +38,18 @@ data class Objects(
         //val disabled: Boolean = false,
 
         @Column(name = "creationdate", insertable = false, updatable = false)
-        //@Temporal(TemporalType.TIMESTAMP)
         val creationdate: DateTime? = null,
 
+        @JsonIgnore
         @ManyToMany(mappedBy = "objects", fetch = FetchType.LAZY)
-        private val objectGroups: List<ObjectGroup>? = null
+        val objectGroups: List<ObjectGroup>? = null,
+
+        @JsonIdentityReference(alwaysAsId = true)
+        @OneToMany(cascade = arrayOf(CascadeType.ALL), fetch = FetchType.EAGER, orphanRemoval = true)
+        @JoinColumn(name = "object_id", updatable = false)
+        val tags: Set<Tag>,
+
+        @OneToMany(fetch = FetchType.LAZY, cascade = arrayOf())
+        @JoinColumn(name = "object_id", insertable = false, updatable = false)
+        protected val userPerms: List<ObjectsPerms>
 )

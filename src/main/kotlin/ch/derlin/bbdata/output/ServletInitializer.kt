@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.api.output
+package ch.derlin.bbdata.output
 
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer

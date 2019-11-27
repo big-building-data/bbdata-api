@@ -1,10 +1,10 @@
-package ch.derlin.bbdata.api.output.entities.object_groups
+package ch.derlin.bbdata.output.api.object_groups
 
 /**
  * date: 20.11.19
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
-import ch.derlin.bbdata.api.output.entities.objects.Objects
+import ch.derlin.bbdata.output.api.objects.Objects
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
