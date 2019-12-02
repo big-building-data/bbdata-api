@@ -5,22 +5,26 @@ package ch.derlin.bbdata.output.api.object_groups
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
+import ch.derlin.bbdata.output.Constants
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/objectGroups")
-class ObjectGroupsController(private val repo: ObjectGroupsRepository) {
+class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRepository) {
+
     @GetMapping("")
-    fun getAllObjects(): List<ObjectGroup> = repo.findAll()
+    fun getAll(@RequestHeader(Constants.HEADER_USER) userId: Int,
+               @RequestParam("writable", required = false) writable: Boolean): List<ObjectGroup> {
+        return if (writable) objectGroupsRepository.findAllWritable(userId)
+        else objectGroupsRepository.findAll(userId)
+    }
 
     @GetMapping("/{id}")
-    fun getObjectById(@PathVariable(value = "id") id: Long): ResponseEntity<ObjectGroup> {
-        return repo.findById(id).map { o ->
-            ResponseEntity.ok(o)
-        }.orElse(ResponseEntity.notFound().build())
+    fun getOneById(@PathVariable(value = "id") id: Long,
+                   @RequestHeader(Constants.HEADER_USER) userId: Int,
+                   @RequestParam("writable", required = false) writable: Boolean): ObjectGroup {
+        return if (writable) objectGroupsRepository.findOne(userId, id)
+        else objectGroupsRepository.findOneWritable(userId, id)
     }
 }

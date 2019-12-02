@@ -2,6 +2,8 @@ package ch.derlin.bbdata.output.api.users
 
 import ch.derlin.bbdata.output.api.auth.Apikey
 import ch.derlin.bbdata.output.api.auth.PasswordDigest
+import ch.derlin.bbdata.output.api.user_groups.UserGroup
+import ch.derlin.bbdata.output.api.user_groups.UserUgrpMapping
 import ch.derlin.bbdata.output.exceptions.AppException
 import org.joda.time.DateTime
 import org.springframework.http.HttpStatus
@@ -47,21 +49,20 @@ data class User(
         var email: String? = null,
 
         @Column(name = "creationdate", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-        var creationdate: DateTime? = null,
+        val creationdate: DateTime? = null,
 
         @OneToMany(cascade = arrayOf(CascadeType.ALL), fetch = FetchType.LAZY)
         @JoinColumn(name = "user_id", referencedColumnName = "id")
-        var apikeys: List<Apikey>? = null
+        var apikeys: List<Apikey>? = null,
 
-        /*
+
         @ManyToMany(fetch = FetchType.LAZY, mappedBy = "users")
         @get:XmlTransient
         val groups: Set<UserGroup>? = null,
 
-        @OneToMany(cascade = CascadeType.ALL, mappedBy = "user", fetch = FetchType.LAZY)
-        @get:XmlTransient
-        var userToGroupMappings: List<UserUserGroup>? = null
-        */
+        @OneToMany(cascade = arrayOf(CascadeType.ALL), mappedBy = "user", fetch = FetchType.LAZY)
+        private var userToGroupMappings: List<UserUgrpMapping>? = null
+
 
 ) {
 
@@ -76,11 +77,4 @@ data class User(
         }
 
     }
-
-
-    companion object {
-
-        private const val serialVersionUID = 1L
-    }
-
 }

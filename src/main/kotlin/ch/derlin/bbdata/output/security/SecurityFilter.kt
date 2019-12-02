@@ -2,7 +2,7 @@ package ch.derlin.bbdata.output.security
 
 
 import ch.derlin.bbdata.output.Constants
-import ch.derlin.bbdata.output.api.auth.AuthFacade
+import ch.derlin.bbdata.output.api.auth.AuthRepository
 import ch.derlin.bbdata.output.exceptions.AppException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
@@ -42,7 +42,7 @@ annotation class NoHeaderRequired
 class AuthInterceptor : HandlerInterceptor {
 
     @Autowired
-    lateinit var authFacade: AuthFacade
+    lateinit var authRepository: AuthRepository
 
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
@@ -73,20 +73,20 @@ class AuthInterceptor : HandlerInterceptor {
 
         bbuser.toIntOrNull()?.let { userId ->
             // check valid tokens
-            authFacade.checkApikey(userId, bbtoken)?.let {
+            authRepository.checkApikey(userId, bbtoken)?.let {
                 // check if write access is necessary
                 if (it.isReadOnly && method.getAnnotation(ApikeyWrite::class.java) != null) {
                     // check write permissions
-                    throw AppException.forbidden("Access denied for user %d : this apikey is read-only", userId)
+                    throw AppException.forbidden("Access denied for user ${userId} : this apikey is read-only")
                 }
                 // every checks passed !
                 return true
             }
             // apikey is null
-            throw AppException.badApiKey("Access denied for user %d : bad apikey", userId)
+            throw AppException.badApiKey("Access denied for user ${userId} : bad apikey")
         }
         // bbuser is not an int
-        throw AppException.badApiKey("Wrong header %s=%s. Should be an integer", Constants.HEADER_USER, bbuser)
+        throw AppException.badApiKey("Wrong header ${Constants.HEADER_USER}=${bbuser}. Should be an integer")
 
     }
 

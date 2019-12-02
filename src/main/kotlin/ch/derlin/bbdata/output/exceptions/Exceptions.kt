@@ -5,10 +5,15 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
+import org.springframework.validation.BindException
+import org.springframework.validation.FieldError
+import org.springframework.validation.ObjectError
+import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
+
 
 class AppException private constructor(
         val statusCode: HttpStatus,
@@ -21,11 +26,11 @@ class AppException private constructor(
     )
 
     companion object {
-        fun create(status: HttpStatus, exceptionType: String, msg: Any, vararg args: Any) =
+        fun create(status: HttpStatus, exceptionType: String, msg: Any) =
                 AppException(
                         statusCode = status,
                         exceptionType = exceptionType,
-                        msg = if (msg is String) String.format(msg, *args) else msg
+                        msg = msg
                 )
 
         fun fromThrowable(ex: Throwable, status: HttpStatus? = null): AppException =
@@ -34,17 +39,17 @@ class AppException private constructor(
                         exceptionType = ex.javaClass.name.split('.').last(),
                         msg = ex.message ?: "")
 
-        fun badApiKey(msg: String = "The apikey you provided does not exist or has expired.", vararg args: Any?) =
-                create(HttpStatus.UNAUTHORIZED, "BadApiKey", msg, args)
+        fun badApiKey(msg: String = "The apikey you provided does not exist or has expired.") =
+                AppException(HttpStatus.UNAUTHORIZED, "BadApiKey", msg)
 
-        fun badRequest(name: String = "BadRequest", msg: String, vararg args: Any?) =
-                create(HttpStatus.BAD_REQUEST, name, msg, args)
+        fun badRequest(name: String = "BadRequest", msg: Any) =
+                AppException(HttpStatus.BAD_REQUEST, name, msg)
 
-        fun forbidden(msg: String = "This resource is protected.", vararg args: Any?) =
-                create(HttpStatus.FORBIDDEN, "Forbidden", msg, args)
+        fun forbidden(msg: String = "This resource is protected.") =
+                AppException(HttpStatus.FORBIDDEN, "Forbidden", msg)
 
-        fun itemNotFound(msg: String = "The resource was not found or you don't have access to it.", vararg args: Any?) =
-                create(HttpStatus.NOT_FOUND, "NotFound", msg, args)
+        fun itemNotFound(msg: String = "The resource was not found or you don't have access to it.") =
+                AppException(HttpStatus.NOT_FOUND, "NotFound", msg)
     }
 }
 
@@ -72,7 +77,20 @@ class ErrorHandler : ResponseEntityExceptionHandler() {
     fun handleAppException(e: AppException): ResponseEntity<Map<String, Any>> = ResponseEntity(e.errorAttributes, e.statusCode)
 
     // unknown exceptions
-    override fun handleExceptionInternal(ex: java.lang.Exception, body: Any?, headers: HttpHeaders, status: HttpStatus, request: WebRequest): ResponseEntity<Any> =
-            ResponseEntity(AppException.fromThrowable(ex, status).errorAttributes, status)
+    override fun handleExceptionInternal(ex: java.lang.Exception, body: Any?, headers: HttpHeaders, status: HttpStatus, request: WebRequest): ResponseEntity<Any> {
+        val appEx = when (ex) {
+            is MethodArgumentNotValidException -> AppException.badRequest(name = "WrongParameters",
+                    msg = formatValidationErrors(ex.bindingResult.allErrors))
+            is BindException -> AppException.badRequest(name = "WrongParameters",
+                    msg = formatValidationErrors(ex.allErrors))
+            else -> AppException.fromThrowable(ex, status)
+        }
+        return ResponseEntity(appEx.errorAttributes, status)
+    }
+
+    companion object {
+        fun formatValidationErrors(errors: List<ObjectError>) =
+                errors.associateBy({ (it as FieldError).getField() }, { it.defaultMessage })
+    }
 
 }

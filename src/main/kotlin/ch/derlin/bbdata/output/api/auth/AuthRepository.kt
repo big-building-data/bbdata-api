@@ -20,13 +20,10 @@ import javax.persistence.PersistenceContext
 
 
 @Component
-class AuthFacade {
+class AuthRepository {
 
     @PersistenceContext
     private lateinit var em: EntityManager
-
-    @Autowired
-    private lateinit var userRepository: UserRepository
 
     @Throws(AppException::class)
     fun login(userId: Int, pass: String): Apikey {
@@ -43,16 +40,21 @@ class AuthFacade {
         val ok = storedProcedure.getOutputParameterValue("ok") as Boolean
 
         if (!ok) {
-            throw AppException.forbidden("AuthenticationFailure",
-                    "Wrong username|password.")
+            throw AppException.forbidden("Wrong username|password.")
         }
         // create a temporary token
         return createApikey(userId, true, DateTime().plus(EXPIRE), "auto_login")
     }
 
-    companion object {
-        val EXPIRE = MutablePeriod(13, 0, 0, 0)
+    fun logout(userId: Int, apikey: String): Boolean {
+        val entity = checkApikey(userId, apikey)
+        entity?.let {
+            em.remove(entity)
+            return true
+        }
+        return false
     }
+
 
     fun createApikey(userId: Int, writable: Boolean, expirationDate: DateTime,
                      description: String): Apikey {
@@ -71,11 +73,6 @@ class AuthFacade {
         return apikey
     }
 
-    fun login(username: String, password: String): Apikey {
-        val u: User = userRepository.findByName(username)
-        u.id?.let { return login(it, password) }
-        throw AppException.forbidden(msg = "User not found.")
-    }
 
     fun checkApikey(userId: Int, apikey: String): Apikey? {
         val resultList = em.createNamedQuery("Apikey.Check")
@@ -84,5 +81,9 @@ class AuthFacade {
                 .resultList
 
         return if (resultList.size == 1) resultList[0] as Apikey else null
+    }
+
+    companion object {
+        val EXPIRE = MutablePeriod(13, 0, 0, 0)
     }
 }

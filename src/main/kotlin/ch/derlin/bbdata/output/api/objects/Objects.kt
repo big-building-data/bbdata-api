@@ -1,6 +1,8 @@
 package ch.derlin.bbdata.output.api.objects
 
 import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
+import ch.derlin.bbdata.output.api.user_groups.UserGroup
+import ch.derlin.bbdata.output.api.types.Unit
 import com.fasterxml.jackson.annotation.JsonIdentityReference
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.joda.time.DateTime
@@ -28,28 +30,37 @@ data class Objects(
         @NotNull
         @Size(min = 1, max = 60)
         @Column(name = "name")
-        val name: String? = null,
+        var name: String? = null,
 
         @Size(max = 255)
         @Column(name = "description")
-        val description: String? = null,
+        var description: String? = null,
 
-        //@Column(name = "disabled")
-        //val disabled: Boolean = false,
+        @JoinColumn(name = "unit_symbol", referencedColumnName = "symbol")
+        @ManyToOne(optional = false, fetch = FetchType.EAGER)
+        val unit: Unit,
+
+        @Column(name = "disabled")
+        var disabled: Boolean = false,
 
         @Column(name = "creationdate", insertable = false, updatable = false)
         val creationdate: DateTime? = null,
+
+        @JoinColumn(name = "ugrp_id", referencedColumnName = "id")
+        @ManyToOne(optional = false, fetch = FetchType.LAZY)
+        val owner: UserGroup,
+
+        @JsonIdentityReference(alwaysAsId = true)
+        @OneToMany(cascade = arrayOf(CascadeType.ALL), fetch = FetchType.EAGER, orphanRemoval = true)
+        @JoinColumn(name = "object_id", updatable = false)
+        val tags: Set<Tag>? = setOf(),
 
         @JsonIgnore
         @ManyToMany(mappedBy = "objects", fetch = FetchType.LAZY)
         val objectGroups: List<ObjectGroup>? = null,
 
-        @JsonIdentityReference(alwaysAsId = true)
-        @OneToMany(cascade = arrayOf(CascadeType.ALL), fetch = FetchType.EAGER, orphanRemoval = true)
-        @JoinColumn(name = "object_id", updatable = false)
-        val tags: Set<Tag>,
 
         @OneToMany(fetch = FetchType.LAZY, cascade = arrayOf())
         @JoinColumn(name = "object_id", insertable = false, updatable = false)
-        protected val userPerms: List<ObjectsPerms>
+        protected val userPerms: List<ObjectsPerms>? = listOf()
 )

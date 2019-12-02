@@ -52,4 +52,10 @@ class ObjectController(private val repo: ObjectRepository) {
             else -> return "OK"
         }
     }
+
+    @PutMapping("")
+    fun newObject(@RequestBody objects: Objects, @RequestHeader(value = Constants.HEADER_USER) userId: Int) {
+        // TODO: get user group + add unitSymbol etc to the object entity
+        repo.save(objects)
+    }
 }

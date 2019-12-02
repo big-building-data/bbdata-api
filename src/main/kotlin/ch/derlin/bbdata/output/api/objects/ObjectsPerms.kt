@@ -30,15 +30,9 @@ class ObjectsPermsId(
 @IdClass(ObjectsPermsId::class)
 data class ObjectsPerms(
         @Id
-        @Basic(optional = false)
-        @NotNull
-        @Column(name = "user_id")
         val userId: Int,
 
         @Id
-        @Basic(optional = false)
-        @NotNull
-        @Column(name = "object_id")
         val objectId: Int,
 
         @Basic(optional = false)

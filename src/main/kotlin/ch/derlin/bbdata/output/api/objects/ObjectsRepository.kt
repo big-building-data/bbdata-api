@@ -1,8 +1,10 @@
 package ch.derlin.bbdata.output.api.objects
 
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.Repository
+import org.springframework.stereotype.Repository
+
 
 /**
  * date: 20.11.19
@@ -10,8 +12,8 @@ import org.springframework.data.repository.Repository
  */
 
 
-@org.springframework.stereotype.Repository
-interface ObjectRepository : Repository<Objects, Long> {
+@Repository
+interface ObjectRepository : JpaRepository<Objects, Long> {
     @Query("SELECT o FROM Objects o INNER JOIN o.userPerms p " +
             "WHERE p.userId = :userId " +
             "AND (p.writable = true OR p.writable = :writable) " +
