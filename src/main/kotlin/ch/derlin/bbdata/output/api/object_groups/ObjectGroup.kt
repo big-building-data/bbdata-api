@@ -6,7 +6,11 @@ package ch.derlin.bbdata.output.api.object_groups
  */
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
+import com.fasterxml.jackson.annotation.JsonFilter
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter
+import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider
+import org.springframework.http.converter.json.MappingJacksonValue
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -14,6 +18,7 @@ import javax.xml.bind.annotation.XmlTransient
 
 @Entity
 @Table(name = "ogrps")
+@JsonFilter("noObjectsFilter")
 data class ObjectGroup(
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -61,4 +66,15 @@ data class ObjectGroup(
         @JoinColumn(name = "ogrp_id", insertable = false, updatable = false)
         @JsonIgnore
         val writePermissions: List<ObjectGroupWritePerms> = listOf()
-)
+) {
+    companion object {
+        fun asJacksonMapping(obj: Any, withObjects: Boolean = false): MappingJacksonValue {
+            val mapping = MappingJacksonValue(obj)
+            mapping.filters = SimpleFilterProvider().addFilter(
+                    "noObjectsFilter",
+                    SimpleBeanPropertyFilter.serializeAllExcept(if (withObjects) "_x_" else "objects"))
+            return mapping
+        }
+    }
+}
+
