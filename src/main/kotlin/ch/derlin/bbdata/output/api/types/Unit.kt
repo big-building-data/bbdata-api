@@ -1,10 +1,9 @@
 package ch.derlin.bbdata.output.api.types
 
-import com.fasterxml.jackson.annotation.JsonIdentityReference
-import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
+import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
 
 
 /**
@@ -20,7 +19,7 @@ data class Unit(
         @NotNull
         @Size(min = 1, max = 10)
         @Column(name = "symbol")
-        var symbol: String = "",
+        private var symbol: String = "",
 
         @Basic(optional = false)
         @NotNull
@@ -31,4 +30,7 @@ data class Unit(
         @JoinColumn(name = "type", referencedColumnName = "name")
         @ManyToOne(optional = false, fetch = FetchType.EAGER)
         var type: BaseType? = null
-)
+
+) : NoUpdateOnCreateEntity<String>() {
+    override fun getId(): String = id
+}

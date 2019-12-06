@@ -1,5 +1,6 @@
 package ch.derlin.bbdata.output.api.objects
 
+import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
 import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.api.types.Unit
@@ -18,13 +19,14 @@ import javax.validation.constraints.Size
 
 
 @Entity
+@Table(name = "objects")
 data class Objects(
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Basic(optional = false)
         @Column(name = "id")
-        val id: Long? = null,
+        private val id: Long? = null,
 
         @Basic(optional = false)
         @NotNull
@@ -53,7 +55,7 @@ data class Objects(
         @JsonIdentityReference(alwaysAsId = true)
         @OneToMany(cascade = arrayOf(CascadeType.ALL), fetch = FetchType.EAGER, orphanRemoval = true)
         @JoinColumn(name = "object_id", updatable = false)
-        val tags: Set<Tag>? = setOf(),
+        var tags: MutableSet<Tag> = mutableSetOf(),
 
         @JsonIgnore
         @ManyToMany(mappedBy = "objects", fetch = FetchType.LAZY)
@@ -63,4 +65,8 @@ data class Objects(
         @OneToMany(fetch = FetchType.LAZY, cascade = arrayOf())
         @JoinColumn(name = "object_id", insertable = false, updatable = false)
         protected val userPerms: List<ObjectsPerms>? = listOf()
-)
+
+) {
+    fun addTag(tag: String): Boolean = this.tags.add(Tag(tag, this.id!!))
+    fun removeTag(tag: String): Boolean = this.tags.removeIf { it.name == tag }
+}

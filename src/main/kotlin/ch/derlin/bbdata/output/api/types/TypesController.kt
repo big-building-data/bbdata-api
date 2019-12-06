@@ -33,10 +33,6 @@ class TypesController(private val unitRepository: UnitRepository,
         val type: String = ""
     }
 
-    @GetMapping("/types_")
-    @NoHeaderRequired
-    fun getBaseTypes_(): Array<String> = baseTypeRepository.findAll().map { it.type }.toTypedArray()
-
     @GetMapping("/types")
     @NoHeaderRequired
     fun getBaseTypes(): List<BaseType> = baseTypeRepository.findAll()
@@ -47,13 +43,9 @@ class TypesController(private val unitRepository: UnitRepository,
 
     @PostMapping("/units")
     fun addUnit(@Valid @RequestBody newUnit: NewUnit) { // TODO: @Valid !!!
-        if (unitRepository.existsById(newUnit.symbol))
-        // TODO JPA doesn't make a difference between create and save
-            throw AppException.badRequest(name = "DuplicateField", msg = "A unit with symbol ${newUnit.symbol} already exists.")
-
         baseTypeRepository.findById(newUnit.type).map {
             unitRepository.save(Unit(symbol = newUnit.symbol, name = newUnit.name, type = it))
-        }.orElseThrow { AppException.badRequest(name = "WrongType", msg = "The type ${newUnit.type} is not valid.") }
+        }.orElseThrow { AppException.badRequest(name = "WrongType", msg = "The type '${newUnit.type}' is not valid.") }
     }
 
 

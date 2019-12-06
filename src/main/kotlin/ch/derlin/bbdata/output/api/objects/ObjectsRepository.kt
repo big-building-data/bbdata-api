@@ -4,6 +4,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import java.util.*
 
 
 /**
@@ -31,5 +32,5 @@ interface ObjectRepository : JpaRepository<Objects, Long> {
 
     @Query("SELECT o FROM Objects o INNER JOIN o.userPerms p " +
             "WHERE p.userId = :userId AND o.id = :id AND (p.writable = true OR p.writable = :writable)")
-    fun findById(id: Long, userId: Int, writable: Boolean): Objects?
+    fun findById(id: Long, userId: Int, writable: Boolean): Optional<Objects>
 }

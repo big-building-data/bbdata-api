@@ -1,6 +1,8 @@
 package ch.derlin.bbdata.output.exceptions
 
+import org.hibernate.exception.ConstraintViolationException
 import org.springframework.boot.web.servlet.error.DefaultErrorAttributes
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
+import java.sql.SQLIntegrityConstraintViolationException
 
 
 class AppException private constructor(
@@ -58,13 +61,8 @@ class AppException private constructor(
 class ErrorAttributesCustom : DefaultErrorAttributes() {
 
     override fun getErrorAttributes(webRequest: WebRequest, includeStackTrace: Boolean): Map<String, Any> {
-        val map = super.getErrorAttributes(webRequest, includeStackTrace)
-        val msg = map["trace"]?.let { (it as String).split("\n").get(0) }.orEmpty()
-        return hashMapOf<String, Any>(
-                //"code" to map["status"].toString(),
-                "details" to map["error"].toString(),
-                "exception" to msg
-        )
+        val ex = getError(webRequest)
+        return AppException.fromThrowable(ex).errorAttributes
     }
 }
 
@@ -75,6 +73,36 @@ class ErrorHandler : ResponseEntityExceptionHandler() {
     // known exceptions
     @ExceptionHandler(AppException::class)
     fun handleAppException(e: AppException): ResponseEntity<Map<String, Any>> = ResponseEntity(e.errorAttributes, e.statusCode)
+
+    /*@ExceptionHandler(value = [
+        javax.validation.ConstraintViolationException::class,
+        org.hibernate.exception.ConstraintViolationException::class,
+        org.springframework.dao.DataIntegrityViolationException::class])
+    @ExceptionHandler(DataIntegrityViolationException::class)
+    fun handleDataIntegrityException(ex: DataIntegrityViolationException): ResponseEntity<Map<String, Any>> {
+        return ResponseEntity(AppException.fromThrowable(
+                (ex.cause as? ConstraintViolationException)?.sqlException ?: ex
+        ).errorAttributes, HttpStatus.BAD_REQUEST)
+    }
+     */
+
+    @ExceptionHandler(DataIntegrityViolationException::class)
+    fun handleDataIntegrityException(ex: DataIntegrityViolationException): ResponseEntity<Map<String, Any>> {
+        val appEx = (ex.cause as? ConstraintViolationException)?.sqlException?.let {
+            val sqlMsg = it.message ?: ""
+            val (name, msg) =
+                    if ("foreign key constraint fails" in sqlMsg) {
+                        "ForeignKeyException" to "A field references a non-existing resource."
+                    } else if ("Duplicate entry" in sqlMsg) {
+                        "DuplicateField" to "value ${sqlMsg.split(" ")[2]} already exists."
+                    } else {
+                        "SqlException" to sqlMsg
+                    }
+            AppException.badRequest(name, msg)
+        } ?: AppException.fromThrowable(ex)
+
+        return ResponseEntity(appEx.errorAttributes, appEx.statusCode)
+    }
 
     // unknown exceptions
     override fun handleExceptionInternal(ex: java.lang.Exception, body: Any?, headers: HttpHeaders, status: HttpStatus, request: WebRequest): ResponseEntity<Any> {

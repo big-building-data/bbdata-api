@@ -1,6 +1,13 @@
 package ch.derlin.bbdata.output.api.user_groups
 
+import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
 import ch.derlin.bbdata.output.api.users.User
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonMerge
+import com.fasterxml.jackson.annotation.JsonRootName
+import com.fasterxml.jackson.annotation.JsonUnwrapped
+import org.hibernate.annotations.NotFound
+import org.hibernate.annotations.NotFoundAction
 import java.io.Serializable
 import javax.persistence.*
 import javax.validation.constraints.NotNull
@@ -12,7 +19,7 @@ import javax.validation.constraints.NotNull
 
 // Composite key class must implement Serializable
 // and have defaults.
-class UserUgrpMappingId(
+data class UserUgrpMappingId(
         val userId: Int = 0,
         val groupId: Int = 0
 ) : Serializable
@@ -25,22 +32,30 @@ data class UserUgrpMapping(
         @Basic(optional = false)
         @NotNull
         @Column(name = "user_id")
+        @JsonIgnore
         val userId: Int,
 
         @Id
         @Basic(optional = false)
         @NotNull
         @Column(name = "ugrp_id")
+        @JsonIgnore
         val groupId: Int,
 
         @Column(name = "is_admin")
         var isAdmin: Boolean,
 
         @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
-        @ManyToOne(optional = false, fetch = FetchType.EAGER)
-        private val user: User,
-
-        @JoinColumn(name = "ugrp_id", referencedColumnName = "id", insertable = false, updatable = false)
         @ManyToOne(optional = false, fetch = FetchType.LAZY)
-        private val group: UserGroup
-)
+        @JsonUnwrapped
+        val user: User? = null,
+
+        @ManyToOne(optional = false, fetch = FetchType.LAZY)
+        @JoinColumn(name = "ugrp_id", referencedColumnName = "id", insertable = false, updatable = false)
+        private val group: UserGroup? = null
+
+) : NoUpdateOnCreateEntity<UserUgrpMappingId>() {
+    @JsonIgnore
+    override fun getId(): UserUgrpMappingId? = UserUgrpMappingId(userId, groupId)
+
+}

@@ -24,18 +24,16 @@ class TagId(
         @Basic(optional = false)
         @NotNull
         @Column(name = "object_id")
-        val objectId: Int = 0
+        val objectId: Long = 0
 ) : Serializable
 
 @Entity
 @Table(name = "tags")
 @IdClass(TagId::class)
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator::class, property = "name")
-class Tag {
-
-    @Id
-    val name: String? = null
-
-    @Id
-    val objectId: Int = 0
-}
+data class Tag(
+        @Id
+        val name: String,
+        @Id
+        val objectId: Long
+)

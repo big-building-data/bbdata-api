@@ -5,19 +5,34 @@ package ch.derlin.bbdata.output.api.objects
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
+import ch.derlin.bbdata.output.Beans
 import ch.derlin.bbdata.output.Constants
+import ch.derlin.bbdata.output.api.types.Unit
+import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.exceptions.AppException
 import ch.derlin.bbdata.output.security.ApikeyWrite
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.lang.RuntimeException
+import javax.servlet.http.HttpServletRequest
+import javax.validation.Valid
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.NotNull
 
 @RestController
 @RequestMapping("/objects")
 class ObjectController(private val repo: ObjectRepository) {
+
+    class NewObject: Beans.NameDescription() {
+        @NotNull
+        val owner: Int? = null
+
+        @NotEmpty
+        val unitSymbol: String = ""
+    }
+
     @GetMapping("")
     fun getAll(
             @RequestHeader(value = Constants.HEADER_USER) userId: Int,
@@ -38,7 +53,42 @@ class ObjectController(private val repo: ObjectRepository) {
             @PathVariable(value = "id") id: Long,
             @RequestHeader(value = Constants.HEADER_USER) userId: Int,
             @RequestParam(name = "writable", required = false) writable: Boolean = false
-    ): Objects? = repo.findById(id, userId, writable) ?: throw AppException.itemNotFound()
+    ): Objects? = repo.findById(id, userId, writable).orElseThrow { AppException.itemNotFound() }
+
+    @PutMapping("")
+    @ApikeyWrite
+    fun newObject(
+            @RequestBody @Valid newObject: NewObject,
+            @RequestHeader(value = Constants.HEADER_USER) userId: Int): Objects {
+        // TODO: get user group + add unitSymbol etc to the object entity
+        return repo.save(Objects(
+                name = newObject.name,
+                description = newObject.description,
+                unit = Unit(symbol = newObject.unitSymbol),
+                owner = UserGroup(newObject.owner!!)
+        ))
+    }
+
+
+    @RequestMapping("{id}/tags", method = arrayOf(RequestMethod.PUT, RequestMethod.DELETE))
+    @ApikeyWrite
+    fun addOrDeleteTags(
+            request: HttpServletRequest,
+            @PathVariable(value = "id") id: Long,
+            @RequestHeader(value = Constants.HEADER_USER) userId: Int,
+            @RequestParam(name = "tags", required = true) rawTags: String = ""): ResponseEntity<Unit> {
+        val obj = repo.findById(id, userId, writable = true).orElseThrow { AppException.itemNotFound() }
+
+        val tags = rawTags.split(",").map { t -> t.trim() }
+        val modified =
+                if (request.method == RequestMethod.DELETE.name) tags.any { obj.removeTag(it) }
+                else tags.any { obj.addTag(it) }
+        repo.save(obj)
+
+        return ResponseEntity.status(
+                if (modified) HttpStatus.OK else HttpStatus.NOT_MODIFIED
+        ).build()
+    }
 
 
     @GetMapping("/exc/{id}")
@@ -53,9 +103,4 @@ class ObjectController(private val repo: ObjectRepository) {
         }
     }
 
-    @PutMapping("")
-    fun newObject(@RequestBody objects: Objects, @RequestHeader(value = Constants.HEADER_USER) userId: Int) {
-        // TODO: get user group + add unitSymbol etc to the object entity
-        repo.save(objects)
-    }
 }

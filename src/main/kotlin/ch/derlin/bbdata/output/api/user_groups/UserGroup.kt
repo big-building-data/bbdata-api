@@ -1,12 +1,16 @@
 package ch.derlin.bbdata.output.api.user_groups
 
+import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
 import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.users.User
+import com.fasterxml.jackson.annotation.JsonIgnore
+import org.springframework.transaction.annotation.Transactional
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 import javax.xml.bind.annotation.XmlTransient
+import kotlin.jvm.Transient
 
 /**
  * date: 30.11.19
@@ -19,13 +23,13 @@ data class UserGroup(
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Basic(optional = false)
         @Column(name = "id")
-        val id: Int? = null,
+        private val id: Int? = null,
 
         @Basic(optional = false)
         @Size(min = 1, max = 45)
         @Column(name = "name")
         @NotNull
-        val name: String,
+        val name: String = "",
 
         @ManyToMany(mappedBy = "allowedUserGroups", fetch = FetchType.LAZY)
         private val accessibleObjectGroups: List<ObjectGroup> = listOf(),
@@ -36,9 +40,9 @@ data class UserGroup(
         @OneToMany(cascade = arrayOf(), mappedBy = "owner", fetch = FetchType.LAZY)
         private val ownedObjects: List<Objects> = listOf(),
 
-        @OneToMany(cascade = arrayOf(CascadeType.ALL))
+        @OneToMany(cascade = arrayOf(CascadeType.PERSIST, CascadeType.ALL))
         @JoinColumn(name = "ugrp_id")
-        private val userMappings: List<UserUgrpMapping> = listOf(),
+        private val userMappings: MutableList<UserUgrpMapping> = mutableListOf(),
 
         @JoinTable(
                 name = "users_ugrps",
@@ -46,5 +50,12 @@ data class UserGroup(
                 inverseJoinColumns = arrayOf(JoinColumn(name = "user_id", referencedColumnName = "id"))
         )
         @ManyToMany(fetch = FetchType.LAZY)
-        private val users: Set<User> = setOf()
-)
+        private val users: List<User> = listOf()
+
+) : NoUpdateOnCreateEntity<Int?>() {
+    override fun getId(): Int? = id
+
+
+    @JsonIgnore
+    fun getUsers(): List<UserUgrpMapping> = userMappings
+}

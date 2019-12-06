@@ -5,6 +5,7 @@ import ch.derlin.bbdata.output.api.auth.PasswordDigest
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.api.user_groups.UserUgrpMapping
 import ch.derlin.bbdata.output.exceptions.AppException
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.joda.time.DateTime
 import org.springframework.http.HttpStatus
 import java.io.Serializable
@@ -53,12 +54,12 @@ data class User(
 
         @OneToMany(cascade = arrayOf(CascadeType.ALL), fetch = FetchType.LAZY)
         @JoinColumn(name = "user_id", referencedColumnName = "id")
+        @JsonIgnore
         var apikeys: List<Apikey>? = null,
 
 
         @ManyToMany(fetch = FetchType.LAZY, mappedBy = "users")
-        @get:XmlTransient
-        val groups: Set<UserGroup>? = null,
+        private val groups: List<UserGroup>? = null,
 
         @OneToMany(cascade = arrayOf(CascadeType.ALL), mappedBy = "user", fetch = FetchType.LAZY)
         private var userToGroupMappings: List<UserUgrpMapping>? = null
