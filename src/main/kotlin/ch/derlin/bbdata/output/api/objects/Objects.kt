@@ -1,11 +1,14 @@
 package ch.derlin.bbdata.output.api.objects
 
+import ch.derlin.bbdata.output.Beans
 import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
 import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.api.types.Unit
 import com.fasterxml.jackson.annotation.JsonIdentityReference
 import com.fasterxml.jackson.annotation.JsonIgnore
+import org.hibernate.annotations.Generated
+import org.hibernate.annotations.GenerationTime
 import org.joda.time.DateTime
 import javax.persistence.*
 import javax.validation.constraints.NotNull
@@ -26,7 +29,7 @@ data class Objects(
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Basic(optional = false)
         @Column(name = "id")
-        private val id: Long? = null,
+        val id: Long? = null,
 
         @Basic(optional = false)
         @NotNull
@@ -46,21 +49,19 @@ data class Objects(
         var disabled: Boolean = false,
 
         @Column(name = "creationdate", insertable = false, updatable = false)
+        @Generated(GenerationTime.INSERT)
         val creationdate: DateTime? = null,
 
         @JoinColumn(name = "ugrp_id", referencedColumnName = "id")
         @ManyToOne(optional = false, fetch = FetchType.LAZY)
         val owner: UserGroup,
 
-        @JsonIdentityReference(alwaysAsId = true)
         @OneToMany(cascade = arrayOf(CascadeType.ALL), fetch = FetchType.EAGER, orphanRemoval = true)
         @JoinColumn(name = "object_id", updatable = false)
         var tags: MutableSet<Tag> = mutableSetOf(),
 
-        @JsonIgnore
         @ManyToMany(mappedBy = "objects", fetch = FetchType.LAZY)
-        val objectGroups: List<ObjectGroup>? = null,
-
+        private val objectGroups: List<ObjectGroup>? = null,
 
         @OneToMany(fetch = FetchType.LAZY, cascade = arrayOf())
         @JoinColumn(name = "object_id", insertable = false, updatable = false)

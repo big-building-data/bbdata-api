@@ -32,5 +32,5 @@ data class Unit(
         var type: BaseType? = null
 
 ) : NoUpdateOnCreateEntity<String>() {
-    override fun getId(): String = id
+    override fun getId(): String = symbol
 }

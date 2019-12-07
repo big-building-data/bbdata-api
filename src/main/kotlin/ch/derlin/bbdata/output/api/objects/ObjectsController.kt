@@ -9,6 +9,9 @@ import ch.derlin.bbdata.output.Beans
 import ch.derlin.bbdata.output.Constants
 import ch.derlin.bbdata.output.api.types.Unit
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
+import ch.derlin.bbdata.output.api.user_groups.UserGroupMappingRepository
+import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
+import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.output.exceptions.AppException
 import ch.derlin.bbdata.output.security.ApikeyWrite
 import org.springframework.data.domain.Pageable
@@ -23,15 +26,7 @@ import javax.validation.constraints.NotNull
 
 @RestController
 @RequestMapping("/objects")
-class ObjectController(private val repo: ObjectRepository) {
-
-    class NewObject: Beans.NameDescription() {
-        @NotNull
-        val owner: Int? = null
-
-        @NotEmpty
-        val unitSymbol: String = ""
-    }
+class ObjectController(private val objectRepository: ObjectRepository) {
 
     @GetMapping("")
     fun getAll(
@@ -43,9 +38,9 @@ class ObjectController(private val repo: ObjectRepository) {
     ): List<Objects> {
         val tags = unparsedTags.split(",").map { s -> s.trim() }.filter { s -> s.length > 0 }
         return if (tags.size > 0)
-            repo.findAllByTag(tags, userId, writable, search, pageable)
+            objectRepository.findAllByTag(tags, userId, writable, search, pageable)
         else
-            repo.findAll(userId, writable, search, pageable)
+            objectRepository.findAll(userId, writable, search, pageable)
     }
 
     @GetMapping("/{id}")
@@ -53,22 +48,7 @@ class ObjectController(private val repo: ObjectRepository) {
             @PathVariable(value = "id") id: Long,
             @RequestHeader(value = Constants.HEADER_USER) userId: Int,
             @RequestParam(name = "writable", required = false) writable: Boolean = false
-    ): Objects? = repo.findById(id, userId, writable).orElseThrow { AppException.itemNotFound() }
-
-    @PutMapping("")
-    @ApikeyWrite
-    fun newObject(
-            @RequestBody @Valid newObject: NewObject,
-            @RequestHeader(value = Constants.HEADER_USER) userId: Int): Objects {
-        // TODO: get user group + add unitSymbol etc to the object entity
-        return repo.save(Objects(
-                name = newObject.name,
-                description = newObject.description,
-                unit = Unit(symbol = newObject.unitSymbol),
-                owner = UserGroup(newObject.owner!!)
-        ))
-    }
-
+    ): Objects? = objectRepository.findById(id, userId, writable).orElseThrow { AppException.itemNotFound() }
 
     @RequestMapping("{id}/tags", method = arrayOf(RequestMethod.PUT, RequestMethod.DELETE))
     @ApikeyWrite
@@ -77,13 +57,13 @@ class ObjectController(private val repo: ObjectRepository) {
             @PathVariable(value = "id") id: Long,
             @RequestHeader(value = Constants.HEADER_USER) userId: Int,
             @RequestParam(name = "tags", required = true) rawTags: String = ""): ResponseEntity<Unit> {
-        val obj = repo.findById(id, userId, writable = true).orElseThrow { AppException.itemNotFound() }
+        val obj = objectRepository.findById(id, userId, writable = true).orElseThrow { AppException.itemNotFound() }
 
         val tags = rawTags.split(",").map { t -> t.trim() }
         val modified =
                 if (request.method == RequestMethod.DELETE.name) tags.any { obj.removeTag(it) }
                 else tags.any { obj.addTag(it) }
-        repo.save(obj)
+        objectRepository.save(obj)
 
         return ResponseEntity.status(
                 if (modified) HttpStatus.OK else HttpStatus.NOT_MODIFIED
@@ -103,4 +83,36 @@ class ObjectController(private val repo: ObjectRepository) {
         }
     }
 
+}
+
+@RestController
+@RequestMapping("/objects")
+class NewObjectController(private val objectRepository: ObjectRepository,
+                          private val userGroupRepository: UserGroupRepository) {
+
+    class NewObject : Beans.NameDescription() {
+        @NotNull
+        val owner: Int? = null
+
+        @NotEmpty
+        val unitSymbol: String = ""
+    }
+
+    @PutMapping("")
+    @ApikeyWrite
+    fun newObject(
+            @RequestBody @Valid newObject: NewObject,
+            @RequestHeader(value = Constants.HEADER_USER) userId: Int): Objects {
+
+        val userGroup = userGroupRepository.findMine(userId, newObject.owner!!, admin = true).orElseThrow{
+            AppException.forbidden("UserGroup '${newObject.owner}' does not exist or is not writable.")
+        }
+
+        return objectRepository.saveAndFlush(Objects(
+                name = newObject.name,
+                description = newObject.description,
+                unit = Unit(symbol = newObject.unitSymbol),
+                owner = userGroup
+        ))
+    }
 }

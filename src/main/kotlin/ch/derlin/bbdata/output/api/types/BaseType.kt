@@ -35,6 +35,5 @@ data class BaseType(
         var type: String = "",
 
         @OneToMany(cascade = [CascadeType.ALL], mappedBy = "type", fetch = FetchType.LAZY)
-        @JsonIgnore
-        var units: Collection<Unit> = listOf()
+        private var units: Collection<Unit> = listOf()
 )

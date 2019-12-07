@@ -6,6 +6,7 @@ package ch.derlin.bbdata.output.api.object_groups
  */
 
 import ch.derlin.bbdata.output.Constants
+import ch.derlin.bbdata.output.exceptions.AppException
 import org.springframework.http.converter.json.MappingJacksonValue
 import org.springframework.web.bind.annotation.*
 
@@ -31,9 +32,11 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
                    @RequestParam("writable", required = false) writable: Boolean,
                    @RequestParam("withObjects", required = false) withObjects: Boolean): MappingJacksonValue {
         val obj =
-                if (writable) objectGroupsRepository.findOne(userId, id)
-                else objectGroupsRepository.findOneWritable(userId, id)
+                if (writable) objectGroupsRepository.findOneWritable(userId, id)
+                else objectGroupsRepository.findOne(userId, id)
 
-        return ObjectGroup.asJacksonMapping(obj, withObjects)
+        return ObjectGroup.asJacksonMapping(obj.orElseThrow {
+            AppException.itemNotFound()
+        }, withObjects)
     }
 }

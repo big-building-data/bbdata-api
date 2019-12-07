@@ -6,11 +6,17 @@ import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.api.user_groups.UserUgrpMapping
 import ch.derlin.bbdata.output.exceptions.AppException
 import com.fasterxml.jackson.annotation.JsonIgnore
+import org.hibernate.annotations.*
+import org.jadira.usertype.dateandtime.joda.PersistentDateTime
 import org.joda.time.DateTime
 import org.springframework.http.HttpStatus
 import java.io.Serializable
 import javax.persistence.*
+import javax.persistence.CascadeType
+import javax.persistence.Entity
+import javax.persistence.Table
 import javax.validation.constraints.NotNull
+import javax.validation.constraints.Pattern
 import javax.validation.constraints.Size
 import javax.xml.bind.annotation.XmlTransient
 
@@ -34,7 +40,7 @@ data class User(
         @NotNull
         @Size(min = 1, max = 45)
         @Column(name = "name")
-        var name: String? = null,
+        var name: String = "",
 
         @Basic(fetch = FetchType.LAZY)
         @NotNull
@@ -49,7 +55,8 @@ data class User(
         @Column(name = "email")
         var email: String? = null,
 
-        @Column(name = "creationdate", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+        @Column(name = "creationdate", insertable = false, updatable = false)
+        @Generated(GenerationTime.INSERT)
         val creationdate: DateTime? = null,
 
         @OneToMany(cascade = arrayOf(CascadeType.ALL), fetch = FetchType.LAZY)
@@ -67,15 +74,34 @@ data class User(
 
 ) {
 
+    class NewUser {
+        @NotNull
+        @Size(min = 1, max = 45)
+        val name: String? = null
 
-    @Throws(AppException::class)
-    fun setPassword(password: String) {
-        try {
-            this.password = PasswordDigest.toMD5(password)
-        } catch (ex: Exception) {
-            throw AppException.create(HttpStatus.INTERNAL_SERVER_ERROR,
-                    "SecurityException", "Could not hash password")
+        @NotNull
+        @Size(min = 5)
+        val password: String? = null
+
+        @NotNull
+        @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message = "Invalid email")
+        val email: String? = null
+
+        fun toUser(): User = User(name = name!!, password = hashPassword(password!!), email = email!!)
+
+    }
+
+    companion object {
+
+        @Throws(AppException::class)
+        fun hashPassword(password: String): String {
+            try {
+                return PasswordDigest.toMD5(password)
+            } catch (ex: Exception) {
+                throw AppException.create(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "SecurityException", "Could not hash password")
+            }
+
         }
-
     }
 }

@@ -40,9 +40,10 @@ data class UserGroup(
         @OneToMany(cascade = arrayOf(), mappedBy = "owner", fetch = FetchType.LAZY)
         private val ownedObjects: List<Objects> = listOf(),
 
+        @JsonIgnore
         @OneToMany(cascade = arrayOf(CascadeType.PERSIST, CascadeType.ALL))
         @JoinColumn(name = "ugrp_id")
-        private val userMappings: MutableList<UserUgrpMapping> = mutableListOf(),
+        val userMappings: MutableList<UserUgrpMapping> = mutableListOf(),
 
         @JoinTable(
                 name = "users_ugrps",
@@ -54,8 +55,4 @@ data class UserGroup(
 
 ) : NoUpdateOnCreateEntity<Int?>() {
     override fun getId(): Int? = id
-
-
-    @JsonIgnore
-    fun getUsers(): List<UserUgrpMapping> = userMappings
 }
