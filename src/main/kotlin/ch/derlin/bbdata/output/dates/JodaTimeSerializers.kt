@@ -7,6 +7,8 @@ import com.fasterxml.jackson.datatype.joda.JodaModule
 import org.joda.time.DateTime
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.convert.converter.Converter
+import org.springframework.stereotype.Component
 
 
 /**
@@ -14,6 +16,7 @@ import org.springframework.context.annotation.Configuration
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
+// ============== Jackson / JSON
 
 @Configuration
 class AppConfig {
@@ -39,13 +42,19 @@ class AppConfig {
 class JodaDateTimeSerializer : JsonSerializer<DateTime>() {
 
     override fun serialize(value: DateTime, gen: JsonGenerator, serializers: SerializerProvider) =
-        gen.writeString(JodaUtils.format(value))
+            gen.writeString(JodaUtils.format(value))
 
 }
 
 class JodaDateTimeDeserializer : JsonDeserializer<DateTime>() {
     override fun deserialize(p: JsonParser?, ctxt: DeserializationContext?): DateTime =
-        JodaUtils.parse(p!!.valueAsString)
+            JodaUtils.parse(p!!.valueAsString)
 
+}
 
+// ============== @RequestParam support
+
+@Component
+class DateUtilToDateSQLConverter : Converter<String, DateTime> {
+    override fun convert(source: String): DateTime? = JodaUtils.parse(source)
 }
