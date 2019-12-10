@@ -39,9 +39,13 @@ dependencies {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
 
+    // joda-time
     implementation("org.jadira.usertype:usertype.core:7.0.0.CR1")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-joda:2.0.1")
     implementation("joda-time:joda-time:2.8")
+
+    // cassandra
+    implementation("org.springframework.data:spring-data-cassandra")
 
     // for XML support
     // implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
