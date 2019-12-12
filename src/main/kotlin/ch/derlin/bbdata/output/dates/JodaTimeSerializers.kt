@@ -55,6 +55,11 @@ class JodaDateTimeDeserializer : JsonDeserializer<DateTime>() {
 // ============== @RequestParam support
 
 @Component
-class DateUtilToDateSQLConverter : Converter<String, DateTime> {
+class StringToJodaTimeSQLConverter : Converter<String, DateTime> {
     override fun convert(source: String): DateTime? = JodaUtils.parse(source)
+}
+
+@Component
+class LongToJodaTimeSQLConverter : Converter<Long, DateTime> {
+    override fun convert(source: Long): DateTime? = JodaUtils.parse(source)
 }
