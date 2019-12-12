@@ -46,13 +46,16 @@ class AuthInterceptor : HandlerInterceptor {
 
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
-        val method = (handler as HandlerMethod).method
+
+        if (handler !is HandlerMethod) return true // static resources, do nothing
 
         // allow options method to support CORS requests
         if (request.method.equals("options", ignoreCase = true)) {
             response.status = HttpStatus.OK.value()
             return false
         }
+
+        val method = (handler as HandlerMethod).method
 
         // "free access" endpoints, do nothing
         if (method.getAnnotation(NoHeaderRequired::class.java) != null) {
