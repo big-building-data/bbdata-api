@@ -6,6 +6,7 @@ import ch.derlin.bbdata.output.exceptions.AppException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @RestController
+@Tag(name = "Authentication", description = "login/logout")
 class AuthController {
 
     @Autowired

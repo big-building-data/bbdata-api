@@ -3,6 +3,7 @@ package ch.derlin.bbdata.output.api.types
 import ch.derlin.bbdata.output.exceptions.AppException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -17,6 +18,7 @@ import javax.validation.constraints.Size
 
 
 @RestController
+@Tag(name = "Basics", description = "Manage generic types and units")
 class TypesController(private val unitRepository: UnitRepository,
                       private val baseTypeRepository: BaseTypeRepository) {
 

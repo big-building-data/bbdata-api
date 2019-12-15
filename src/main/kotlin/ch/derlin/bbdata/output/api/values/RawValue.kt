@@ -6,6 +6,7 @@ import ch.derlin.bbdata.output.security.UserId
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonUnwrapped
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
 import org.joda.time.YearMonth
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType
@@ -88,6 +89,7 @@ interface RawValueRepository : CassandraRepository<RawValue, RawValuePK> {
 }
 
 @RestController
+@Tag(name = "Values", description = "Get raw object values")
 class RawValuesController(private val rawValueRepository: RawValueRepository,
                           private val cassandraObjectStreamer: CassandraObjectStreamer) {
 

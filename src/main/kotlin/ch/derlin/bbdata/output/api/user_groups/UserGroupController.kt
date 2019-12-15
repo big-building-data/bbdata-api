@@ -6,6 +6,7 @@ import ch.derlin.bbdata.output.exceptions.AppException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -17,6 +18,7 @@ import javax.validation.Valid
  */
 
 @RestController
+@Tag(name = "UserGroups", description = "Manage user groups")
 class UserGroupController(
         private val userGroupRepository: UserGroupRepository) {
 
@@ -49,6 +51,7 @@ class UserGroupController(
 }
 
 @RestController
+@Tag(name = "UserGroups", description = "Manage user groups")
 class UserGroupMappingController(
         private val userGroupMappingRepository: UserGroupMappingRepository,
         private val userRepository: UserRepository) {

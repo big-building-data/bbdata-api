@@ -8,11 +8,13 @@ package ch.derlin.bbdata.output.api.object_groups
 import ch.derlin.bbdata.output.exceptions.AppException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.converter.json.MappingJacksonValue
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/objectGroups")
+@Tag(name = "ObjectGroups", description = "Manage object groups")
 class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRepository) {
 
     @Protected

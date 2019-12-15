@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonUnwrapped
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
 import org.joda.time.YearMonth
 import org.springframework.data.cassandra.core.cql.Ordering
@@ -104,6 +105,7 @@ interface AggregationsRepository : CassandraRepository<Aggregation, AggregationP
 }
 
 @RestController
+@Tag(name = "Aggregations", description = "Get aggregated object values")
 class AggregationsController(private val aggregationsRepository: AggregationsRepository,
                              private val cassandraObjectStreamer: CassandraObjectStreamer) {
 

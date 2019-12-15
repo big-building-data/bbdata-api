@@ -14,6 +14,7 @@ import ch.derlin.bbdata.output.exceptions.AppException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -25,6 +26,7 @@ import javax.validation.constraints.NotNull
 
 @RestController
 @RequestMapping("/objects")
+@Tag(name = "Objects", description = "Manage objects")
 class ObjectController(private val objectRepository: ObjectRepository) {
 
     @Protected
@@ -76,6 +78,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
 
 @RestController
 @RequestMapping("/objects")
+@Tag(name = "Objects", description = "Manage objects")
 class NewObjectController(private val objectRepository: ObjectRepository,
                           private val userGroupRepository: UserGroupRepository) {
 
