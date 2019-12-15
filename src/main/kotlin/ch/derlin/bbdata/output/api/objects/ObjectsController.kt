@@ -5,7 +5,9 @@ package ch.derlin.bbdata.output.api.objects
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
+import ch.derlin.bbdata.output.HiddenParam
 import ch.derlin.bbdata.output.Beans
+import ch.derlin.bbdata.output.PageableAsQueryParam
 import ch.derlin.bbdata.output.api.types.Unit
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.output.exceptions.AppException
@@ -26,13 +28,14 @@ import javax.validation.constraints.NotNull
 class ObjectController(private val objectRepository: ObjectRepository) {
 
     @Protected
+    @PageableAsQueryParam
     @GetMapping("")
     fun getAll(
             @UserId userId: Int,
             @RequestParam(name = "writable", required = false) writable: Boolean,
             @RequestParam(name = "tags", required = false, defaultValue = "") unparsedTags: String,
             @RequestParam(name = "search", required = false, defaultValue = "") search: String,
-            pageable: Pageable
+            @HiddenParam pageable: Pageable
     ): List<Objects> {
         val tags = unparsedTags.split(",").map { s -> s.trim() }.filter { s -> s.length > 0 }
         return if (tags.size > 0)
@@ -88,7 +91,7 @@ class NewObjectController(private val objectRepository: ObjectRepository,
     @PutMapping("")
     fun newObject(@UserId userId: Int,
                   @RequestBody @Valid newObject: NewObject
-                  ): Objects {
+    ): Objects {
 
         val userGroup = userGroupRepository.findMine(userId, newObject.owner!!, admin = true).orElseThrow {
             AppException.forbidden("UserGroup '${newObject.owner}' does not exist or is not writable.")

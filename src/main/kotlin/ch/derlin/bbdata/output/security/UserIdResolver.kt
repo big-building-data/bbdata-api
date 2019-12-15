@@ -1,5 +1,6 @@
 package ch.derlin.bbdata.output.security
 
+import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
@@ -20,6 +21,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
 @kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
 @kotlin.annotation.Target(AnnotationTarget.VALUE_PARAMETER)
+@Parameter(hidden = true) // hide it in OpenAPI doc
 annotation class UserId
 
 @Component
