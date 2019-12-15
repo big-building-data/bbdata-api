@@ -1,12 +1,9 @@
 package ch.derlin.bbdata.output.api.values
 
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
-import ch.derlin.bbdata.output.api.objects.Objects
-import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Component
 import java.io.OutputStream
-import java.io.Writer
 import javax.servlet.http.HttpServletResponse
 
 /**

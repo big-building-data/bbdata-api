@@ -3,11 +3,7 @@ package ch.derlin.bbdata.output.api.user_groups
 import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
 import ch.derlin.bbdata.output.api.users.User
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonMerge
-import com.fasterxml.jackson.annotation.JsonRootName
 import com.fasterxml.jackson.annotation.JsonUnwrapped
-import org.hibernate.annotations.NotFound
-import org.hibernate.annotations.NotFoundAction
 import java.io.Serializable
 import javax.persistence.*
 import javax.validation.constraints.NotNull

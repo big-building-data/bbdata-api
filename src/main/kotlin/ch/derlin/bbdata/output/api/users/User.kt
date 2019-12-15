@@ -6,19 +6,14 @@ import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.api.user_groups.UserUgrpMapping
 import ch.derlin.bbdata.output.exceptions.AppException
 import com.fasterxml.jackson.annotation.JsonIgnore
-import org.hibernate.annotations.*
-import org.jadira.usertype.dateandtime.joda.PersistentDateTime
+import org.hibernate.annotations.Generated
+import org.hibernate.annotations.GenerationTime
 import org.joda.time.DateTime
 import org.springframework.http.HttpStatus
-import java.io.Serializable
 import javax.persistence.*
-import javax.persistence.CascadeType
-import javax.persistence.Entity
-import javax.persistence.Table
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Size
-import javax.xml.bind.annotation.XmlTransient
 
 
 /**

@@ -1,13 +1,9 @@
 package ch.derlin.bbdata.output.api.auth
 
-import ch.derlin.bbdata.output.api.users.User
-import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.output.exceptions.AppException
 import org.joda.time.DateTime
 import org.joda.time.MutablePeriod
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import org.springframework.stereotype.Repository
 import javax.persistence.EntityManager
 import javax.persistence.ParameterMode
 import javax.persistence.PersistenceContext

@@ -34,7 +34,9 @@ class UserIdHandlerMethodArgumentResolver : HandlerMethodArgumentResolver {
                                  @Nullable modelAndViewContainer: ModelAndViewContainer?,
                                  nativeWebRequest: NativeWebRequest,
                                  @Nullable webDataBinderFactory: WebDataBinderFactory?): Any? {
-        return (nativeWebRequest.getAttribute(SecurityConstants.HEADER_USER, 0) as String).toIntOrNull()
+        return nativeWebRequest.getAttribute(SecurityConstants.HEADER_USER, 0)?.let {
+            (it as String).toIntOrNull()
+        }
     }
 }
 

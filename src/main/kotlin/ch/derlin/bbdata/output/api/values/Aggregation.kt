@@ -1,6 +1,7 @@
 package ch.derlin.bbdata.output.api.values
 
 import ch.derlin.bbdata.output.dates.JodaUtils
+import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.io.Serializable
-import java.util.Locale
+import java.util.*
 import javax.servlet.http.HttpServletResponse
 
 /**
@@ -109,6 +110,7 @@ class AggregationsController(private val aggregationsRepository: AggregationsRep
     val quarters = 15
     val hours = 60
 
+    @Protected
     @GetMapping("/values/quarters", produces = arrayOf("application/json", "text/plain"))
     fun getQuarterAggregationsStream(
             @UserId userId: Int,
@@ -126,6 +128,7 @@ class AggregationsController(private val aggregationsRepository: AggregationsRep
 
     }
 
+    @Protected
     @GetMapping("/values/hours", produces = arrayOf("application/json", "text/plain"))
     fun getHoursAggregationsStream(
             @UserId userId: Int,

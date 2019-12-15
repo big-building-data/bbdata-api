@@ -1,15 +1,13 @@
 package ch.derlin.bbdata.output.api.types
 
 import ch.derlin.bbdata.output.exceptions.AppException
-import ch.derlin.bbdata.output.security.NoHeaderRequired
-import org.springframework.beans.factory.annotation.Autowired
+import ch.derlin.bbdata.output.security.Protected
+import ch.derlin.bbdata.output.security.SecurityConstants
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import javax.validation.Valid
-import javax.validation.constraints.NotBlank
-import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 /**
@@ -34,15 +32,14 @@ class TypesController(private val unitRepository: UnitRepository,
     }
 
     @GetMapping("/types")
-    @NoHeaderRequired
     fun getBaseTypes(): List<BaseType> = baseTypeRepository.findAll()
 
     @GetMapping("/units")
-    @NoHeaderRequired
     fun getUnits(): List<Unit> = unitRepository.findAll()
 
+    @Protected(SecurityConstants.SCOPE_WRITE)
     @PostMapping("/units")
-    fun addUnit(@Valid @RequestBody newUnit: NewUnit) { // TODO: @Valid !!!
+    fun addUnit(@Valid @RequestBody newUnit: NewUnit) {
         baseTypeRepository.findById(newUnit.type).map {
             unitRepository.save(Unit(symbol = newUnit.symbol, name = newUnit.name, type = it))
         }.orElseThrow { AppException.badRequest(name = "WrongType", msg = "The type '${newUnit.type}' is not valid.") }

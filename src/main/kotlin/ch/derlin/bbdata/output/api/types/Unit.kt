@@ -1,9 +1,9 @@
 package ch.derlin.bbdata.output.api.types
 
+import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
-import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
 
 
 /**

@@ -1,6 +1,7 @@
 package ch.derlin.bbdata.output.api.values
 
 import ch.derlin.bbdata.output.dates.JodaUtils
+import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -91,6 +92,7 @@ class RawValuesController(private val rawValueRepository: RawValueRepository,
                           private val cassandraObjectStreamer: CassandraObjectStreamer) {
 
 
+    @Protected
     @GetMapping("/values", produces = arrayOf("application/json", "text/plain"))
     fun getValuesStream(
             @UserId userId: Int,

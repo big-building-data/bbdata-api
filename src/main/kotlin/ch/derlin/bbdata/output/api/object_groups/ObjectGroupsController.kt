@@ -6,6 +6,7 @@ package ch.derlin.bbdata.output.api.object_groups
  */
 
 import ch.derlin.bbdata.output.exceptions.AppException
+import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
 import org.springframework.http.converter.json.MappingJacksonValue
 import org.springframework.web.bind.annotation.*
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/objectGroups")
 class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRepository) {
 
+    @Protected
     @GetMapping("")
     fun getAll(@UserId userId: Int,
                @RequestParam("writable", required = false) writable: Boolean,
@@ -26,6 +28,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
 
     }
 
+    @Protected
     @GetMapping("/{id}")
     fun getOneById(@UserId userId: Int,
                    @PathVariable(value = "id") id: Long,

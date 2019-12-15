@@ -14,7 +14,6 @@ import org.springframework.http.converter.json.MappingJacksonValue
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
-import javax.xml.bind.annotation.XmlTransient
 
 @Entity
 @Table(name = "ogrps")

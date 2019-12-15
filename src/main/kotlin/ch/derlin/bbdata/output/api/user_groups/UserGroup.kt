@@ -5,12 +5,9 @@ import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.users.User
 import com.fasterxml.jackson.annotation.JsonIgnore
-import org.springframework.transaction.annotation.Transactional
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
-import javax.xml.bind.annotation.XmlTransient
-import kotlin.jvm.Transient
 
 /**
  * date: 30.11.19

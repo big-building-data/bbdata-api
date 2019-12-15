@@ -1,10 +1,10 @@
 package ch.derlin.bbdata.output.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import javax.persistence.PostLoad
-import javax.persistence.PrePersist
 import org.springframework.data.domain.Persistable
 import javax.persistence.MappedSuperclass
+import javax.persistence.PostLoad
+import javax.persistence.PrePersist
 
 
 /**

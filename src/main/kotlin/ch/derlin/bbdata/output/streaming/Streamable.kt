@@ -1,6 +1,5 @@
 package ch.derlin.bbdata.output.streaming
 
-import java.io.IOException
 import com.fasterxml.jackson.core.JsonGenerator
 import java.io.Writer
 

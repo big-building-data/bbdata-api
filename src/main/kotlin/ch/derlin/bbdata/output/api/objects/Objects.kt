@@ -1,12 +1,8 @@
 package ch.derlin.bbdata.output.api.objects
 
-import ch.derlin.bbdata.output.Beans
-import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
 import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
-import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.api.types.Unit
-import com.fasterxml.jackson.annotation.JsonIdentityReference
-import com.fasterxml.jackson.annotation.JsonIgnore
+import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import org.hibernate.annotations.Generated
 import org.hibernate.annotations.GenerationTime
 import org.joda.time.DateTime

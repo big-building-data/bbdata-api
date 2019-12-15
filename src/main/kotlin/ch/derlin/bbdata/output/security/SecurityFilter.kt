@@ -5,6 +5,7 @@ import ch.derlin.bbdata.output.api.auth.AuthRepository
 import ch.derlin.bbdata.output.exceptions.AppException
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_TOKEN
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_USER
+import ch.derlin.bbdata.output.security.SecurityConstants.SCOPE_WRITE
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
@@ -41,12 +42,15 @@ class AuthInterceptor : HandlerInterceptor {
             return true
         }
 
-        // "free access" endpoints, do nothing
-        // todo: handler.method.getAnnotation(io.swagger.v3.oas.annotations.security.SecurityRequirement::class.java).scopes.contains("write")
-        if (handler.method.getAnnotation(NoHeaderRequired::class.java) != null) {
+        // get security annotation and scope
+        val securityAnnotation = handler.method.getAnnotation(Protected::class.java)
+        if (securityAnnotation == null) {
+            // "free access" endpoints, do nothing
             return true
         }
+        val writeRequired = securityAnnotation.value.contains(SCOPE_WRITE)
 
+        // extract userId and token into request attributes
         extractAuth(request)
         val bbuser = request.getAttribute(HEADER_USER) as String
         val bbtoken = request.getAttribute(HEADER_TOKEN) as String
@@ -63,7 +67,7 @@ class AuthInterceptor : HandlerInterceptor {
             // check valid tokens
             authRepository.checkApikey(userId, bbtoken)?.let {
                 // check if write access is necessary
-                if (it.isReadOnly && handler.method.getAnnotation(ApikeyWrite::class.java) != null) {
+                if (it.isReadOnly && writeRequired) {
                     // check write permissions
                     throw AppException.forbidden("Access denied for user ${userId} : this apikey is read-only")
                 }

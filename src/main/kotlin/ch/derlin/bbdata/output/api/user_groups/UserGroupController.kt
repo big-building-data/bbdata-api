@@ -3,7 +3,8 @@ package ch.derlin.bbdata.output.api.user_groups
 import ch.derlin.bbdata.output.api.users.User
 import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.output.exceptions.AppException
-import ch.derlin.bbdata.output.security.ApikeyWrite
+import ch.derlin.bbdata.output.security.Protected
+import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -19,17 +20,19 @@ import javax.validation.Valid
 class UserGroupController(
         private val userGroupRepository: UserGroupRepository) {
 
+    @Protected
     @GetMapping("/userGroups")
     fun getAll(@UserId userId: Int): List<UserGroup> =
             userGroupRepository.findAll()
 
+    @Protected
     @GetMapping("/mine/groups")
     fun getMines(@UserId userId: Int,
                  @PathVariable(value = "id") id: Int,
                  @RequestParam(name = "admin", required = false) admin: Boolean): List<UserGroup> =
             userGroupRepository.findMines(userId, admin)
 
-
+    @Protected
     @GetMapping("/userGroups/{id}")
     fun getOne(@UserId userId: Int,
                @PathVariable(value = "id") id: Int): UserGroup =
@@ -38,7 +41,7 @@ class UserGroupController(
                 AppException.itemNotFound("No usergroup with id '${id}'")
             }
 
-
+    @Protected
     @GetMapping("/userGroups/{id}/users")
     fun getUsers(@UserId userId: Int,
                  @PathVariable(value = "id") id: Int): List<UserUgrpMapping> =
@@ -50,6 +53,7 @@ class UserGroupMappingController(
         private val userGroupMappingRepository: UserGroupMappingRepository,
         private val userRepository: UserRepository) {
 
+    @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("/userGroups/{id}/users")
     fun addOrUpdateUserMapping(@UserId userId: Int,
                                @PathVariable(value = "id") id: Int,
@@ -79,6 +83,7 @@ class UserGroupMappingController(
         return ResponseEntity(HttpStatus.OK)
     }
 
+    @Protected(SecurityConstants.SCOPE_WRITE)
     @DeleteMapping("/userGroups/{id}/users")
     fun deleteUserMapping(@UserId userId: Int,
                           @PathVariable(value = "id") id: Int,
@@ -94,7 +99,7 @@ class UserGroupMappingController(
         return ResponseEntity(HttpStatus.NOT_MODIFIED)
     }
 
-    @ApikeyWrite
+    @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("/userGroups/{id}/users/new")
     fun createUser(@UserId userId: Int,
                    @Valid @RequestBody newUser: User.NewUser,

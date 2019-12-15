@@ -1,15 +1,17 @@
 package ch.derlin.bbdata.output.api.auth
 
-import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.api.users.User
 import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.output.exceptions.AppException
-import ch.derlin.bbdata.output.security.NoHeaderRequired
+import ch.derlin.bbdata.output.security.Protected
+import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestAttribute
+import org.springframework.web.bind.annotation.RestController
 
 /**
  * date: 30.11.19
@@ -25,13 +27,13 @@ class AuthController {
     private lateinit var authRepository: AuthRepository
 
     @PostMapping("/login")
-    @NoHeaderRequired
     fun login(username: String, password: String): Apikey {
         val u: User = userRepository.findByName(username)
         u.id?.let { return authRepository.login(it, password) }
         throw AppException.forbidden(msg = "User not found.")
     }
 
+    @Protected
     @PostMapping("/logout")
     fun logout(
             @UserId userId: Int,

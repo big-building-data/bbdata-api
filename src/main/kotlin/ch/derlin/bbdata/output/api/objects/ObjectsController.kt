@@ -9,7 +9,8 @@ import ch.derlin.bbdata.output.Beans
 import ch.derlin.bbdata.output.api.types.Unit
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.output.exceptions.AppException
-import ch.derlin.bbdata.output.security.ApikeyWrite
+import ch.derlin.bbdata.output.security.Protected
+import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -24,6 +25,7 @@ import javax.validation.constraints.NotNull
 @RequestMapping("/objects")
 class ObjectController(private val objectRepository: ObjectRepository) {
 
+    @Protected
     @GetMapping("")
     fun getAll(
             @UserId userId: Int,
@@ -39,6 +41,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
             objectRepository.findAll(userId, writable, search, pageable)
     }
 
+    @Protected
     @GetMapping("/{id}")
     fun getById(
             @UserId userId: Int,
@@ -46,8 +49,8 @@ class ObjectController(private val objectRepository: ObjectRepository) {
             @RequestParam(name = "writable", required = false) writable: Boolean = false
     ): Objects? = objectRepository.findById(id, userId, writable).orElseThrow { AppException.itemNotFound() }
 
+    @Protected(SecurityConstants.SCOPE_WRITE)
     @RequestMapping("{id}/tags", method = arrayOf(RequestMethod.PUT, RequestMethod.DELETE))
-    @ApikeyWrite
     fun addOrDeleteTags(
             request: HttpServletRequest,
             @UserId userId: Int,
@@ -81,8 +84,8 @@ class NewObjectController(private val objectRepository: ObjectRepository,
         val unitSymbol: String = ""
     }
 
+    @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("")
-    @ApikeyWrite
     fun newObject(@UserId userId: Int,
                   @RequestBody @Valid newObject: NewObject
                   ): Objects {
