@@ -48,6 +48,7 @@ class AuthRepository {
 
     fun logout(userId: Int, apikey: String): Boolean {
         val entity = checkApikey(userId, apikey)
+        // TODO: really remove apikey ?
         entity?.let {
             em.remove(entity)
             return true

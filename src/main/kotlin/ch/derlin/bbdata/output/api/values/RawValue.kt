@@ -1,7 +1,7 @@
 package ch.derlin.bbdata.output.api.values
 
-import ch.derlin.bbdata.output.Constants
 import ch.derlin.bbdata.output.dates.JodaUtils
+import ch.derlin.bbdata.output.security.UserId
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonUnwrapped
@@ -93,8 +93,8 @@ class RawValuesController(private val rawValueRepository: RawValueRepository,
 
     @GetMapping("/values", produces = arrayOf("application/json", "text/plain"))
     fun getValuesStream(
+            @UserId userId: Int,
             @RequestHeader(value = "Content-Type") contentType: String,
-            @RequestHeader(value = Constants.HEADER_USER) userId: Int,
             @RequestParam(name = "ids", required = true) ids: List<Long>,
             @RequestParam(name = "from", required = true) from: DateTime,
             @RequestParam(name = "to", required = false) to: DateTime?,

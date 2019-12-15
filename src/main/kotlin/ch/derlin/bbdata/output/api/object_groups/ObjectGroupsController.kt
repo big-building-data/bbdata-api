@@ -5,8 +5,8 @@ package ch.derlin.bbdata.output.api.object_groups
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
-import ch.derlin.bbdata.output.Constants
 import ch.derlin.bbdata.output.exceptions.AppException
+import ch.derlin.bbdata.output.security.UserId
 import org.springframework.http.converter.json.MappingJacksonValue
 import org.springframework.web.bind.annotation.*
 
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*
 class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRepository) {
 
     @GetMapping("")
-    fun getAll(@RequestHeader(Constants.HEADER_USER) userId: Int,
+    fun getAll(@UserId userId: Int,
                @RequestParam("writable", required = false) writable: Boolean,
                @RequestParam("withObjects", required = false) withObjects: Boolean): MappingJacksonValue {
         val ogrpList =
@@ -27,8 +27,8 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     }
 
     @GetMapping("/{id}")
-    fun getOneById(@PathVariable(value = "id") id: Long,
-                   @RequestHeader(Constants.HEADER_USER) userId: Int,
+    fun getOneById(@UserId userId: Int,
+                   @PathVariable(value = "id") id: Long,
                    @RequestParam("writable", required = false) writable: Boolean,
                    @RequestParam("withObjects", required = false) withObjects: Boolean): MappingJacksonValue {
         val obj =

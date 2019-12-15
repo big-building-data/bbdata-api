@@ -1,7 +1,7 @@
 package ch.derlin.bbdata.output.api.values
 
-import ch.derlin.bbdata.output.Constants
 import ch.derlin.bbdata.output.dates.JodaUtils
+import ch.derlin.bbdata.output.security.UserId
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -13,7 +13,6 @@ import org.springframework.data.cassandra.core.cql.PrimaryKeyType
 import org.springframework.data.cassandra.core.mapping.*
 import org.springframework.data.cassandra.repository.CassandraRepository
 import org.springframework.data.cassandra.repository.Query
-import org.springframework.format.annotation.DateTimeFormat
 import org.springframework.stereotype.Repository
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestHeader
@@ -112,8 +111,8 @@ class AggregationsController(private val aggregationsRepository: AggregationsRep
 
     @GetMapping("/values/quarters", produces = arrayOf("application/json", "text/plain"))
     fun getQuarterAggregationsStream(
+            @UserId userId: Int,
             @RequestHeader(value = "Content-Type") contentType: String,
-            @RequestHeader(value = Constants.HEADER_USER) userId: Int,
             @RequestParam(name = "ids", required = true) ids: List<Long>,
             @RequestParam(name = "from", required = true) from: DateTime,
             @RequestParam(name = "to", required = false) to: DateTime?,
@@ -129,8 +128,8 @@ class AggregationsController(private val aggregationsRepository: AggregationsRep
 
     @GetMapping("/values/hours", produces = arrayOf("application/json", "text/plain"))
     fun getHoursAggregationsStream(
+            @UserId userId: Int,
             @RequestHeader(value = "Content-Type") contentType: String,
-            @RequestHeader(value = Constants.HEADER_USER) userId: Int,
             @RequestParam(name = "ids", required = true) ids: List<Long>,
             @RequestParam(name = "from", required = true) from: DateTime,
             @RequestParam(name = "to", required = false) to: DateTime?,

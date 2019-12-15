@@ -1,11 +1,10 @@
 package ch.derlin.bbdata.output.api.user_groups
 
-import ch.derlin.bbdata.output.Constants
 import ch.derlin.bbdata.output.api.users.User
 import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.output.exceptions.AppException
 import ch.derlin.bbdata.output.security.ApikeyWrite
-import org.springframework.beans.factory.annotation.Autowired
+import ch.derlin.bbdata.output.security.UserId
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -21,19 +20,19 @@ class UserGroupController(
         private val userGroupRepository: UserGroupRepository) {
 
     @GetMapping("/userGroups")
-    fun getAll(@RequestHeader(value = Constants.HEADER_USER) userId: Int): List<UserGroup> =
+    fun getAll(@UserId userId: Int): List<UserGroup> =
             userGroupRepository.findAll()
 
     @GetMapping("/mine/groups")
-    fun getMines(@PathVariable(value = "id") id: Int,
-                 @RequestHeader(value = Constants.HEADER_USER) userId: Int,
+    fun getMines(@UserId userId: Int,
+                 @PathVariable(value = "id") id: Int,
                  @RequestParam(name = "admin", required = false) admin: Boolean): List<UserGroup> =
             userGroupRepository.findMines(userId, admin)
 
 
     @GetMapping("/userGroups/{id}")
-    fun getOne(@PathVariable(value = "id") id: Int,
-               @RequestHeader(value = Constants.HEADER_USER) userId: Int): UserGroup =
+    fun getOne(@UserId userId: Int,
+               @PathVariable(value = "id") id: Int): UserGroup =
             // TODO: admins only ? return list of users ?
             userGroupRepository.findById(id).orElseThrow {
                 AppException.itemNotFound("No usergroup with id '${id}'")
@@ -41,8 +40,8 @@ class UserGroupController(
 
 
     @GetMapping("/userGroups/{id}/users")
-    fun getUsers(@PathVariable(value = "id") id: Int,
-                 @RequestHeader(value = Constants.HEADER_USER) userId: Int): List<UserUgrpMapping> =
+    fun getUsers(@UserId userId: Int,
+                 @PathVariable(value = "id") id: Int): List<UserUgrpMapping> =
             getOne(id, userId).userMappings // TODO: should we be admins for that ?
 }
 
@@ -52,8 +51,8 @@ class UserGroupMappingController(
         private val userRepository: UserRepository) {
 
     @PutMapping("/userGroups/{id}/users")
-    fun addOrUpdateUserMapping(@PathVariable(value = "id") id: Int,
-                               @RequestHeader(value = Constants.HEADER_USER) userId: Int,
+    fun addOrUpdateUserMapping(@UserId userId: Int,
+                               @PathVariable(value = "id") id: Int,
                                @RequestParam(name = "userId", required = true) newUserId: Int,
                                @RequestParam(name = "admin", required = false) admin: Boolean
     ): ResponseEntity<Unit> {
@@ -81,8 +80,8 @@ class UserGroupMappingController(
     }
 
     @DeleteMapping("/userGroups/{id}/users")
-    fun deleteUserMapping(@PathVariable(value = "id") id: Int,
-                          @RequestHeader(value = Constants.HEADER_USER) userId: Int,
+    fun deleteUserMapping(@UserId userId: Int,
+                          @PathVariable(value = "id") id: Int,
                           @RequestParam(name = "userId", required = true) userIdToDelete: Int
     ): ResponseEntity<Unit> {
         canUserModifyGroup(userId, id) // ensure the user has the right to delete a member from the group
@@ -97,9 +96,9 @@ class UserGroupMappingController(
 
     @ApikeyWrite
     @PutMapping("/userGroups/{id}/users/new")
-    fun createUser(@Valid @RequestBody newUser: User.NewUser,
+    fun createUser(@UserId userId: Int,
+                   @Valid @RequestBody newUser: User.NewUser,
                    @PathVariable(value = "id") id: Int,
-                   @RequestHeader(value = Constants.HEADER_USER) userId: Int,
                    @RequestParam(name = "admin", required = false) admin: Boolean): User {
         // ensure the user has the right to add a member to the group
         val mapping = canUserModifyGroup(userId, id)

@@ -6,19 +6,15 @@ package ch.derlin.bbdata.output.api.objects
  */
 
 import ch.derlin.bbdata.output.Beans
-import ch.derlin.bbdata.output.Constants
 import ch.derlin.bbdata.output.api.types.Unit
-import ch.derlin.bbdata.output.api.user_groups.UserGroup
-import ch.derlin.bbdata.output.api.user_groups.UserGroupMappingRepository
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
-import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.output.exceptions.AppException
 import ch.derlin.bbdata.output.security.ApikeyWrite
+import ch.derlin.bbdata.output.security.UserId
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.lang.RuntimeException
 import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
@@ -30,7 +26,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
 
     @GetMapping("")
     fun getAll(
-            @RequestHeader(value = Constants.HEADER_USER) userId: Int,
+            @UserId userId: Int,
             @RequestParam(name = "writable", required = false) writable: Boolean,
             @RequestParam(name = "tags", required = false, defaultValue = "") unparsedTags: String,
             @RequestParam(name = "search", required = false, defaultValue = "") search: String,
@@ -45,8 +41,8 @@ class ObjectController(private val objectRepository: ObjectRepository) {
 
     @GetMapping("/{id}")
     fun getById(
+            @UserId userId: Int,
             @PathVariable(value = "id") id: Long,
-            @RequestHeader(value = Constants.HEADER_USER) userId: Int,
             @RequestParam(name = "writable", required = false) writable: Boolean = false
     ): Objects? = objectRepository.findById(id, userId, writable).orElseThrow { AppException.itemNotFound() }
 
@@ -54,8 +50,8 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     @ApikeyWrite
     fun addOrDeleteTags(
             request: HttpServletRequest,
+            @UserId userId: Int,
             @PathVariable(value = "id") id: Long,
-            @RequestHeader(value = Constants.HEADER_USER) userId: Int,
             @RequestParam(name = "tags", required = true) rawTags: String = ""): ResponseEntity<Unit> {
         val obj = objectRepository.findById(id, userId, writable = true).orElseThrow { AppException.itemNotFound() }
 
@@ -68,19 +64,6 @@ class ObjectController(private val objectRepository: ObjectRepository) {
         return ResponseEntity.status(
                 if (modified) HttpStatus.OK else HttpStatus.NOT_MODIFIED
         ).build()
-    }
-
-
-    @GetMapping("/exc/{id}")
-    fun exc(@PathVariable(value = "id") id: Long): String {
-        when (id) {
-            1L -> throw AppException.badApiKey()
-            2L -> throw AppException.create(HttpStatus.BAD_REQUEST, "BadX", mapOf("x" to 1, "y" to mapOf("z" to "sf")))
-            3L -> throw RuntimeException("argg!")
-            5L -> throw AppException.fromThrowable(ClassNotFoundException("alésdkfj"))
-            6L -> throw AppException.forbidden("nope.")
-            else -> return "OK"
-        }
     }
 
 }
@@ -100,11 +83,11 @@ class NewObjectController(private val objectRepository: ObjectRepository,
 
     @PutMapping("")
     @ApikeyWrite
-    fun newObject(
-            @RequestBody @Valid newObject: NewObject,
-            @RequestHeader(value = Constants.HEADER_USER) userId: Int): Objects {
+    fun newObject(@UserId userId: Int,
+                  @RequestBody @Valid newObject: NewObject
+                  ): Objects {
 
-        val userGroup = userGroupRepository.findMine(userId, newObject.owner!!, admin = true).orElseThrow{
+        val userGroup = userGroupRepository.findMine(userId, newObject.owner!!, admin = true).orElseThrow {
             AppException.forbidden("UserGroup '${newObject.owner}' does not exist or is not writable.")
         }
 

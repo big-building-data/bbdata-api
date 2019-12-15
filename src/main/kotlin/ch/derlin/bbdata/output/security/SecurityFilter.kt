@@ -1,9 +1,10 @@
 package ch.derlin.bbdata.output.security
 
 
-import ch.derlin.bbdata.output.Constants
 import ch.derlin.bbdata.output.api.auth.AuthRepository
 import ch.derlin.bbdata.output.exceptions.AppException
+import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_TOKEN
+import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_USER
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
@@ -12,31 +13,11 @@ import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+import java.nio.charset.Charset
 import java.util.*
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-
-/*
-@Component
-@Order(1)
-public class TransactionFilter : Filter {
-
-    override fun doFilter(request: ServletRequest?, response: ServletResponse?, chain: FilterChain?) {
-        val req: HttpServletRequest = request as HttpServletRequest
-        chain?.doFilter(request, response)
-    }
-}
-*/
-
-
-@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
-@kotlin.annotation.Target(AnnotationTarget.FUNCTION, AnnotationTarget.TYPE)
-annotation class ApikeyWrite
-
-@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
-@kotlin.annotation.Target(AnnotationTarget.FUNCTION, AnnotationTarget.TYPE)
-annotation class NoHeaderRequired
 
 @Component
 class AuthInterceptor : HandlerInterceptor {
@@ -55,19 +36,23 @@ class AuthInterceptor : HandlerInterceptor {
             return false
         }
 
-        val method = (handler as HandlerMethod).method
-
-        // "free access" endpoints, do nothing
-        if (method.getAnnotation(NoHeaderRequired::class.java) != null) {
+        // allow non-bbdata endpoints, such as doc
+        if (!handler.beanType.packageName.contains("bbdata")) {
             return true
         }
 
-        extractBasicAuth(request)
-        val bbuser = request.getHeader(Constants.HEADER_USER)
-        val bbtoken = request.getHeader(Constants.HEADER_TOKEN)
+        // "free access" endpoints, do nothing
+        // todo: handler.method.getAnnotation(io.swagger.v3.oas.annotations.security.SecurityRequirement::class.java).scopes.contains("write")
+        if (handler.method.getAnnotation(NoHeaderRequired::class.java) != null) {
+            return true
+        }
+
+        extractAuth(request)
+        val bbuser = request.getAttribute(HEADER_USER) as String
+        val bbtoken = request.getAttribute(HEADER_TOKEN) as String
 
         // missing one of the two headers...
-        if (bbuser == null || bbtoken == null) {
+        if (bbuser == "" || bbtoken == "") {
             response.getWriter().write("This resource is protected. "
                     + "Missing authorization headers: %s=<user_id:int>, %s=<token:string>");
             response.status = HttpStatus.UNAUTHORIZED.value()
@@ -78,7 +63,7 @@ class AuthInterceptor : HandlerInterceptor {
             // check valid tokens
             authRepository.checkApikey(userId, bbtoken)?.let {
                 // check if write access is necessary
-                if (it.isReadOnly && method.getAnnotation(ApikeyWrite::class.java) != null) {
+                if (it.isReadOnly && handler.method.getAnnotation(ApikeyWrite::class.java) != null) {
                     // check write permissions
                     throw AppException.forbidden("Access denied for user ${userId} : this apikey is read-only")
                 }
@@ -89,23 +74,32 @@ class AuthInterceptor : HandlerInterceptor {
             throw AppException.badApiKey("Access denied for user ${userId} : bad apikey")
         }
         // bbuser is not an int
-        throw AppException.badApiKey("Wrong header ${Constants.HEADER_USER}=${bbuser}. Should be an integer")
+        throw AppException.badApiKey("Wrong header $HEADER_USER=${bbuser}. Should be an integer")
 
     }
 
-    private fun extractBasicAuth(request: HttpServletRequest) {
-        val auth = request.getHeader("Authorization")
+    private fun extractAuth(request: HttpServletRequest) {
         // Basic Authorization header has the format: "Basic <base64-encoded user:pass>"
+        val auth = request.getHeader("Authorization")
         if (auth != null && auth.startsWith("Basic")) {
             val decoded = String(
-                    Base64.getDecoder().decode(auth.replaceFirst("Basic ".toRegex(), "").toByteArray())
+                    Base64.getDecoder().decode(auth.replaceFirst("Basic ", "").toByteArray()),
+                    charset = UTF_8_CHARSET
             ).split(":")
 
             if (decoded.size == 2) {
-                request.setAttribute(Constants.HEADER_USER, decoded[0])
-                request.setAttribute(Constants.HEADER_TOKEN, decoded[1])
+                request.setAttribute(HEADER_USER, decoded[0])
+                request.setAttribute(HEADER_TOKEN, decoded[1])
+                return
             }
         }
+        // If not working, extract from the headers
+        request.setAttribute(HEADER_USER, request.getHeader(HEADER_USER) ?: "")
+        request.setAttribute(HEADER_TOKEN, request.getHeader(HEADER_TOKEN) ?: "")
+    }
+
+    companion object {
+        val UTF_8_CHARSET = Charset.forName("utf-8")
     }
 
 }
