@@ -7,6 +7,7 @@ import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -32,7 +33,7 @@ class UserGroupController(
     @GetMapping("/mine/groups")
     fun getMines(@UserId userId: Int,
                  @PathVariable(value = "id") id: Int,
-                 @RequestParam(name = "admin", required = false) admin: Boolean): List<UserGroup> =
+                 @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): List<UserGroup> =
             userGroupRepository.findMines(userId, admin)
 
     @Protected
@@ -56,11 +57,12 @@ class UserGroupMappingController(
         private val userRepository: UserRepository) {
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @ApiResponse(responseCode = "304", description = "Not modified.")
     @PutMapping("/userGroups/{id}/users")
     fun addOrUpdateUserMapping(@UserId userId: Int,
                                @PathVariable(value = "id") id: Int,
                                @RequestParam(name = "userId", required = true) newUserId: Int,
-                               @RequestParam(name = "admin", required = false) admin: Boolean
+                               @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean
     ): ResponseEntity<Unit> {
         canUserModifyGroup(userId, id) // ensure the user has the right to update members of this group
         // ensure the user we want to update exists
@@ -84,6 +86,7 @@ class UserGroupMappingController(
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @ApiResponse(responseCode = "304", description = "Not modified.")
     @DeleteMapping("/userGroups/{id}/users")
     fun deleteUserMapping(@UserId userId: Int,
                           @PathVariable(value = "id") id: Int,
@@ -104,7 +107,7 @@ class UserGroupMappingController(
     fun createUser(@UserId userId: Int,
                    @Valid @RequestBody newUser: User.NewUser,
                    @PathVariable(value = "id") id: Int,
-                   @RequestParam(name = "admin", required = false) admin: Boolean): User {
+                   @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): User {
         // ensure the user has the right to add a member to the group
         val mapping = canUserModifyGroup(userId, id)
         // create both user and mapping (group permission)

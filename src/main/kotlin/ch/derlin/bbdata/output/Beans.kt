@@ -1,5 +1,6 @@
 package ch.derlin.bbdata.output
 
+import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 /**
@@ -9,6 +10,8 @@ import javax.validation.constraints.Size
 
 object Beans {
     open class NameDescription {
+
+        @NotNull
         @Size(min = 3, max = 60)
         val name: String = ""
 

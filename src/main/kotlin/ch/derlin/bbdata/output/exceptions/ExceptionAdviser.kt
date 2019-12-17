@@ -1,5 +1,7 @@
 package ch.derlin.bbdata.output.exceptions
 
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.hibernate.exception.ConstraintViolationException
 import org.springframework.boot.web.servlet.error.DefaultErrorAttributes
 import org.springframework.dao.DataIntegrityViolationException
@@ -49,20 +51,28 @@ class ErrorAttributes : DefaultErrorAttributes() {
 
 // for all other errors
 @RestControllerAdvice
+@ApiResponse(responseCode = "200", description = "Success.") // also override the message for 200 status codes
 class GlobalControllerExceptionHandler : ResponseEntityExceptionHandler() {
     // === known exceptions
 
     @ExceptionHandler(ItemNotFoundException::class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ApiResponse(responseCode = "404",
+            description = "The resource was not found, either because it does not exist or because it cannot be accessed " +
+                    "using the provided authentication (no right, read-only apikey accessing writable resources)")
     fun handleItemNotFound(ex: ItemNotFoundException): ExceptionBody = ex.body()
 
     @ExceptionHandler(ForbiddenException::class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    fun handleForbidden(ex: ItemNotFoundException): ExceptionBody = ex.body()
+    @ApiResponse(responseCode = "403",
+            description = "Login error: wrong user and/or apikey provided.")
+    fun handleForbidden(ex: ForbiddenException): ExceptionBody = ex.body()
 
 
     @ExceptionHandler(DataIntegrityViolationException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ApiResponse(responseCode = "400",
+            description = "Some provided information is incorrect.")
     fun handleDataIntegrityException(ex: DataIntegrityViolationException): ExceptionBody = ex.body()
 
 

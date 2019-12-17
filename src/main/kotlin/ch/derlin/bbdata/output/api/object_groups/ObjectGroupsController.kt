@@ -20,8 +20,8 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     @Protected
     @GetMapping("")
     fun getAll(@UserId userId: Int,
-               @RequestParam("writable", required = false) writable: Boolean,
-               @RequestParam("withObjects", required = false) withObjects: Boolean): MappingJacksonValue {
+               @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
+               @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): MappingJacksonValue {
         val ogrpList =
                 if (writable) objectGroupsRepository.findAllWritable(userId)
                 else objectGroupsRepository.findAll(userId)
@@ -34,8 +34,8 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     @GetMapping("/{id}")
     fun getOneById(@UserId userId: Int,
                    @PathVariable(value = "id") id: Long,
-                   @RequestParam("writable", required = false) writable: Boolean,
-                   @RequestParam("withObjects", required = false) withObjects: Boolean): MappingJacksonValue {
+                   @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
+                   @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): MappingJacksonValue {
         val obj =
                 if (writable) objectGroupsRepository.findOneWritable(userId, id)
                 else objectGroupsRepository.findOne(userId, id)

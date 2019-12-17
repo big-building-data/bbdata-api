@@ -15,6 +15,7 @@ import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -35,7 +36,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     @GetMapping("")
     fun getAll(
             @UserId userId: Int,
-            @RequestParam(name = "writable", required = false) writable: Boolean,
+            @RequestParam(name = "writable", required = false, defaultValue = "false") writable: Boolean,
             @RequestParam(name = "tags", required = false, defaultValue = "") unparsedTags: String,
             @RequestParam(name = "search", required = false, defaultValue = "") search: String,
             @HiddenParam pageable: Pageable
@@ -52,10 +53,11 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     fun getById(
             @UserId userId: Int,
             @PathVariable(value = "id") id: Long,
-            @RequestParam(name = "writable", required = false) writable: Boolean = false
+            @RequestParam(name = "writable", required = false, defaultValue = "false") writable: Boolean = false
     ): Objects? = objectRepository.findById(id, userId, writable).orElseThrow { ItemNotFoundException("object") }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @ApiResponse(responseCode = "304", description = "Not modified.")
     @RequestMapping("{id}/tags", method = arrayOf(RequestMethod.PUT, RequestMethod.DELETE))
     fun addOrDeleteTags(
             request: HttpServletRequest,
@@ -98,7 +100,7 @@ class NewObjectController(private val objectRepository: ObjectRepository,
     ): Objects {
 
         val userGroup = userGroupRepository.findMine(userId, newObject.owner!!, admin = true).orElseThrow {
-            ForbiddenException("UserGroup '${newObject.owner}' does not exist or is not writable.")
+            ItemNotFoundException("UserGroup ('${newObject.owner}', writable=true)")
         }
 
         return objectRepository.saveAndFlush(Objects(

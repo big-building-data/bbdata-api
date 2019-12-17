@@ -6,6 +6,7 @@ import ch.derlin.bbdata.output.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -36,6 +37,7 @@ class AuthController {
     }
 
     @Protected
+    @ApiResponse(responseCode = "304", description = "Not modified.")
     @PostMapping("/logout")
     fun logout(
             @UserId userId: Int,
