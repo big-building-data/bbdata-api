@@ -2,7 +2,8 @@ package ch.derlin.bbdata.output.security
 
 
 import ch.derlin.bbdata.output.api.auth.AuthRepository
-import ch.derlin.bbdata.output.exceptions.AppException
+import ch.derlin.bbdata.output.exceptions.BadApikeyException
+import ch.derlin.bbdata.output.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_TOKEN
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_USER
 import ch.derlin.bbdata.output.security.SecurityConstants.SCOPE_WRITE
@@ -69,16 +70,16 @@ class AuthInterceptor : HandlerInterceptor {
                 // check if write access is necessary
                 if (it.isReadOnly && writeRequired) {
                     // check write permissions
-                    throw AppException.forbidden("Access denied for user ${userId} : this apikey is read-only")
+                    throw ForbiddenException("Access denied for user ${userId} : this apikey is read-only")
                 }
                 // every checks passed !
                 return true
             }
             // apikey is null
-            throw AppException.badApiKey("Access denied for user ${userId} : bad apikey")
+            throw BadApikeyException("Access denied for user ${userId} : bad apikey")
         }
         // bbuser is not an int
-        throw AppException.badApiKey("Wrong header $HEADER_USER=${bbuser}. Should be an integer")
+        throw BadApikeyException("Wrong header $HEADER_USER=${bbuser}. Should be an integer")
 
     }
 

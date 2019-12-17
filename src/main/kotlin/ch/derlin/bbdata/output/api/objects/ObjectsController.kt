@@ -5,12 +5,13 @@ package ch.derlin.bbdata.output.api.objects
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
-import ch.derlin.bbdata.output.HiddenParam
 import ch.derlin.bbdata.output.Beans
+import ch.derlin.bbdata.output.HiddenParam
 import ch.derlin.bbdata.output.PageableAsQueryParam
 import ch.derlin.bbdata.output.api.types.Unit
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
-import ch.derlin.bbdata.output.exceptions.AppException
+import ch.derlin.bbdata.output.exceptions.ForbiddenException
+import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
@@ -52,7 +53,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
             @UserId userId: Int,
             @PathVariable(value = "id") id: Long,
             @RequestParam(name = "writable", required = false) writable: Boolean = false
-    ): Objects? = objectRepository.findById(id, userId, writable).orElseThrow { AppException.itemNotFound() }
+    ): Objects? = objectRepository.findById(id, userId, writable).orElseThrow { ItemNotFoundException("object") }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @RequestMapping("{id}/tags", method = arrayOf(RequestMethod.PUT, RequestMethod.DELETE))
@@ -61,7 +62,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
             @UserId userId: Int,
             @PathVariable(value = "id") id: Long,
             @RequestParam(name = "tags", required = true) rawTags: String = ""): ResponseEntity<Unit> {
-        val obj = objectRepository.findById(id, userId, writable = true).orElseThrow { AppException.itemNotFound() }
+        val obj = objectRepository.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
 
         val tags = rawTags.split(",").map { t -> t.trim() }
         val modified =
@@ -97,7 +98,7 @@ class NewObjectController(private val objectRepository: ObjectRepository,
     ): Objects {
 
         val userGroup = userGroupRepository.findMine(userId, newObject.owner!!, admin = true).orElseThrow {
-            AppException.forbidden("UserGroup '${newObject.owner}' does not exist or is not writable.")
+            ForbiddenException("UserGroup '${newObject.owner}' does not exist or is not writable.")
         }
 
         return objectRepository.saveAndFlush(Objects(

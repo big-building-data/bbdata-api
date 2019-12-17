@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.Generated
 import org.hibernate.annotations.GenerationTime
 import org.joda.time.DateTime
-import org.springframework.http.HttpStatus
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
@@ -88,13 +87,11 @@ data class User(
 
     companion object {
 
-        @Throws(AppException::class)
         fun hashPassword(password: String): String {
             try {
                 return PasswordDigest.toMD5(password)
             } catch (ex: Exception) {
-                throw AppException.create(HttpStatus.INTERNAL_SERVER_ERROR,
-                        "SecurityException", "Could not hash password")
+                throw AppException("Could not hash password")
             }
 
         }

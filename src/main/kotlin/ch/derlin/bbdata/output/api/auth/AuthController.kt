@@ -2,7 +2,7 @@ package ch.derlin.bbdata.output.api.auth
 
 import ch.derlin.bbdata.output.api.users.User
 import ch.derlin.bbdata.output.api.users.UserRepository
-import ch.derlin.bbdata.output.exceptions.AppException
+import ch.derlin.bbdata.output.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
@@ -32,7 +32,7 @@ class AuthController {
     fun login(username: String, password: String): Apikey {
         val u: User = userRepository.findByName(username)
         u.id?.let { return authRepository.login(it, password) }
-        throw AppException.forbidden(msg = "User not found.")
+        throw ForbiddenException("User not found.")
     }
 
     @Protected

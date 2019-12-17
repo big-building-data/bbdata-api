@@ -1,6 +1,6 @@
 package ch.derlin.bbdata.output.api.types
 
-import ch.derlin.bbdata.output.exceptions.AppException
+import ch.derlin.bbdata.output.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -44,7 +44,7 @@ class TypesController(private val unitRepository: UnitRepository,
     fun addUnit(@Valid @RequestBody newUnit: NewUnit) {
         baseTypeRepository.findById(newUnit.type).map {
             unitRepository.save(Unit(symbol = newUnit.symbol, name = newUnit.name, type = it))
-        }.orElseThrow { AppException.badRequest(name = "WrongType", msg = "The type '${newUnit.type}' is not valid.") }
+        }.orElseThrow { WrongParamsException("The type '${newUnit.type}' is not valid.") }
     }
 
 

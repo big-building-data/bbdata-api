@@ -5,7 +5,7 @@ package ch.derlin.bbdata.output.api.object_groups
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
-import ch.derlin.bbdata.output.exceptions.AppException
+import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -40,8 +40,6 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
                 if (writable) objectGroupsRepository.findOneWritable(userId, id)
                 else objectGroupsRepository.findOne(userId, id)
 
-        return ObjectGroup.asJacksonMapping(obj.orElseThrow {
-            AppException.itemNotFound()
-        }, withObjects)
+        return ObjectGroup.asJacksonMapping(obj.orElseThrow { ItemNotFoundException("object group") }, withObjects)
     }
 }

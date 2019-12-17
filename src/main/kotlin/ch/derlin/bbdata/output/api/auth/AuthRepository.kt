@@ -1,6 +1,7 @@
 package ch.derlin.bbdata.output.api.auth
 
 import ch.derlin.bbdata.output.exceptions.AppException
+import ch.derlin.bbdata.output.exceptions.ForbiddenException
 import org.joda.time.DateTime
 import org.joda.time.MutablePeriod
 import org.springframework.stereotype.Component
@@ -36,7 +37,7 @@ class AuthRepository {
         val ok = storedProcedure.getOutputParameterValue("ok") as Boolean
 
         if (!ok) {
-            throw AppException.forbidden("Wrong username|password.")
+            throw ForbiddenException("Wrong username|password.")
         }
         // create a temporary token
         return createApikey(userId, true, DateTime().plus(EXPIRE), "auto_login")

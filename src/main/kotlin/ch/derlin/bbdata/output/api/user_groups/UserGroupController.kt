@@ -2,7 +2,8 @@ package ch.derlin.bbdata.output.api.user_groups
 
 import ch.derlin.bbdata.output.api.users.User
 import ch.derlin.bbdata.output.api.users.UserRepository
-import ch.derlin.bbdata.output.exceptions.AppException
+import ch.derlin.bbdata.output.exceptions.ForbiddenException
+import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
@@ -39,9 +40,7 @@ class UserGroupController(
     fun getOne(@UserId userId: Int,
                @PathVariable(value = "id") id: Int): UserGroup =
             // TODO: admins only ? return list of users ?
-            userGroupRepository.findById(id).orElseThrow {
-                AppException.itemNotFound("No usergroup with id '${id}'")
-            }
+            userGroupRepository.findById(id).orElseThrow { ItemNotFoundException("usergroup (${id})") }
 
     @Protected
     @GetMapping("/userGroups/{id}/users")
@@ -65,9 +64,7 @@ class UserGroupMappingController(
     ): ResponseEntity<Unit> {
         canUserModifyGroup(userId, id) // ensure the user has the right to update members of this group
         // ensure the user we want to update exists
-        userRepository.findById(newUserId).orElseThrow {
-            AppException.itemNotFound("The user with id '${newUserId}' does not exist.")
-        }
+        userRepository.findById(newUserId).orElseThrow { ItemNotFoundException("user ($newUserId)") }
         // do the deed, either updating or creating a new mapping
         val optional = userGroupMappingRepository.findById(UserUgrpMappingId(newUserId, id))
         if (optional.isPresent()) {
@@ -111,7 +108,7 @@ class UserGroupMappingController(
         // ensure the user has the right to add a member to the group
         val mapping = canUserModifyGroup(userId, id)
         // create both user and mapping (group permission)
-        if (!mapping.isAdmin) throw AppException.forbidden("You must be admin to add users.")
+        if (!mapping.isAdmin) throw ForbiddenException("You must be admin to add users.")
         val user = userRepository.saveAndFlush(newUser.toUser()) // use flush to get the generated ID
         userGroupMappingRepository.save(UserUgrpMapping(userId = user.id!!, groupId = id, isAdmin = admin))
         return user
@@ -120,6 +117,6 @@ class UserGroupMappingController(
     fun canUserModifyGroup(userId: Int, groupId: Int): UserUgrpMapping =
             // ensure the user has the right to add a member to the group
             userGroupMappingRepository.findById(UserUgrpMappingId(userId, groupId)).orElseThrow {
-                AppException.itemNotFound("UserGroup '${groupId}' not found or not accessible.")
+                ItemNotFoundException("usergroup (${groupId})")
             }
 }
