@@ -9,9 +9,10 @@ import ch.derlin.bbdata.output.Beans
 import ch.derlin.bbdata.output.HiddenParam
 import ch.derlin.bbdata.output.PageableAsQueryParam
 import ch.derlin.bbdata.output.api.types.Unit
+import ch.derlin.bbdata.output.api.types.UnitRepository
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
-import ch.derlin.bbdata.output.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
+import ch.derlin.bbdata.output.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
@@ -67,13 +68,14 @@ class ObjectController(private val objectRepository: ObjectRepository) {
         val obj = objectRepository.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
 
         val tags = rawTags.split(",").map { t -> t.trim() }
-        val modified =
-                if (request.method == RequestMethod.DELETE.name) tags.any { obj.removeTag(it) }
-                else tags.any { obj.addTag(it) }
+        // TODO: modified not working !!!
+        val statuses =
+                if (request.method == RequestMethod.DELETE.name) tags.map { obj.removeTag(it) }
+                else tags.map { obj.addTag(it) }
         objectRepository.save(obj)
 
         return ResponseEntity.status(
-                if (modified) HttpStatus.OK else HttpStatus.NOT_MODIFIED
+                if (statuses.any { x -> x }) HttpStatus.OK else HttpStatus.NOT_MODIFIED
         ).build()
     }
 
@@ -83,7 +85,8 @@ class ObjectController(private val objectRepository: ObjectRepository) {
 @RequestMapping("/objects")
 @Tag(name = "Objects", description = "Manage objects")
 class NewObjectController(private val objectRepository: ObjectRepository,
-                          private val userGroupRepository: UserGroupRepository) {
+                          private val userGroupRepository: UserGroupRepository,
+                          private val unitRepository: UnitRepository) {
 
     class NewObject : Beans.NameDescription() {
         @NotNull
@@ -103,10 +106,14 @@ class NewObjectController(private val objectRepository: ObjectRepository,
             ItemNotFoundException("UserGroup ('${newObject.owner}', writable=true)")
         }
 
+        val unit = unitRepository.findById(newObject.unitSymbol).orElseThrow {
+            WrongParamsException("Unit '${newObject.unitSymbol}' does not exist.")
+        }
+
         return objectRepository.saveAndFlush(Objects(
                 name = newObject.name,
                 description = newObject.description,
-                unit = Unit(symbol = newObject.unitSymbol),
+                unit = unit,
                 owner = userGroup
         ))
     }
