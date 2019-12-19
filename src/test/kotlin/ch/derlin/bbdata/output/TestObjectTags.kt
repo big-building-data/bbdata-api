@@ -21,6 +21,7 @@ import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import kotlin.random.Random
 import ch.derlin.bbdata.output.putForEntity
+import org.springframework.beans.factory.annotation.Autowired
 
 
 /**
@@ -33,9 +34,8 @@ import ch.derlin.bbdata.output.putForEntity
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class TestObjectTags {
 
-    @LocalServerPort
-    private val port = 0
-    var restTemplate = TestRestTemplate()
+    @Autowired
+    private lateinit var restTemplate: TestRestTemplate
 
     companion object {
         val id = 1
@@ -47,10 +47,10 @@ class TestObjectTags {
     @Throws(Exception::class)
     fun `1-1 add tags`() {
         // == add tags
-        val response = restTemplate.putForEntity(url("/objects/${1}/tags?tags=${tag1},${tag2}"), "", String::class.java)
+        val response = restTemplate.putForEntity("/objects/${1}/tags?tags=${tag1},${tag2}", "", String::class.java)
         assertEquals(response.statusCode, HttpStatus.OK)
 
-        val json = restTemplate.getQueryJson(url("/objects/$id")).second
+        val json = restTemplate.getQueryJson("/objects/$id").second
         assertTrue(json.read<List<String>>("$.tags").contains(tag1))
         assertTrue(json.read<List<String>>("$.tags").contains(tag2))
     }
@@ -59,7 +59,7 @@ class TestObjectTags {
     @Throws(Exception::class)
     fun `1-2 add tags not modified`() {
         // == add tags bis
-        val response = restTemplate.putQueryString(url("/objects/${1}/tags?tags=${tag1},${tag2}"))
+        val response = restTemplate.putQueryString("/objects/${1}/tags?tags=${tag1},${tag2}")
         assertEquals(HttpStatus.NOT_MODIFIED, response.statusCode)
     }
 
@@ -67,10 +67,10 @@ class TestObjectTags {
     @Throws(Exception::class)
     fun `1-3 remove first tag`() {
         // == remove first tag
-        val response = restTemplate.deleteQueryString(url("/objects/${1}/tags?tags=${tag1}"))
+        val response = restTemplate.deleteQueryString("/objects/${1}/tags?tags=${tag1}")
         assertEquals(HttpStatus.OK, response.statusCode)
 
-        val json = restTemplate.getQueryJson(url("/objects/$id")).second
+        val json = restTemplate.getQueryJson("/objects/$id").second
         assertFalse(json.read<List<String>>("$.tags").contains(tag1))
         assertTrue(json.read<List<String>>("$.tags").contains(tag2))
     }
@@ -79,15 +79,11 @@ class TestObjectTags {
     @Throws(Exception::class)
     fun `1-4 remove second tag`() {
         // == remove second tag
-        val response = restTemplate.deleteQueryString(url("/objects/${1}/tags?tags=${tag2}"))
+        val response = restTemplate.deleteQueryString("/objects/${1}/tags?tags=${tag2}")
         assertEquals(HttpStatus.OK, response.statusCode)
 
-        val json = restTemplate.getQueryJson(url("/objects/$id")).second
+        val json = restTemplate.getQueryJson("/objects/$id").second
         assertFalse(json.read<List<String>>("$.tags").contains(tag1))
         assertFalse(json.read<List<String>>("$.tags").contains(tag2))
-    }
-
-    private fun url(uri: String): String {
-        return "http://localhost:$port$uri"
     }
 }
