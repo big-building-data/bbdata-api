@@ -10,7 +10,7 @@ import javax.validation.constraints.NotNull
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
-class ObjectsGroupPermsId(
+data class ObjectsGroupPermsId(
         @Id
         @Basic(optional = false)
         @NotNull

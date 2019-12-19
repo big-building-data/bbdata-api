@@ -14,7 +14,7 @@ import javax.validation.constraints.Size
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
-class TagId(
+data class TagId(
         @Basic(optional = false)
         @NotNull
         @Column(name = "name")

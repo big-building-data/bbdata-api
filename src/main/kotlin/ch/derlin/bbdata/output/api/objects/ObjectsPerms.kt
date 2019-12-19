@@ -11,7 +11,7 @@ import javax.validation.constraints.NotNull
 
 // Composite key class must implement Serializable
 // and have defaults.
-class ObjectsPermsId(
+data class ObjectsPermsId(
         @Id
         @Basic(optional = false)
         @NotNull
