@@ -8,11 +8,15 @@ import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.security.SecurityScheme
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.context.annotation.ComponentScan
+import org.springframework.context.annotation.FilterType
 import javax.annotation.PostConstruct
 
 
 @SpringBootApplication
-// @EnableCassandraRepositories("ch.derlin.bbdata.output.api.values")
+@ComponentScan(excludeFilters = arrayOf(
+        ComponentScan.Filter(type = FilterType.CUSTOM, classes = arrayOf(ExcludePackageFilter::class))
+))
 @OpenAPIDefinition( // see https://github.com/swagger-api/swagger-core/wiki/Swagger-2.X---Annotations
         info = Info(
                 title = "BBData",
@@ -34,6 +38,7 @@ class OutputApiApplication {
         JodaUtils.defaultPattern(JodaUtils.Format.ISO_SECONDS);
     }
 }
+
 
 fun main(args: Array<String>) {
     runApplication<OutputApiApplication>(*args)

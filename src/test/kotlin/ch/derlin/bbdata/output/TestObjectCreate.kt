@@ -21,14 +21,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
  */
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("unsecured")
+@ActiveProfiles(Profiles.UNSECURED, Profiles.NO_CASSANDRA)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class TestObjectCreate {
 
     @LocalServerPort
     private val port = 0
     var restTemplate = TestRestTemplate()
-    val id = 1
 
     @Test
     @Throws(Exception::class)

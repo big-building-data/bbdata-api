@@ -8,4 +8,6 @@ package ch.derlin.bbdata.output
 object Profiles {
     const val UNSECURED = "unsecured"
     const val NOT_UNSECURED = "!$UNSECURED"
+
+    const val NO_CASSANDRA = "noc"
 }
