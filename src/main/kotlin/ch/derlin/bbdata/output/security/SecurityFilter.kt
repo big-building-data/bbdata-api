@@ -1,6 +1,7 @@
 package ch.derlin.bbdata.output.security
 
 
+import ch.derlin.bbdata.output.Profiles
 import ch.derlin.bbdata.output.api.auth.AuthRepository
 import ch.derlin.bbdata.output.exceptions.BadApikeyException
 import ch.derlin.bbdata.output.exceptions.ForbiddenException
@@ -9,6 +10,7 @@ import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_USER
 import ch.derlin.bbdata.output.security.SecurityConstants.SCOPE_WRITE
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
 import org.springframework.web.method.HandlerMethod
@@ -20,8 +22,33 @@ import java.util.*
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+// ========================
 
 @Component
+@Profile(Profiles.UNSECURED)
+class DummyAuthInterceptor : HandlerInterceptor {
+    override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
+        request.setAttribute(HEADER_USER, "1")
+        return true
+    }
+}
+
+@Configuration
+@Profile(Profiles.UNSECURED)
+class DummyWebMvcConfiguration : WebMvcConfigurer {
+
+    @Autowired
+    lateinit var authInterceptor: DummyAuthInterceptor
+
+    override fun addInterceptors(registry: InterceptorRegistry) {
+        registry.addInterceptor(authInterceptor)
+    }
+}
+
+// ========================
+
+@Component
+@Profile(Profiles.NOT_UNSECURED)
 class AuthInterceptor : HandlerInterceptor {
 
     @Autowired
@@ -110,6 +137,7 @@ class AuthInterceptor : HandlerInterceptor {
 }
 
 @Configuration
+@Profile(Profiles.NOT_UNSECURED)
 class WebMvcConfiguration : WebMvcConfigurer {
 
     @Autowired
