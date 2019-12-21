@@ -41,7 +41,7 @@ data class ObjectGroup(
                 inverseJoinColumns = arrayOf(JoinColumn(name = "object_id", referencedColumnName = "id"))
         )
         @ManyToMany(fetch = FetchType.LAZY)
-        var objects: List<Objects>,
+        var objects: MutableList<Objects> = mutableListOf(),
 
         @JoinColumn(name = "ugrp_id", referencedColumnName = "id")
         @ManyToOne(optional = false, fetch = FetchType.LAZY)
@@ -54,7 +54,7 @@ data class ObjectGroup(
         )
         @ManyToMany(fetch = FetchType.LAZY)
         @JsonIgnore
-        var allowedUserGroups: List<UserGroup>,
+        var allowedUserGroups: List<UserGroup> = listOf(),
 
         @OneToMany(fetch = FetchType.LAZY)
         @JoinColumn(name = "ogrp_id", insertable = false, updatable = false)

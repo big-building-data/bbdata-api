@@ -32,7 +32,6 @@ class UserGroupController(
     @Protected
     @GetMapping("/mine/groups")
     fun getMines(@UserId userId: Int,
-                 @PathVariable(value = "id") id: Int,
                  @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): List<UserGroup> =
             userGroupRepository.findMines(userId, admin)
 
