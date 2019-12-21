@@ -34,8 +34,8 @@ class OutputApiApplication {
     @PostConstruct
     fun init() {
         // Setting Spring Boot SetTimeZone
-        JodaUtils.setDefaultTimeZoneUTC();
-        JodaUtils.defaultPattern(JodaUtils.Format.ISO_SECONDS);
+        JodaUtils.setDefaultTimeZoneUTC()
+        JodaUtils.defaultPattern(JodaUtils.Format.ISO_SECONDS)
     }
 }
 
