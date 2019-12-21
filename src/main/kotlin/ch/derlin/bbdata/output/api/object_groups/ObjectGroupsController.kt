@@ -15,7 +15,6 @@ import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.http.converter.json.MappingJacksonValue
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
@@ -33,27 +32,33 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
 
     @Protected
     @GetMapping("")
+    //@ApiResponse(
+    //        responseCode = "200",
+    //        description = "default resposne. Note: depending on the withObject parameter, the objects array can be missing.",
+    //        content = arrayOf(Content(
+    //                schema = ArraySchema(schema = Schema(type= "ObjectGroup", implementation = ObjectGroup::class)))
+    //        ))
     fun getAll(@UserId userId: Int,
-               @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
-               @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): MappingJacksonValue {
+               @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean)
+            : List<ObjectGroup.ObjectGroupSimple> {
+
         val ogrpList =
                 if (writable) objectGroupsRepository.findAllWritable(userId)
                 else objectGroupsRepository.findAll(userId)
 
-        return ObjectGroup.asJacksonMapping(ogrpList, withObjects)
-
+        return ogrpList.map { ObjectGroup.ObjectGroupSimple.fromObjectGroup(it) }
     }
 
     @Protected
     @PutMapping("")
     fun createOne(@UserId userId: Int,
-                  @Valid @RequestBody newOgrp: NewObjectGroup): MappingJacksonValue {
+                  @Valid @RequestBody newOgrp: NewObjectGroup): ObjectGroup.ObjectGroupSimple {
 
         val owner = userGroupRepository.findMine(userId, newOgrp.owner!!).orElseThrow {
             ItemNotFoundException("userGroup (${newOgrp.owner})")
         }
 
-        val ogrp = objectGroupsRepository.saveAndFlush(
+        val obj = objectGroupsRepository.saveAndFlush(
                 ObjectGroup(
                         name = newOgrp.name,
                         description = newOgrp.description,
@@ -61,21 +66,19 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
                 )
         )
 
-        return ObjectGroup.asJacksonMapping(ogrp, withObjects = false)
-
+        return ObjectGroup.ObjectGroupSimple.fromObjectGroup(obj)
     }
 
     @Protected
     @GetMapping("/{id}")
     fun getOneById(@UserId userId: Int,
                    @PathVariable(value = "id") id: Long,
-                   @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
-                   @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): MappingJacksonValue {
+                   @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean): ObjectGroup {
         val obj =
                 if (writable) objectGroupsRepository.findOneWritable(userId, id)
                 else objectGroupsRepository.findOne(userId, id)
 
-        return ObjectGroup.asJacksonMapping(obj.orElseThrow { ItemNotFoundException("object group ($id)") }, withObjects)
+        return obj.orElseThrow { ItemNotFoundException("object group ($id)") }
     }
 
     @Protected
@@ -133,8 +136,8 @@ class ObjectGroupsObjectController(
     @Protected
     @DeleteMapping("/{id}/objects")
     fun removeObjectFromGroup(@UserId userId: Int,
-                         @PathVariable(value = "id") id: Long,
-                         @RequestParam("objectId", required = true) objectId: Long): ResponseEntity<Unit> {
+                              @PathVariable(value = "id") id: Long,
+                              @RequestParam("objectId", required = true) objectId: Long): ResponseEntity<Unit> {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
             ItemNotFoundException("object group ($id)")

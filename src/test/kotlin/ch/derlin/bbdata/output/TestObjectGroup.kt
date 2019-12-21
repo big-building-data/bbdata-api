@@ -88,13 +88,13 @@ class TestObjectGroup {
         val putResponse = restTemplate.putQueryString("/objectGroups/$id/objects?objectId=1")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
-        val json = restTemplate.getQueryJson("/objectGroups/${id}?withObjects=true", String::class.java).second
+        val json = restTemplate.getQueryJson("/objectGroups/${id}", String::class.java).second
         Assertions.assertTrue(json.read<List<Any>>("$.objects[?(@.id == 1)]").size > 0)
     }
 
     @Test
     fun `1-3 test get objects`() {
-        val json1 = restTemplate.getQueryJson("/objectGroups/${id}?withObjects=true", String::class.java).second
+        val json1 = restTemplate.getQueryJson("/objectGroups/${id}", String::class.java).second
         val objs1 = json1.read<List<String>>("$.objects")
         Assertions.assertTrue(objs1.size > 0)
 

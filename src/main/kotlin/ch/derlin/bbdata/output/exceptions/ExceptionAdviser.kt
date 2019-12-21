@@ -51,7 +51,6 @@ class ErrorAttributes : DefaultErrorAttributes() {
 
 // for all other errors
 @RestControllerAdvice
-@ApiResponse(responseCode = "200", description = "Success.") // also override the message for 200 status codes
 class GlobalControllerExceptionHandler : ResponseEntityExceptionHandler() {
     // === known exceptions
 

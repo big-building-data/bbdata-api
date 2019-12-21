@@ -5,6 +5,7 @@ package ch.derlin.bbdata.output.api.object_groups
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 import ch.derlin.bbdata.output.api.objects.Objects
+import ch.derlin.bbdata.output.api.objects.Tag
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import com.fasterxml.jackson.annotation.JsonFilter
 import com.fasterxml.jackson.annotation.JsonIgnore
@@ -17,7 +18,7 @@ import javax.validation.constraints.Size
 
 @Entity
 @Table(name = "ogrps")
-@JsonFilter("noObjectsFilter")
+//@JsonFilter("noObjectsFilter")
 data class ObjectGroup(
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -66,13 +67,29 @@ data class ObjectGroup(
         @JsonIgnore
         val writePermissions: List<ObjectGroupWritePerms> = listOf()
 ) {
-    companion object {
-        fun asJacksonMapping(obj: Any, withObjects: Boolean = false): MappingJacksonValue {
-            val mapping = MappingJacksonValue(obj)
-            mapping.filters = SimpleFilterProvider().addFilter(
-                    "noObjectsFilter",
-                    SimpleBeanPropertyFilter.serializeAllExcept(if (withObjects) "_x_" else "objects"))
-            return mapping
+//    companion object {
+//        fun asJacksonMapping(obj: Any, withObjects: Boolean = false): MappingJacksonValue {
+//            val mapping = MappingJacksonValue(obj)
+//            mapping.filters = SimpleFilterProvider().addFilter(
+//                    "noObjectsFilter",
+//                    SimpleBeanPropertyFilter.serializeAllExcept(if (withObjects) "_x_" else "objects"))
+//            return mapping
+//        }
+//    }
+
+    data class ObjectGroupSimple constructor(
+            val id: Long,
+            val name: String,
+            val description: String?,
+            val owner: UserGroup
+    ) {
+        companion object {
+            fun fromObjectGroup(og: ObjectGroup): ObjectGroupSimple = ObjectGroupSimple(
+                    id = og.id!!,
+                    name = og.name!!,
+                    description = og.description,
+                    owner = og.owner
+            )
         }
     }
 }
