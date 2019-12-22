@@ -6,12 +6,18 @@ package ch.derlin.bbdata.output.api.object_groups
  */
 
 import ch.derlin.bbdata.output.Beans
+import ch.derlin.bbdata.output.api.object_groups.ObjectGroup.ObjectGroupSimple
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -32,27 +38,29 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
 
     @Protected
     @GetMapping("")
-    //@ApiResponse(
-    //        responseCode = "200",
-    //        description = "default resposne. Note: depending on the withObject parameter, the objects array can be missing.",
-    //        content = arrayOf(Content(
-    //                schema = ArraySchema(schema = Schema(type= "ObjectGroup", implementation = ObjectGroup::class)))
-    //        ))
+    @ApiResponse(
+            responseCode = "200",
+            description = "default response. Note: if *withObject* is true, the `objects` array will be present as well.",
+            content = arrayOf(Content(
+                    array = ArraySchema(schema = Schema(implementation = ObjectGroupSimple::class))
+            )))
     fun getAll(@UserId userId: Int,
-               @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean)
-            : List<ObjectGroup.ObjectGroupSimple> {
+               @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
+               @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean)
+            : List<Any> {
 
         val ogrpList =
                 if (writable) objectGroupsRepository.findAllWritable(userId)
                 else objectGroupsRepository.findAll(userId)
 
-        return ogrpList.map { ObjectGroup.ObjectGroupSimple.fromObjectGroup(it) }
+        if (withObjects) return ogrpList
+        return ogrpList.map { ObjectGroupSimple(it) }
     }
 
     @Protected
     @PutMapping("")
     fun createOne(@UserId userId: Int,
-                  @Valid @RequestBody newOgrp: NewObjectGroup): ObjectGroup.ObjectGroupSimple {
+                  @Valid @RequestBody newOgrp: NewObjectGroup): ObjectGroupSimple {
 
         val owner = userGroupRepository.findMine(userId, newOgrp.owner!!).orElseThrow {
             ItemNotFoundException("userGroup (${newOgrp.owner})")
@@ -66,19 +74,25 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
                 )
         )
 
-        return ObjectGroup.ObjectGroupSimple.fromObjectGroup(obj)
+        return ObjectGroupSimple(obj)
     }
 
     @Protected
     @GetMapping("/{id}")
+    @ApiResponse(
+            responseCode = "200",
+            description = "default response. Note: if *withObject* is true, the `objects` array will be present as well.",
+            content = arrayOf(Content(schema = Schema(implementation = ObjectGroupSimple::class))))
     fun getOneById(@UserId userId: Int,
                    @PathVariable(value = "id") id: Long,
-                   @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean): ObjectGroup {
-        val obj =
+                   @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
+                   @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): Any {
+        val opt =
                 if (writable) objectGroupsRepository.findOneWritable(userId, id)
                 else objectGroupsRepository.findOne(userId, id)
 
-        return obj.orElseThrow { ItemNotFoundException("object group ($id)") }
+        val ogrp = opt.orElseThrow { ItemNotFoundException("object group ($id)") }
+        return if (withObjects) ogrp else ObjectGroupSimple(ogrp)
     }
 
     @Protected

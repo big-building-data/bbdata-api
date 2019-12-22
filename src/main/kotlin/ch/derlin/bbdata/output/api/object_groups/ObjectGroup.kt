@@ -83,14 +83,11 @@ data class ObjectGroup(
             val description: String?,
             val owner: UserGroup
     ) {
-        companion object {
-            fun fromObjectGroup(og: ObjectGroup): ObjectGroupSimple = ObjectGroupSimple(
-                    id = og.id!!,
-                    name = og.name!!,
-                    description = og.description,
-                    owner = og.owner
-            )
-        }
+        constructor(og: ObjectGroup) : this(
+                id = og.id!!,
+                name = og.name!!,
+                description = og.description,
+                owner = og.owner)
     }
 }
 
