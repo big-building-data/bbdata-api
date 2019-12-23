@@ -1,6 +1,7 @@
 package ch.derlin.bbdata.output.api.user_groups
 
 import ch.derlin.bbdata.output.api.CommonResponses
+import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.users.User
 import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.output.exceptions.ForbiddenException
@@ -8,9 +9,7 @@ import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
-import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
@@ -57,7 +56,7 @@ class UserGroupMappingController(
         private val userRepository: UserRepository) {
 
     @Protected(SecurityConstants.SCOPE_WRITE)
-    @ApiResponse(responseCode = "304", description = "Not modified.")
+    @SimpleModificationStatusResponse
     @PutMapping("/userGroups/{id}/users")
     fun addOrUpdateUserMapping(@UserId userId: Int,
                                @PathVariable(value = "id") id: Int,
@@ -86,7 +85,7 @@ class UserGroupMappingController(
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
-    @ApiResponse(responseCode = "304", description = "Not modified.")
+    @SimpleModificationStatusResponse
     @DeleteMapping("/userGroups/{id}/users")
     fun deleteUserMapping(@UserId userId: Int,
                           @PathVariable(value = "id") id: Int,

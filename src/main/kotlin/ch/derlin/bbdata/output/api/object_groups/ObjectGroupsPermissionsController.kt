@@ -6,6 +6,7 @@ package ch.derlin.bbdata.output.api.object_groups
  */
 
 import ch.derlin.bbdata.output.api.CommonResponses
+import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
@@ -35,6 +36,7 @@ class ObjectGroupsPermissionsController(
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @SimpleModificationStatusResponse
     @PutMapping("/{id}/permissions")
     fun addPermission(@UserId userId: Int,
                       @PathVariable(value = "id") id: Long,
@@ -44,6 +46,7 @@ class ObjectGroupsPermissionsController(
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @SimpleModificationStatusResponse
     @DeleteMapping("/{id}/permissions")
     fun removePermission(@UserId userId: Int,
                          @PathVariable(value = "id") id: Long,

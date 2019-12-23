@@ -6,13 +6,14 @@ package ch.derlin.bbdata.output.api.object_groups
  */
 
 import ch.derlin.bbdata.output.api.CommonResponses
+import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
+import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -34,7 +35,8 @@ class ObjectGroupsObjectController(
         return ogrp.objects
     }
 
-    @Protected
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @SimpleModificationStatusResponse
     @PutMapping("/{id}/objects")
     fun addObjectToGroup(@UserId userId: Int,
                          @PathVariable(value = "id") id: Long,
@@ -57,7 +59,8 @@ class ObjectGroupsObjectController(
         return CommonResponses.ok()
     }
 
-    @Protected
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @SimpleModificationStatusResponse
     @DeleteMapping("/{id}/objects")
     fun removeObjectFromGroup(@UserId userId: Int,
                               @PathVariable(value = "id") id: Long,

@@ -1,16 +1,15 @@
 package ch.derlin.bbdata.output.api.auth
 
 import ch.derlin.bbdata.output.api.CommonResponses
+import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.users.User
 import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.output.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
-import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestAttribute
@@ -38,7 +37,7 @@ class AuthController {
     }
 
     @Protected
-    @ApiResponse(responseCode = "304", description = "Not modified.")
+    @SimpleModificationStatusResponse
     @PostMapping("/logout")
     fun logout(
             @UserId userId: Int,

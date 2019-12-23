@@ -8,6 +8,7 @@ package ch.derlin.bbdata.output.api.objects
 import ch.derlin.bbdata.output.Beans
 import ch.derlin.bbdata.output.HiddenParam
 import ch.derlin.bbdata.output.PageableAsQueryParam
+import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.types.Unit
 import ch.derlin.bbdata.output.api.types.UnitRepository
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
@@ -16,7 +17,6 @@ import ch.derlin.bbdata.output.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
-import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
@@ -58,7 +58,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     ): Objects? = objectRepository.findById(id, userId, writable).orElseThrow { ItemNotFoundException("object") }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
-    @ApiResponse(responseCode = "304", description = "Not modified.")
+    @SimpleModificationStatusResponse
     @RequestMapping("{id}/tags", method = arrayOf(RequestMethod.PUT, RequestMethod.DELETE))
     fun addOrDeleteTags(
             request: HttpServletRequest,

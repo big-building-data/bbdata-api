@@ -7,6 +7,7 @@ package ch.derlin.bbdata.output.api.object_groups
 
 import ch.derlin.bbdata.output.Beans
 import ch.derlin.bbdata.output.api.CommonResponses
+import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
@@ -16,7 +17,6 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
@@ -92,6 +92,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
 
     @Protected
     @DeleteMapping("/{id}")
+    @SimpleModificationStatusResponse
     fun deleteOneById(@UserId userId: Int, @PathVariable(value = "id") id: Long): ResponseEntity<String> {
         var modified = false
         objectGroupsRepository.findOne(userId, id).ifPresent {
