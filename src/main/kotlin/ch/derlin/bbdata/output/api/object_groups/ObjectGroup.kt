@@ -42,6 +42,7 @@ data class ObjectGroup(
                 inverseJoinColumns = arrayOf(JoinColumn(name = "object_id", referencedColumnName = "id"))
         )
         @ManyToMany(fetch = FetchType.LAZY)
+        @JsonIgnore
         var objects: MutableList<Objects> = mutableListOf(),
 
         @JoinColumn(name = "ugrp_id", referencedColumnName = "id")
@@ -77,17 +78,19 @@ data class ObjectGroup(
 //        }
 //    }
 
-    data class ObjectGroupSimple constructor(
+    data class ObjectGroupExtended constructor(
             val id: Long,
             val name: String,
             val description: String?,
-            val owner: UserGroup
+            val owner: UserGroup,
+            val objects: List<Objects> = listOf() // make object part of the JSON
     ) {
         constructor(og: ObjectGroup) : this(
                 id = og.id!!,
                 name = og.name!!,
                 description = og.description,
-                owner = og.owner)
+                owner = og.owner,
+                objects = og.objects)
     }
 }
 

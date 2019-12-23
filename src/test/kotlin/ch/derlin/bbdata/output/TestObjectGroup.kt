@@ -84,7 +84,7 @@ class TestObjectGroup {
     }
 
     @Test
-    fun `1-2 test add object`() {
+    fun `2-1 test add object`() {
         val putResponse = restTemplate.putQueryString("/objectGroups/$id/objects?objectId=1")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
@@ -93,9 +93,9 @@ class TestObjectGroup {
     }
 
     @Test
-    fun `1-3 test get objects`() {
-        val json1 = restTemplate.getQueryJson("/objectGroups/${id}?withObjects=true", String::class.java).second
-        val objs1 = json1.read<List<String>>("$.objects")
+    fun `2-2 test get objects`() {
+        val json = restTemplate.getQueryJson("/objectGroups/${id}?withObjects=true", String::class.java).second
+        val objs1 = json.read<List<String>>("$.objects")
         Assertions.assertTrue(objs1.size > 0)
 
         val objs2 = restTemplate.getQueryString("/objectGroups/${id}/objects", String::class.java).body!!
@@ -103,7 +103,16 @@ class TestObjectGroup {
     }
 
     @Test
-    fun `1-4 test remove object`() {
+    fun `2-4 test object withObjects`() {
+        val respFalse = restTemplate.getQueryString("/objectGroups/$id?withObjects=false")
+        Assertions.assertFalse(respFalse.body!!.contains("\"objects\""))
+
+        val respTrue = restTemplate.getQueryString("/objectGroups/$id?withObjects=true")
+        Assertions.assertTrue(respTrue.body!!.contains("\"objects\""))
+    }
+
+    @Test
+    fun `2-5 test remove object`() {
         val putResponse = restTemplate.deleteQueryString("/objectGroups/$id/objects?objectId=1")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
@@ -112,7 +121,16 @@ class TestObjectGroup {
     }
 
     @Test
-    fun `1-5 test remove object group`() {
+    fun `3-1 test objectGroup withObjects`() {
+        val respFalse = restTemplate.getQueryString("/objectGroups?withObjects=false")
+        Assertions.assertFalse(respFalse.body!!.contains("\"objects\""))
+
+        val respTrue = restTemplate.getQueryString("/objectGroups?withObjects=true")
+        Assertions.assertTrue(respTrue.body!!.contains("\"objects\""))
+    }
+
+    @Test
+    fun `5-0 test remove object group`() {
         val putResponse = restTemplate.deleteQueryString("/objectGroups/$id")
         Assertions.assertEquals(putResponse.statusCode, HttpStatus.OK)
 

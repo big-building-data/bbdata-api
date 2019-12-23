@@ -6,7 +6,7 @@ package ch.derlin.bbdata.output.api.object_groups
  */
 
 import ch.derlin.bbdata.output.Beans
-import ch.derlin.bbdata.output.api.object_groups.ObjectGroup.ObjectGroupSimple
+import ch.derlin.bbdata.output.api.object_groups.ObjectGroup.ObjectGroupExtended
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.responses.ApiResponses
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -42,7 +41,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
             responseCode = "200",
             description = "default response. Note: if *withObject* is true, the `objects` array will be present as well.",
             content = arrayOf(Content(
-                    array = ArraySchema(schema = Schema(implementation = ObjectGroupSimple::class))
+                    array = ArraySchema(schema = Schema(implementation = ObjectGroup::class))
             )))
     fun getAll(@UserId userId: Int,
                @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
@@ -53,28 +52,26 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
                 if (writable) objectGroupsRepository.findAllWritable(userId)
                 else objectGroupsRepository.findAll(userId)
 
-        if (withObjects) return ogrpList
-        return ogrpList.map { ObjectGroupSimple(it) }
+        if (!withObjects) return ogrpList
+        return ogrpList.map { ObjectGroup.ObjectGroupExtended(it) }
     }
 
     @Protected
     @PutMapping("")
     fun createOne(@UserId userId: Int,
-                  @Valid @RequestBody newOgrp: NewObjectGroup): ObjectGroupSimple {
+                  @Valid @RequestBody newOgrp: NewObjectGroup): ObjectGroup {
 
         val owner = userGroupRepository.findMine(userId, newOgrp.owner!!).orElseThrow {
             ItemNotFoundException("userGroup (${newOgrp.owner})")
         }
 
-        val obj = objectGroupsRepository.saveAndFlush(
+        return objectGroupsRepository.saveAndFlush(
                 ObjectGroup(
                         name = newOgrp.name,
                         description = newOgrp.description,
                         owner = owner
                 )
         )
-
-        return ObjectGroupSimple(obj)
     }
 
     @Protected
@@ -82,7 +79,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     @ApiResponse(
             responseCode = "200",
             description = "default response. Note: if *withObject* is true, the `objects` array will be present as well.",
-            content = arrayOf(Content(schema = Schema(implementation = ObjectGroupSimple::class))))
+            content = arrayOf(Content(schema = Schema(implementation = ObjectGroup::class))))
     fun getOneById(@UserId userId: Int,
                    @PathVariable(value = "id") id: Long,
                    @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
@@ -92,7 +89,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
                 else objectGroupsRepository.findOne(userId, id)
 
         val ogrp = opt.orElseThrow { ItemNotFoundException("object group ($id)") }
-        return if (withObjects) ogrp else ObjectGroupSimple(ogrp)
+        return if (withObjects) ObjectGroupExtended(ogrp) else ogrp
     }
 
     @Protected
