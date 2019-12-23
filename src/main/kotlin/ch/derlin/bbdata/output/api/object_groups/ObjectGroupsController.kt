@@ -6,8 +6,6 @@ package ch.derlin.bbdata.output.api.object_groups
  */
 
 import ch.derlin.bbdata.output.Beans
-import ch.derlin.bbdata.output.api.objects.ObjectRepository
-import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
@@ -98,67 +96,6 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
         objectGroupsRepository.findOne(userId, id).ifPresent {
             objectGroupsRepository.delete(it)
             ret = HttpStatus.OK
-        }
-        return ResponseEntity(ret)
-    }
-}
-
-@RestController
-@RequestMapping("/objectGroups")
-@Tag(name = "ObjectGroups", description = "Manage object groups")
-class ObjectGroupsObjectController(
-        private val objectGroupsRepository: ObjectGroupsRepository,
-        private val objectRepository: ObjectRepository) {
-
-    @Protected
-    @GetMapping("/{id}/objects")
-    fun getObjectsOfGroup(@UserId userId: Int, @PathVariable(value = "id") id: Long): MutableList<Objects> {
-
-        val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
-            ItemNotFoundException("object group ($id)")
-        }
-        return ogrp.objects
-    }
-
-    @Protected
-    @PutMapping("/{id}/objects")
-    fun addObjectToGroup(@UserId userId: Int,
-                         @PathVariable(value = "id") id: Long,
-                         @RequestParam("objectId", required = true) objectId: Long): ResponseEntity<Unit> {
-
-        val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
-            ItemNotFoundException("object group ($id)")
-        }
-
-        if (ogrp.objects.find { it.id == objectId } != null) {
-            return ResponseEntity(HttpStatus.NOT_MODIFIED)
-        }
-
-        val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
-            ItemNotFoundException("object ($objectId)")
-        }
-
-        ogrp.objects.add(obj)
-        objectGroupsRepository.save(ogrp)
-        return ResponseEntity(HttpStatus.OK)
-    }
-
-    @Protected
-    @DeleteMapping("/{id}/objects")
-    fun removeObjectFromGroup(@UserId userId: Int,
-                              @PathVariable(value = "id") id: Long,
-                              @RequestParam("objectId", required = true) objectId: Long): ResponseEntity<Unit> {
-
-        val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
-            ItemNotFoundException("object group ($id)")
-        }
-
-        var ret = HttpStatus.NOT_MODIFIED
-        ogrp.objects.find { it.id == objectId }?.let {
-            ogrp.objects.remove(it)
-            objectGroupsRepository.save(ogrp)
-            ret = HttpStatus.OK
-
         }
         return ResponseEntity(ret)
     }

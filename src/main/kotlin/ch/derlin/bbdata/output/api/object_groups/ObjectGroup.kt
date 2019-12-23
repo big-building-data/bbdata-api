@@ -5,19 +5,13 @@ package ch.derlin.bbdata.output.api.object_groups
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 import ch.derlin.bbdata.output.api.objects.Objects
-import ch.derlin.bbdata.output.api.objects.Tag
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
-import com.fasterxml.jackson.annotation.JsonFilter
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter
-import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider
-import org.springframework.http.converter.json.MappingJacksonValue
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
-import kotlin.jvm.Transient
 
 @Entity
 @Table(name = "ogrps")
@@ -58,7 +52,7 @@ data class ObjectGroup(
         )
         @ManyToMany(fetch = FetchType.LAZY)
         @JsonIgnore
-        var allowedUserGroups: List<UserGroup> = listOf(),
+        var allowedUserGroups: MutableList<UserGroup> = mutableListOf(),
 
         @OneToMany(fetch = FetchType.LAZY)
         @JoinColumn(name = "ogrp_id", insertable = false, updatable = false)

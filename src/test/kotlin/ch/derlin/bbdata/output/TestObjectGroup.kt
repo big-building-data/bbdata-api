@@ -129,6 +129,29 @@ class TestObjectGroup {
         Assertions.assertTrue(respTrue.body!!.contains("\"objects\""))
     }
 
+
+    @Test
+    fun `3-1 test add permission`() {
+        val putResp1 = restTemplate.putQueryString("/objectGroups/$id/permissions?userGroup=1")
+        Assertions.assertEquals(HttpStatus.OK, putResp1.statusCode)
+        val putResp2 = restTemplate.putQueryString("/objectGroups/$id/permissions?userGroup=1")
+        Assertions.assertEquals(HttpStatus.NOT_MODIFIED, putResp2.statusCode)
+
+        val json = restTemplate.getQueryJson("/objectGroups/$id/permissions").second
+        Assertions.assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size > 0)
+    }
+
+    @Test
+    fun `3-1 test remove permission`() {
+        val putResp1 = restTemplate.deleteQueryString("/objectGroups/$id/permissions?userGroup=1")
+        Assertions.assertEquals(HttpStatus.OK, putResp1.statusCode)
+        val putResp2 = restTemplate.deleteQueryString("/objectGroups/$id/permissions?userGroup=1")
+        Assertions.assertEquals(HttpStatus.NOT_MODIFIED, putResp2.statusCode)
+
+        val json = restTemplate.getQueryJson("/objectGroups/$id/permissions").second
+        Assertions.assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size == 0)
+    }
+
     @Test
     fun `5-0 test remove object group`() {
         val putResponse = restTemplate.deleteQueryString("/objectGroups/$id")
