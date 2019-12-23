@@ -9,16 +9,18 @@ import ch.derlin.bbdata.output.api.objects.Tag
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import com.fasterxml.jackson.annotation.JsonFilter
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider
 import org.springframework.http.converter.json.MappingJacksonValue
 import javax.persistence.*
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
+import kotlin.jvm.Transient
 
 @Entity
 @Table(name = "ogrps")
-//@JsonFilter("noObjectsFilter")
 data class ObjectGroup(
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -68,29 +70,16 @@ data class ObjectGroup(
         @JsonIgnore
         val writePermissions: List<ObjectGroupWritePerms> = listOf()
 ) {
-//    companion object {
-//        fun asJacksonMapping(obj: Any, withObjects: Boolean = false): MappingJacksonValue {
-//            val mapping = MappingJacksonValue(obj)
-//            mapping.filters = SimpleFilterProvider().addFilter(
-//                    "noObjectsFilter",
-//                    SimpleBeanPropertyFilter.serializeAllExcept(if (withObjects) "_x_" else "objects"))
-//            return mapping
-//        }
-//    }
 
-    data class ObjectGroupExtended constructor(
-            val id: Long,
-            val name: String,
-            val description: String?,
-            val owner: UserGroup,
-            val objects: List<Objects> = listOf() // make object part of the JSON
-    ) {
-        constructor(og: ObjectGroup) : this(
-                id = og.id!!,
-                name = og.name!!,
-                description = og.description,
-                owner = og.owner,
-                objects = og.objects)
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @JsonProperty("objects")
+    @Transient
+    var _objectsToReturn: List<Objects>? = null
+        private set
+
+    fun withObjects(): ObjectGroup {
+        this._objectsToReturn = objects
+        return this
     }
 }
 

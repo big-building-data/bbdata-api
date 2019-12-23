@@ -6,7 +6,6 @@ package ch.derlin.bbdata.output.api.object_groups
  */
 
 import ch.derlin.bbdata.output.Beans
-import ch.derlin.bbdata.output.api.object_groups.ObjectGroup.ObjectGroupExtended
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
@@ -39,21 +38,21 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     @GetMapping("")
     @ApiResponse(
             responseCode = "200",
-            description = "default response. Note: if *withObject* is true, the `objects` array will be present as well.",
+            description = "default response. Note: if *withObject* is false, the `objects` array will be missing.",
             content = arrayOf(Content(
                     array = ArraySchema(schema = Schema(implementation = ObjectGroup::class))
             )))
     fun getAll(@UserId userId: Int,
                @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
                @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean)
-            : List<Any> {
+            : List<ObjectGroup> {
 
         val ogrpList =
                 if (writable) objectGroupsRepository.findAllWritable(userId)
                 else objectGroupsRepository.findAll(userId)
 
         if (!withObjects) return ogrpList
-        return ogrpList.map { ObjectGroup.ObjectGroupExtended(it) }
+        return ogrpList.map { it.withObjects() }
     }
 
     @Protected
@@ -78,18 +77,18 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     @GetMapping("/{id}")
     @ApiResponse(
             responseCode = "200",
-            description = "default response. Note: if *withObject* is true, the `objects` array will be present as well.",
+            description = "default response. Note: if *withObject* is false, the `objects` array will be missing.",
             content = arrayOf(Content(schema = Schema(implementation = ObjectGroup::class))))
     fun getOneById(@UserId userId: Int,
                    @PathVariable(value = "id") id: Long,
                    @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
-                   @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): Any {
+                   @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): ObjectGroup {
         val opt =
                 if (writable) objectGroupsRepository.findOneWritable(userId, id)
                 else objectGroupsRepository.findOne(userId, id)
 
         val ogrp = opt.orElseThrow { ItemNotFoundException("object group ($id)") }
-        return if (withObjects) ObjectGroupExtended(ogrp) else ogrp
+        return if (withObjects) ogrp.withObjects() else ogrp
     }
 
     @Protected
