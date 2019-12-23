@@ -8,8 +8,8 @@ package ch.derlin.bbdata.output.api.objects
 import ch.derlin.bbdata.output.Beans
 import ch.derlin.bbdata.output.HiddenParam
 import ch.derlin.bbdata.output.PageableAsQueryParam
+import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
-import ch.derlin.bbdata.output.api.types.Unit
 import ch.derlin.bbdata.output.api.types.UnitRepository
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
@@ -19,10 +19,8 @@ import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Pageable
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
@@ -57,26 +55,69 @@ class ObjectController(private val objectRepository: ObjectRepository) {
             @RequestParam(name = "writable", required = false, defaultValue = "false") writable: Boolean = false
     ): Objects? = objectRepository.findById(id, userId, writable).orElseThrow { ItemNotFoundException("object") }
 
+    // ======== TAGS
+
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @RequestMapping("{id}/tags", method = arrayOf(RequestMethod.PUT, RequestMethod.DELETE))
-    fun addOrDeleteTags(
-            request: HttpServletRequest,
+    @PutMapping("{id}/tags")
+    fun addTags(
             @UserId userId: Int,
             @PathVariable(value = "id") id: Long,
-            @RequestParam(name = "tags", required = true) rawTags: String = ""): ResponseEntity<Unit> {
+            @RequestParam(name = "tags", required = true) tags: List<String>): ResponseEntity<String> =
+            addOrDeleteTags(userId, id, tags, add = true)
+
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @SimpleModificationStatusResponse
+    @DeleteMapping("{id}/tags")
+    fun removeTags(
+            @UserId userId: Int,
+            @PathVariable(value = "id") id: Long,
+            @RequestParam(name = "tags", required = true) tags: List<String>): ResponseEntity<String> =
+            addOrDeleteTags(userId, id, tags, delete = true)
+
+    private fun addOrDeleteTags(userId: Int, id: Long, tags: List<String>,
+                                add: Boolean = false, delete: Boolean = false): ResponseEntity<String> {
+        assert(add || delete)
         val obj = objectRepository.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
 
-        val tags = rawTags.split(",").map { t -> t.trim() }
-        // TODO: modified not working !!!
         val statuses =
-                if (request.method == RequestMethod.DELETE.name) tags.map { obj.removeTag(it) }
+                if (delete) tags.map { obj.removeTag(it) }
                 else tags.map { obj.addTag(it) }
-        objectRepository.save(obj)
 
-        return ResponseEntity.status(
-                if (statuses.any { x -> x }) HttpStatus.OK else HttpStatus.NOT_MODIFIED
-        ).build()
+        if (statuses.any { x -> x }) {
+            objectRepository.save(obj)
+            return CommonResponses.ok()
+        }
+
+        return CommonResponses.notModifed()
+    }
+
+    // ======== ENABLE/DISABLE
+
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @SimpleModificationStatusResponse
+    @PostMapping("{id}/enable")
+    fun objectEnable(
+            @UserId userId: Int,
+            @PathVariable(value = "id") id: Long): ResponseEntity<String> =
+            enableDisable(userId, id, disabled = false)
+
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @SimpleModificationStatusResponse
+    @PostMapping("{id}/disable")
+    fun objectDisable(
+            @UserId userId: Int,
+            @PathVariable(value = "id") id: Long): ResponseEntity<String> =
+            enableDisable(userId, id, disabled = true)
+
+    private fun enableDisable(userId: Int, id: Long, disabled: Boolean): ResponseEntity<String> {
+        val obj = objectRepository.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
+        if (obj.disabled != disabled) {
+            obj.disabled = disabled
+            objectRepository.save(obj)
+            return CommonResponses.ok()
+        }
+        return CommonResponses.notModifed()
     }
 
 }

@@ -1,26 +1,16 @@
 package ch.derlin.bbdata.output
 
-import com.jayway.jsonpath.DocumentContext
-import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.extension.ExtendWith
-import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.boot.web.server.LocalServerPort
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.web.client.RestClientException
-import org.springframework.web.client.RestTemplate
 import kotlin.random.Random
-import ch.derlin.bbdata.output.putForEntity
 import org.springframework.beans.factory.annotation.Autowired
 
 
@@ -47,8 +37,8 @@ class TestObjectTags {
     @Throws(Exception::class)
     fun `1-1 add tags`() {
         // == add tags
-        val response = restTemplate.putForEntity("/objects/${1}/tags?tags=${tag1},${tag2}", "", String::class.java)
-        assertEquals(response.statusCode, HttpStatus.OK)
+        val response = restTemplate.putWithBody("/objects/${1}/tags?tags=${tag1},${tag2}", "", String::class.java)
+        assertEquals(HttpStatus.OK, response.statusCode)
 
         val json = restTemplate.getQueryJson("/objects/$id").second
         assertTrue(json.read<List<String>>("$.tags").contains(tag1))

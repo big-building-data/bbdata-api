@@ -10,7 +10,6 @@ import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
-import org.springframework.boot.web.server.LocalServerPort
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -33,8 +32,9 @@ class TestObjectCreate {
     @Throws(Exception::class)
     fun `0-1 create object`() {
         // == create
-        val putResponse = restTemplate.putForEntity("/objects",
-                """{"name": "hello", "owner": 1, "unitSymbol": "V"}""", String::class.java)
+        val putResponse = restTemplate.putWithBody(
+                "/objects",
+                """{"name": "hello", "owner": 1, "unitSymbol": "V"}""")
         assertEquals(putResponse.statusCode, HttpStatus.OK)
 
         // == get

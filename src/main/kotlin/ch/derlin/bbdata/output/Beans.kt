@@ -9,13 +9,17 @@ import javax.validation.constraints.Size
  */
 
 object Beans {
-    open class NameDescription {
+
+    open class Description {
+
+        @Size(max = 255)
+        val description: String? = null
+    }
+
+    open class NameDescription : Description() {
 
         @NotNull
         @Size(min = 3, max = 60)
         val name: String = ""
-
-        @Size(max = 255)
-        val description: String? = null
     }
 }

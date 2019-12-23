@@ -47,17 +47,17 @@ class TestObjectGroup {
     @Test
     fun `1-0 test create object group fail`() {
         // == create no name
-        var putResponse = restTemplate.putForEntity("/objectGroups",
+        var putResponse = restTemplate.putWithBody("/objectGroups",
                 """{"name": "", "owner": 1, "description": "test"}""", String::class.java)
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create no owner
-        putResponse = restTemplate.putForEntity("/objectGroups",
+        putResponse = restTemplate.putWithBody("/objectGroups",
                 """{"name": "$name", "description": "test"}""", String::class.java)
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create wrong owner
-        putResponse = restTemplate.putForEntity("/objectGroups",
+        putResponse = restTemplate.putWithBody("/objectGroups",
                 """{"name": "$name", "owner": -1, "description": "test"}""", String::class.java)
         Assertions.assertEquals(HttpStatus.NOT_FOUND, putResponse.statusCode)
     }
@@ -65,7 +65,7 @@ class TestObjectGroup {
     @Test
     fun `1-1 test create object group`() {
         // == create
-        val putResponse = restTemplate.putForEntity("/objectGroups",
+        val putResponse = restTemplate.putWithBody("/objectGroups",
                 """{"name": "$name", "owner": 1, "description": "test"}""", String::class.java)
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 

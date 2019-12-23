@@ -3,6 +3,7 @@ package ch.derlin.bbdata.output
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
 import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.boot.test.web.client.exchange
 import org.springframework.http.*
 import org.springframework.web.client.RestClientException
 
@@ -24,10 +25,8 @@ object JsonEntity {
     fun <T> create(body: T) = HttpEntity(body, headers)
 }
 
-@Throws(RestClientException::class)
-fun <T> TestRestTemplate.putForEntity(url: String, request: T, responseType: Class<T>, vararg uriVariables: Any?): ResponseEntity<T> {
-    return this.exchange(url, HttpMethod.PUT, JsonEntity.create(request), responseType, uriVariables)
-}
+
+// === GET
 
 @Throws(RestClientException::class)
 fun TestRestTemplate.getQueryJson(url: String, vararg uriVariables: Any?): Pair<HttpStatus, DocumentContext> {
@@ -40,10 +39,31 @@ fun TestRestTemplate.getQueryString(url: String, vararg uriVariables: Any?): Res
     return this.exchange(url, HttpMethod.GET, JsonEntity.EMPTY, String::class.java, uriVariables)
 }
 
+// === PUT
+
 @Throws(RestClientException::class)
 fun TestRestTemplate.putQueryString(url: String, vararg uriVariables: Any?): ResponseEntity<String> {
     return this.exchange(url, HttpMethod.PUT, JsonEntity.EMPTY, String::class.java, uriVariables)
 }
+
+@Throws(RestClientException::class)
+fun <T> TestRestTemplate.putWithBody(url: String, request: T, vararg uriVariables: Any?): ResponseEntity<String> {
+    return this.exchange(url, HttpMethod.PUT, JsonEntity.create(request), String::class, uriVariables)
+}
+
+// === POST
+
+@Throws(RestClientException::class)
+fun <T> TestRestTemplate.postWithBody(url: String, request: T, vararg uriVariables: Any?): ResponseEntity<String> {
+    return this.exchange(url, HttpMethod.POST, JsonEntity.create(request), String::class, uriVariables)
+}
+
+@Throws(RestClientException::class)
+fun TestRestTemplate.postQueryString(url: String, vararg uriVariables: Any?): ResponseEntity<String> {
+    return this.exchange(url, HttpMethod.POST, JsonEntity.EMPTY, String::class.java, uriVariables)
+}
+
+// === DELETE
 
 @Throws(RestClientException::class)
 fun TestRestTemplate.deleteQueryString(url: String, vararg uriVariables: Any?): ResponseEntity<String> {

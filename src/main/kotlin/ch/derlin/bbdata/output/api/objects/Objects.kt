@@ -1,8 +1,10 @@
 package ch.derlin.bbdata.output.api.objects
 
+import ch.derlin.bbdata.output.api.auth.TokenGenerator
 import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
 import ch.derlin.bbdata.output.api.types.Unit
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.Generated
 import org.hibernate.annotations.GenerationTime
 import org.joda.time.DateTime
@@ -56,6 +58,11 @@ data class Objects(
         @JoinColumn(name = "object_id", updatable = false)
         var tags: MutableSet<Tag> = mutableSetOf(),
 
+        @OneToMany(cascade = arrayOf())
+        @field:JsonIgnore
+        @JoinColumn(name = "object_id", insertable = false, updatable = false)
+        var tokens: MutableList<Token> = mutableListOf(),
+
         @ManyToMany(mappedBy = "objects", fetch = FetchType.LAZY)
         private val objectGroups: List<ObjectGroup>? = null,
 
@@ -66,4 +73,7 @@ data class Objects(
 ) {
     fun addTag(tag: String): Boolean = this.tags.add(Tag(tag, this.id!!))
     fun removeTag(tag: String): Boolean = this.tags.removeIf { it.name == tag }
+
+    fun getToken(id: Int): Token? = tokens.find { it.id == id }
+
 }

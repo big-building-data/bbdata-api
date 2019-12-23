@@ -33,7 +33,7 @@ object TokenGenerator {
      * @param length the length of the token to generate
      * @return the token
      */
-    fun generate(length: Int): String {
+    fun generate(length: Int = 32): String {
         var token = ""
         while (token.length < length) {
             token += Integer.toHexString(random.nextInt())
