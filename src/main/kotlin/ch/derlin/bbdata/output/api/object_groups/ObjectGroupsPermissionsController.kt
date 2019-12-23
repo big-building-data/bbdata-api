@@ -5,6 +5,7 @@ package ch.derlin.bbdata.output.api.object_groups
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
+import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
@@ -12,8 +13,6 @@ import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
@@ -39,7 +38,7 @@ class ObjectGroupsPermissionsController(
     @PutMapping("/{id}/permissions")
     fun addPermission(@UserId userId: Int,
                       @PathVariable(value = "id") id: Long,
-                      @RequestParam("userGroup", required = true) userGroupId: Int): HttpEntity<Unit> {
+                      @RequestParam("userGroup", required = true) userGroupId: Int): ResponseEntity<String> {
         return addRemovePerms(userId, id, userGroupId, add = true)
     }
 
@@ -48,12 +47,12 @@ class ObjectGroupsPermissionsController(
     @DeleteMapping("/{id}/permissions")
     fun removePermission(@UserId userId: Int,
                          @PathVariable(value = "id") id: Long,
-                         @RequestParam("userGroup", required = true) userGroupId: Int): HttpEntity<Unit> {
+                         @RequestParam("userGroup", required = true) userGroupId: Int): ResponseEntity<String> {
         return addRemovePerms(userId, id, userGroupId, delete = true)
     }
 
 
-    private fun addRemovePerms(userId: Int, id: Long, userGroupId: Int, add: Boolean = false, delete: Boolean = false): HttpEntity<Unit> {
+    private fun addRemovePerms(userId: Int, id: Long, userGroupId: Int, add: Boolean = false, delete: Boolean = false): ResponseEntity<String> {
         // get resources
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
             ItemNotFoundException("objectGroup (${id})")
@@ -65,15 +64,15 @@ class ObjectGroupsPermissionsController(
         val found = ogrp.allowedUserGroups.find { it.id == ugrp.id }
 
         if (add) {
-            if (found != null) return ResponseEntity(HttpStatus.NOT_MODIFIED)
+            if (found != null) return CommonResponses.notModifed()
             else ogrp.allowedUserGroups.add(ugrp)
         } else if (delete) {
-            if (found == null) return ResponseEntity(HttpStatus.NOT_MODIFIED)
+            if (found == null) return CommonResponses.notModifed()
             else ogrp.allowedUserGroups.remove(found)
         }
 
         // save changes
         objectGroupsRepository.save(ogrp)
-        return ResponseEntity(HttpStatus.OK)
+        return CommonResponses.ok()
     }
 }

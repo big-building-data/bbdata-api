@@ -6,6 +6,7 @@ package ch.derlin.bbdata.output.api.object_groups
  */
 
 import ch.derlin.bbdata.output.Beans
+import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
@@ -91,12 +92,12 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
 
     @Protected
     @DeleteMapping("/{id}")
-    fun deleteOneById(@UserId userId: Int, @PathVariable(value = "id") id: Long): ResponseEntity<Unit> {
-        var ret = HttpStatus.NOT_MODIFIED
+    fun deleteOneById(@UserId userId: Int, @PathVariable(value = "id") id: Long): ResponseEntity<String> {
+        var modified = false
         objectGroupsRepository.findOne(userId, id).ifPresent {
             objectGroupsRepository.delete(it)
-            ret = HttpStatus.OK
+            modified = true
         }
-        return ResponseEntity(ret)
+        return if (modified) CommonResponses.ok() else CommonResponses.notModifed()
     }
 }

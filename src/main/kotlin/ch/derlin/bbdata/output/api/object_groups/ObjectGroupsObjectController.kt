@@ -5,6 +5,7 @@ package ch.derlin.bbdata.output.api.object_groups
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
+import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
@@ -37,14 +38,14 @@ class ObjectGroupsObjectController(
     @PutMapping("/{id}/objects")
     fun addObjectToGroup(@UserId userId: Int,
                          @PathVariable(value = "id") id: Long,
-                         @RequestParam("objectId", required = true) objectId: Long): ResponseEntity<Unit> {
+                         @RequestParam("objectId", required = true) objectId: Long): ResponseEntity<String> {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
             ItemNotFoundException("object group ($id)")
         }
 
         if (ogrp.objects.find { it.id == objectId } != null) {
-            return ResponseEntity(HttpStatus.NOT_MODIFIED)
+            return CommonResponses.notModifed()
         }
 
         val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
@@ -53,26 +54,26 @@ class ObjectGroupsObjectController(
 
         ogrp.objects.add(obj)
         objectGroupsRepository.save(ogrp)
-        return ResponseEntity(HttpStatus.OK)
+        return CommonResponses.ok()
     }
 
     @Protected
     @DeleteMapping("/{id}/objects")
     fun removeObjectFromGroup(@UserId userId: Int,
                               @PathVariable(value = "id") id: Long,
-                              @RequestParam("objectId", required = true) objectId: Long): ResponseEntity<Unit> {
+                              @RequestParam("objectId", required = true) objectId: Long): ResponseEntity<String> {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
             ItemNotFoundException("object group ($id)")
         }
+        val found = ogrp.objects.find { it.id == objectId }
 
-        var ret = HttpStatus.NOT_MODIFIED
-        ogrp.objects.find { it.id == objectId }?.let {
-            ogrp.objects.remove(it)
+        if (found != null) {
+            ogrp.objects.remove(found)
             objectGroupsRepository.save(ogrp)
-            ret = HttpStatus.OK
+            return CommonResponses.ok()
 
         }
-        return ResponseEntity(ret)
+        return CommonResponses.notModifed()
     }
 }

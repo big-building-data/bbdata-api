@@ -1,5 +1,6 @@
 package ch.derlin.bbdata.output.api.auth
 
+import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.users.User
 import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.output.exceptions.ForbiddenException
@@ -42,9 +43,8 @@ class AuthController {
     fun logout(
             @UserId userId: Int,
             @RequestAttribute(value = SecurityConstants.HEADER_TOKEN) apikey: String
-    ): ResponseEntity<Any> {
+    ): ResponseEntity<String> {
         val ok = authRepository.logout(userId, apikey)
-        val status_code = if (ok) HttpStatus.OK else HttpStatus.NOT_MODIFIED
-        return ResponseEntity(status_code)
+        return if (ok) CommonResponses.ok() else CommonResponses.notModifed()
     }
 }

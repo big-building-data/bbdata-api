@@ -1,5 +1,6 @@
 package ch.derlin.bbdata.output.api.user_groups
 
+import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.users.User
 import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.output.exceptions.ForbiddenException
@@ -62,7 +63,7 @@ class UserGroupMappingController(
                                @PathVariable(value = "id") id: Int,
                                @RequestParam(name = "userId", required = true) newUserId: Int,
                                @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<String> {
         canUserModifyGroup(userId, id) // ensure the user has the right to update members of this group
         // ensure the user we want to update exists
         userRepository.findById(newUserId).orElseThrow { ItemNotFoundException("user ($newUserId)") }
@@ -72,16 +73,16 @@ class UserGroupMappingController(
             // mapping exists, this is an update
             val mapping = optional.get()
             if (mapping.isAdmin == admin) {
-                return ResponseEntity(HttpStatus.NOT_MODIFIED)
+                return CommonResponses.notModifed()
             } else {
                 mapping.isAdmin = admin
                 userGroupMappingRepository.save(mapping)
-                return ResponseEntity(HttpStatus.OK)
+                return CommonResponses.ok()
             }
         }
         // mapping doesn't exist, create a new one
         userGroupMappingRepository.save(UserUgrpMapping(userId = newUserId, groupId = id, isAdmin = admin))
-        return ResponseEntity(HttpStatus.OK)
+        return CommonResponses.ok()
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
@@ -90,15 +91,15 @@ class UserGroupMappingController(
     fun deleteUserMapping(@UserId userId: Int,
                           @PathVariable(value = "id") id: Int,
                           @RequestParam(name = "userId", required = true) userIdToDelete: Int
-    ): ResponseEntity<Unit> {
+    ): ResponseEntity<String> {
         canUserModifyGroup(userId, id) // ensure the user has the right to delete a member from the group
 
         val optional = userGroupMappingRepository.findById(UserUgrpMappingId(userIdToDelete, id))
         if (optional.isPresent()) {
             userGroupMappingRepository.delete(optional.get())
-            return ResponseEntity(HttpStatus.OK)
+            return CommonResponses.ok()
         }
-        return ResponseEntity(HttpStatus.NOT_MODIFIED)
+        return CommonResponses.notModifed()
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
