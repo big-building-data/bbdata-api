@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIdentityReference
 import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import java.io.Serializable
 import javax.persistence.*
-import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 
@@ -15,14 +14,10 @@ import javax.validation.constraints.Size
  */
 
 data class TagId(
-        @Basic(optional = false)
-        @NotNull
         @Column(name = "name")
         @Size(max = 25)
         val name: String = "",
 
-        @Basic(optional = false)
-        @NotNull
         @Column(name = "object_id")
         val objectId: Long = 0
 ) : Serializable

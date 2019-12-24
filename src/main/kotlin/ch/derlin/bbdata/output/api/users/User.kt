@@ -10,6 +10,7 @@ import org.hibernate.annotations.Generated
 import org.hibernate.annotations.GenerationTime
 import org.joda.time.DateTime
 import javax.persistence.*
+import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Size
@@ -26,25 +27,20 @@ data class User(
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        @Basic(optional = false)
         @Column(name = "id")
         var id: Int? = null,
 
-        @Basic(optional = false)
-        @NotNull
+        @NotEmpty
         @Size(min = 1, max = 45)
         @Column(name = "name")
         var name: String = "",
 
         @Basic(fetch = FetchType.LAZY)
-        @NotNull
         @Size(min = 5)
         @Column(name = "password")
         private var password: String? = null,
 
         // @Pattern(regexp="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message="Invalid email")//if the field contains email address consider using this annotation to enforce field validation
-        @Basic(optional = false)
-        @NotNull
         @Size(min = 1, max = 45)
         @Column(name = "email")
         var email: String? = null,

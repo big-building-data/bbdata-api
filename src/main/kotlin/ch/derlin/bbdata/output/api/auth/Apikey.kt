@@ -29,11 +29,9 @@ import javax.validation.constraints.Size
 data class Apikey(
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        @Basic(optional = false)
         @Column(name = "id")
         var id: Int? = null,
 
-        @Basic(optional = false)
         @NotNull
         @Size(min = 1, max = 32)
         @Column(name = "secret")
@@ -44,12 +42,10 @@ data class Apikey(
 
         @Column(name = "user_id")
         @NotNull
-        @Basic(optional = false)
         var userId: Int = 0,
 
         @Column(name = "readonly")
         @NotNull
-        @Basic(optional = false)
         var isReadOnly: Boolean = false,
 
         @Column(name = "description")

@@ -25,14 +25,12 @@ data class UserUgrpMappingId(
 @IdClass(UserUgrpMappingId::class)
 data class UserUgrpMapping(
         @Id
-        @Basic(optional = false)
         @NotNull
         @Column(name = "user_id")
         @JsonIgnore
         val userId: Int,
 
         @Id
-        @Basic(optional = false)
         @NotNull
         @Column(name = "ugrp_id")
         @JsonIgnore

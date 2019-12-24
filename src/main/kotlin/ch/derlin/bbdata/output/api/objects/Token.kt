@@ -19,15 +19,12 @@ interface TokenRepository : JpaRepository<Token, Int>
 data class Token(
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        @Basic(optional = false)
         @Column(name = "id")
         val id: Int? = null,
 
-        @Basic(optional = false)
         @Column(name = "object_id")
         val objectId: Long,
 
-        @Basic(optional = false)
         @Column(name = "token")
         @Size(min = 32, max = 32)
         private val token: String,

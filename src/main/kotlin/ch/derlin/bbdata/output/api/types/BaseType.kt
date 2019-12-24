@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIdentityReference
 import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import javax.persistence.*
-import javax.validation.constraints.NotNull
+import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Size
 
 
@@ -27,8 +27,7 @@ import javax.validation.constraints.Size
 data class BaseType(
 
         @Id
-        @Basic(optional = false)
-        @NotNull
+        @NotEmpty
         @Size(min = 1, max = 45)
         @Column(name = "name")
         var type: String = "",

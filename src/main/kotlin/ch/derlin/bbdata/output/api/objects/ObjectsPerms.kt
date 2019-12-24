@@ -13,13 +13,11 @@ import javax.validation.constraints.NotNull
 // and have defaults.
 data class ObjectsPermsId(
         @Id
-        @Basic(optional = false)
         @NotNull
         @Column(name = "user_id")
         val userId: Int = 0,
 
         @Id
-        @Basic(optional = false)
         @NotNull
         @Column(name = "object_id")
         val objectId: Int = 0
@@ -35,7 +33,6 @@ data class ObjectsPerms(
         @Id
         val objectId: Int,
 
-        @Basic(optional = false)
         @NotNull
         @Column(name = "writable")
         val writable: Boolean

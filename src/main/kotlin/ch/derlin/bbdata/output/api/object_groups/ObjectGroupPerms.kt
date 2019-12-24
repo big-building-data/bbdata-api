@@ -12,13 +12,11 @@ import javax.validation.constraints.NotNull
 
 data class ObjectsGroupPermsId(
         @Id
-        @Basic(optional = false)
         @NotNull
         @Column(name = "user_id")
         var userId: Int = 0,
 
         @Id
-        @Basic(optional = false)
         @NotNull
         @Column(name = "ogrp_id")
         var objectGroupId: Int = 0
@@ -36,7 +34,6 @@ data class ObjectGroupReadPerms(
         @Id
         var objectGroupId: Int = 0,
 
-        @Basic(optional = false)
         @NotNull
         @Column(name = "is_admin")
         var writable: Boolean
@@ -53,7 +50,6 @@ data class ObjectGroupWritePerms(
         @Id
         var objectGroupId: Int = 0,
 
-        @Basic(optional = false)
         @NotNull
         @Column(name = "is_admin")
         var writable: Boolean

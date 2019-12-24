@@ -2,7 +2,7 @@ package ch.derlin.bbdata.output.api.types
 
 import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
 import javax.persistence.*
-import javax.validation.constraints.NotNull
+import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.Size
 
 
@@ -15,14 +15,12 @@ import javax.validation.constraints.Size
 data class Unit(
 
         @Id
-        @Basic(optional = false)
-        @NotNull
+        @NotEmpty
         @Size(min = 1, max = 10)
         @Column(name = "symbol")
         private var symbol: String = "",
 
-        @Basic(optional = false)
-        @NotNull
+        @NotEmpty
         @Size(min = 1, max = 20)
         @Column(name = "name")
         var name: String = "",

@@ -8,7 +8,6 @@ import org.hibernate.annotations.Generated
 import org.hibernate.annotations.GenerationTime
 import org.joda.time.DateTime
 import javax.persistence.*
-import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 
@@ -24,12 +23,9 @@ data class Objects(
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        @Basic(optional = false)
         @Column(name = "id")
         val id: Long? = null,
 
-        @Basic(optional = false)
-        @NotNull
         @Size(min = 1, max = 60)
         @Column(name = "name")
         var name: String? = null,

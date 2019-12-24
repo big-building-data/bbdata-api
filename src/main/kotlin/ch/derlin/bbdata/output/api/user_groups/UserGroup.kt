@@ -6,8 +6,7 @@ import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.users.User
 import com.fasterxml.jackson.annotation.JsonIgnore
 import javax.persistence.*
-import javax.validation.constraints.NotNull
-import javax.validation.constraints.Size
+import javax.validation.constraints.NotEmpty
 
 /**
  * date: 30.11.19
@@ -18,14 +17,11 @@ import javax.validation.constraints.Size
 data class UserGroup(
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        @Basic(optional = false)
         @Column(name = "id")
         private val id: Int? = null,
 
-        @Basic(optional = false)
-        @Size(min = 1, max = 45)
         @Column(name = "name")
-        @NotNull
+        @NotEmpty
         val name: String = "",
 
         @ManyToMany(mappedBy = "allowedUserGroups", fetch = FetchType.LAZY)

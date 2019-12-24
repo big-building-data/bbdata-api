@@ -18,11 +18,9 @@ import javax.validation.constraints.Size
 data class ObjectGroup(
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
-        @Basic(optional = false)
         @Column(name = "id")
         var id: Long? = null,
 
-        @Basic(optional = false)
         @NotNull
         @Size(min = 1, max = 45)
         @Column(name = "name")

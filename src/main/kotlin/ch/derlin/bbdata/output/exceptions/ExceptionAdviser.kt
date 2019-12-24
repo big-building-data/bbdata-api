@@ -1,7 +1,6 @@
 package ch.derlin.bbdata.output.exceptions
 
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import io.swagger.v3.oas.annotations.responses.ApiResponses
 import org.hibernate.exception.ConstraintViolationException
 import org.springframework.boot.web.servlet.error.DefaultErrorAttributes
 import org.springframework.dao.DataIntegrityViolationException
