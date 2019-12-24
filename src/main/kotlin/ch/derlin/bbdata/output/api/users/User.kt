@@ -3,7 +3,7 @@ package ch.derlin.bbdata.output.api.users
 import ch.derlin.bbdata.output.api.auth.Apikey
 import ch.derlin.bbdata.output.api.auth.PasswordDigest
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
-import ch.derlin.bbdata.output.api.user_groups.UserUgrpMapping
+import ch.derlin.bbdata.output.api.user_groups.UsergroupMapping
 import ch.derlin.bbdata.output.exceptions.AppException
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.Generated
@@ -59,11 +59,12 @@ data class User(
         private val groups: List<UserGroup>? = null,
 
         @OneToMany(cascade = arrayOf(CascadeType.ALL), mappedBy = "user", fetch = FetchType.LAZY)
-        private var userToGroupMappings: List<UserUgrpMapping>? = null
+        private var userToGroupMappings: List<UsergroupMapping>? = null
 
 
 ) {
 
+    // TODO: where to put NewX classes ? controller or model ?
     class NewUser {
         @NotNull
         @Size(min = 1, max = 45)

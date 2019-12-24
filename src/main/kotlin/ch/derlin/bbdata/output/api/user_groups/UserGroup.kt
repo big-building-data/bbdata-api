@@ -36,7 +36,7 @@ data class UserGroup(
         @JsonIgnore
         @OneToMany(cascade = arrayOf(CascadeType.PERSIST, CascadeType.ALL))
         @JoinColumn(name = "ugrp_id")
-        val userMappings: MutableList<UserUgrpMapping> = mutableListOf(),
+        val userMappings: MutableList<UsergroupMapping> = mutableListOf(),
 
         @JoinTable(
                 name = "users_ugrps",

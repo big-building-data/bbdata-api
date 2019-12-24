@@ -9,4 +9,4 @@ import org.springframework.stereotype.Repository
  */
 
 @Repository
-interface UserGroupMappingRepository : JpaRepository<UserUgrpMapping, UserUgrpMappingId>
+interface UserGroupMappingRepository : JpaRepository<UsergroupMapping, UserUgrpMappingId>

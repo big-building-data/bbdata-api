@@ -23,7 +23,7 @@ data class UserUgrpMappingId(
 @Entity
 @Table(name = "users_ugrps")
 @IdClass(UserUgrpMappingId::class)
-data class UserUgrpMapping(
+data class UsergroupMapping(
         @Id
         @NotNull
         @Column(name = "user_id")
