@@ -33,4 +33,9 @@ interface ObjectRepository : JpaRepository<Objects, Long> {
     @Query("SELECT o FROM Objects o INNER JOIN o.userPerms p " +
             "WHERE p.userId = :userId AND o.id = :id AND (p.writable = true OR p.writable = :writable)")
     fun findById(id: Long, userId: Int, writable: Boolean): Optional<Objects>
+
+    // TODO add an endpoint to find commented objects ?
+    @Query("SELECT o FROM Objects o INNER JOIN o.userPerms p " +
+            "WHERE p.userId = :userId AND o.id = :id AND o.comments IS NOT EMPTY")
+    fun findCommented(id: Long, userId: Int)
 }

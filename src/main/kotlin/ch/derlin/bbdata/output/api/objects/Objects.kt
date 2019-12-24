@@ -1,6 +1,5 @@
 package ch.derlin.bbdata.output.api.objects
 
-import ch.derlin.bbdata.output.api.auth.TokenGenerator
 import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
 import ch.derlin.bbdata.output.api.types.Unit
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
@@ -61,7 +60,12 @@ data class Objects(
         @OneToMany(cascade = arrayOf())
         @field:JsonIgnore
         @JoinColumn(name = "object_id", insertable = false, updatable = false)
-        var tokens: MutableList<Token> = mutableListOf(),
+        val tokens: List<Token> = listOf(),
+
+        @OneToMany(cascade = arrayOf(), fetch = FetchType.LAZY, orphanRemoval = true)
+        @JoinColumn(name = "object_id", updatable = false)
+        @field:JsonIgnore
+        val comments: List<Comment> = listOf(),
 
         @ManyToMany(mappedBy = "objects", fetch = FetchType.LAZY)
         private val objectGroups: List<ObjectGroup>? = null,
