@@ -9,6 +9,7 @@ import ch.derlin.bbdata.output.Beans
 import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
+import ch.derlin.bbdata.output.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
@@ -94,11 +95,13 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     @DeleteMapping("/{id}")
     @SimpleModificationStatusResponse
     fun deleteOneById(@UserId userId: Int, @PathVariable(value = "id") id: Long): ResponseEntity<String> {
-        var modified = false
-        objectGroupsRepository.findOne(userId, id).ifPresent {
-            objectGroupsRepository.delete(it)
-            modified = true
+        if(!objectGroupsRepository.findOne(userId, id).isPresent){
+            return CommonResponses.notModifed()
         }
-        return if (modified) CommonResponses.ok() else CommonResponses.notModifed()
+        val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
+            ForbiddenException("You must have admin rights on this object group to delete it.")
+        }
+        objectGroupsRepository.delete(ogrp)
+        return CommonResponses.ok()
     }
 }

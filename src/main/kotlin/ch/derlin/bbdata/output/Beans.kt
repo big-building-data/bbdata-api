@@ -10,16 +10,21 @@ import javax.validation.constraints.Size
 
 object Beans {
 
+    open class Name {
+        @NotNull
+        @Size(min = 3, max = 60)
+        val name: String = ""
+    }
+
     open class Description {
 
         @Size(max = 255)
         val description: String? = null
     }
 
-    open class NameDescription : Description() {
-
-        @NotNull
-        @Size(min = 3, max = 60)
-        val name: String = ""
+    open class NameDescription : Name() {
+        // TODO: multiple inheritance ?
+        @Size(max = 255)
+        val description: String? = null
     }
 }

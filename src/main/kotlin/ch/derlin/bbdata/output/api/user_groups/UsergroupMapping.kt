@@ -41,7 +41,7 @@ data class UsergroupMapping(
 
         @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)
         @ManyToOne(optional = false, fetch = FetchType.LAZY)
-        @JsonUnwrapped
+        @field:JsonUnwrapped
         val user: User? = null,
 
         @ManyToOne(optional = false, fetch = FetchType.LAZY)

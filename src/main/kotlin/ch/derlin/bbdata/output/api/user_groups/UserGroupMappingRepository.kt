@@ -2,6 +2,7 @@ package ch.derlin.bbdata.output.api.user_groups
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 
 /**
  * date: 06.12.19
@@ -9,4 +10,7 @@ import org.springframework.stereotype.Repository
  */
 
 @Repository
-interface UserGroupMappingRepository : JpaRepository<UsergroupMapping, UserUgrpMappingId>
+interface UserGroupMappingRepository : JpaRepository<UsergroupMapping, UserUgrpMappingId> {
+    @Transactional
+    fun deleteByGroupId(groupId: Int): Unit
+}
