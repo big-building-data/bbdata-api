@@ -21,7 +21,7 @@ import javax.validation.constraints.NotNull
  */
 @RestController
 @RequestMapping("/objects")
-@Tag(name = "Object Comments", description = "Manage object comments")
+@Tag(name = "Objects Comments", description = "Manage object comments")
 class ObjectsCommentController(private val objectRepository: ObjectRepository,
                                private val commentRepository: CommentRepository) {
 

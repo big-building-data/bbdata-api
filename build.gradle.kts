@@ -48,7 +48,7 @@ dependencies {
     implementation("org.springframework.data:spring-data-cassandra")
 
     // swagger doc
-    implementation("org.springdoc:springdoc-openapi-ui:1.2.18")
+    implementation("org.springdoc:springdoc-openapi-ui:1.2.21")
 
     // for XML support
     // implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
