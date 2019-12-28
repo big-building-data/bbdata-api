@@ -12,6 +12,7 @@ import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.output.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
+import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
@@ -55,7 +56,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
         return ogrpList.map { it.withObjects() }
     }
 
-    @Protected
+    @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("")
     fun createOne(@UserId userId: Int,
                   @Valid @RequestBody newOgrp: NewObjectGroup): ObjectGroup {
@@ -91,7 +92,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
         return if (withObjects) ogrp.withObjects() else ogrp
     }
 
-    @Protected
+    @Protected(SecurityConstants.SCOPE_WRITE)
     @DeleteMapping("/{id}")
     @SimpleModificationStatusResponse
     fun deleteOneById(@UserId userId: Int, @PathVariable(value = "id") id: Long): ResponseEntity<String> {

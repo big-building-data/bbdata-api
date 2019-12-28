@@ -81,10 +81,11 @@ class TestLoginLogout {
     @Test
     fun `1-1 test logout`() {
         // == logout
-        val putResponse = restTemplate.postQueryString("/logout", "bbuser" to userId, "bbtoken" to secrets.first())
+        val secret = secrets.first()
+        val putResponse = restTemplate.postQueryString("/logout", "bbuser" to userId, "bbtoken" to secret)
         assertEquals(HttpStatus.OK, putResponse.statusCode)
 
-        val resp = restTemplate.getQueryString("/objects", "bbuser" to userId, "bbtoken" to "secret")
+        val resp = restTemplate.getQueryString("/objects", "bbuser" to userId, "bbtoken" to secret)
         assertEquals(HttpStatus.FORBIDDEN, resp.statusCode)
     }
 }

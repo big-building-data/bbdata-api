@@ -64,8 +64,8 @@ class ApikeyController(
     fun createApikey(
             @UserId userId: Int,
             @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
-            @RequestParam("expire", required = false, defaultValue = "null") rawExpire: String?,
-            @Valid descriptionBean: Beans.Description): Apikey {
+            @RequestParam("expire", required = false) rawExpire: String?,
+            @Valid @RequestBody descriptionBean: Beans.Description): Apikey {
 
         return apikeyRepository.saveAndFlush(Apikey(
                 userId = userId,
@@ -89,6 +89,6 @@ class ApikeyController(
 
     companion object {
         val AUTOLOGIN_DESCRIPTION = "auto_login"
-        val AUTOLOGIN_EXPIRE = MutablePeriod(13, 0, 0, 0)
+        val AUTOLOGIN_EXPIRE = MutablePeriod(13, 0, 0, 0).toPeriod()
     }
 }
