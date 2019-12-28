@@ -47,21 +47,18 @@ class TestUserGroup {
     @Test
     fun `1-0 test create user group fail`() {
         // == create no name
-        var putResponse = restTemplate.putWithBody("/userGroups",
-                """{"name": ""}""", String::class.java)
+        var putResponse = restTemplate.putWithBody("/userGroups", """{"name": ""}""")
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create no owner
-        putResponse = restTemplate.putWithBody("/userGroups",
-                """{"name": "a"}""", String::class.java)
+        putResponse = restTemplate.putWithBody("/userGroups", """{"name": "a"}""")
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
     }
 
     @Test
     fun `1-1 test create user group`() {
         // == create
-        val putResponse = restTemplate.putWithBody("/userGroups",
-                """{"name": "$name"}""", String::class.java)
+        val putResponse = restTemplate.putWithBody("/userGroups", """{"name": "$name"}""")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         // == store variables
@@ -69,9 +66,9 @@ class TestUserGroup {
         tpl = restTemplate
 
         // == get
-        val getResponse = restTemplate.getForEntity("/userGroups/${id}", String::class.java)
+        val getResponse = restTemplate.getQueryString("/userGroups/${id}")
         JSONAssert.assertEquals(putResponse.body, getResponse.body, false)
-        val json = restTemplate.getQueryJson("/userGroups/${id}/users", String::class.java).second
+        val json = restTemplate.getQueryJson("/userGroups/${id}/users").second
         Assertions.assertEquals(1, json.read<List<Any>>("$").size) // Ensure one user id added
         Assertions.assertTrue(json.read<Boolean>("$.[0].admin"))
     }
@@ -81,7 +78,7 @@ class TestUserGroup {
         val putResponse = restTemplate.putQueryString("/userGroups/$id/users?userId=2")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
-        val json = restTemplate.getQueryJson("/userGroups/${id}/users", String::class.java).second
+        val json = restTemplate.getQueryJson("/userGroups/${id}/users").second
         Assertions.assertEquals(2, json.read<List<Any>>("$").size)
 
         val u = json.read<List<Boolean>>("$[?(@.id == 2)].admin")
@@ -97,7 +94,7 @@ class TestUserGroup {
         val putResponseNM = restTemplate.putQueryString("/userGroups/$id/users?userId=2&admin=true")
         Assertions.assertEquals(HttpStatus.NOT_MODIFIED, putResponseNM.statusCode)
 
-        val json = restTemplate.getQueryJson("/userGroups/${id}/users", String::class.java).second
+        val json = restTemplate.getQueryJson("/userGroups/${id}/users").second
         val u = json.read<List<Boolean>>("$[?(@.id == 2)].admin")
         Assertions.assertEquals(1, u.size)
         Assertions.assertTrue(u[0]) // now admin

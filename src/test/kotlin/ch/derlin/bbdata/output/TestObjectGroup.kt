@@ -48,17 +48,17 @@ class TestObjectGroup {
     fun `1-0 test create object group fail`() {
         // == create no name
         var putResponse = restTemplate.putWithBody("/objectGroups",
-                """{"name": "", "owner": 1, "description": "test"}""", String::class.java)
+                """{"name": "", "owner": 1, "description": "test"}""")
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create no owner
         putResponse = restTemplate.putWithBody("/objectGroups",
-                """{"name": "$name", "description": "test"}""", String::class.java)
+                """{"name": "$name", "description": "test"}""")
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create wrong owner
         putResponse = restTemplate.putWithBody("/objectGroups",
-                """{"name": "$name", "owner": -1, "description": "test"}""", String::class.java)
+                """{"name": "$name", "owner": -1, "description": "test"}""")
         Assertions.assertEquals(HttpStatus.NOT_FOUND, putResponse.statusCode)
     }
 
@@ -66,7 +66,7 @@ class TestObjectGroup {
     fun `1-1 test create object group`() {
         // == create
         val putResponse = restTemplate.putWithBody("/objectGroups",
-                """{"name": "$name", "owner": 1, "description": "test"}""", String::class.java)
+                """{"name": "$name", "owner": 1, "description": "test"}""")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         // == store variables
@@ -74,7 +74,7 @@ class TestObjectGroup {
         tpl = restTemplate
 
         // == get
-        val getResponse = restTemplate.getForEntity("/objectGroups/${id}", String::class.java)
+        val getResponse = restTemplate.getQueryString("/objectGroups/${id}")
         JSONAssert.assertEquals(putResponse.body, getResponse.body, false)
 
         // check some json variables
@@ -88,17 +88,17 @@ class TestObjectGroup {
         val putResponse = restTemplate.putQueryString("/objectGroups/$id/objects?objectId=1")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
-        val json = restTemplate.getQueryJson("/objectGroups/${id}/objects", String::class.java).second
+        val json = restTemplate.getQueryJson("/objectGroups/${id}/objects").second
         Assertions.assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size > 0)
     }
 
     @Test
     fun `2-2 test get objects`() {
-        val json = restTemplate.getQueryJson("/objectGroups/${id}?withObjects=true", String::class.java).second
+        val json = restTemplate.getQueryJson("/objectGroups/${id}?withObjects=true").second
         val objs1 = json.read<List<String>>("$.objects")
         Assertions.assertTrue(objs1.size > 0)
 
-        val objs2 = restTemplate.getQueryString("/objectGroups/${id}/objects", String::class.java).body!!
+        val objs2 = restTemplate.getQueryString("/objectGroups/${id}/objects").body!!
         JSONAssert.assertEquals(objs1.toString(), objs2, false)
     }
 

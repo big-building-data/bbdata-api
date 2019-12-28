@@ -37,7 +37,7 @@ class TestObjectTags {
     @Throws(Exception::class)
     fun `1-1 add tags`() {
         // == add tags
-        val response = restTemplate.putWithBody("/objects/${1}/tags?tags=${tag1},${tag2}", "", String::class.java)
+        val response = restTemplate.putWithBody("/objects/${1}/tags?tags=${tag1},${tag2}", "")
         assertEquals(HttpStatus.OK, response.statusCode)
 
         val json = restTemplate.getQueryJson("/objects/$id").second

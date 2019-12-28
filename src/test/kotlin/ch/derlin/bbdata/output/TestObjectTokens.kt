@@ -54,7 +54,7 @@ class TestObjectTokens {
         // == store variables
         val id = JsonPath.parse(putResponse.body).read<Int>("$.id")
         ids.add(id)
-        TestObjectGroup.tpl = restTemplate
+        tpl = restTemplate
 
         // == get
         val getResponse = restTemplate.getQueryString("/objects/$objectId/tokens/$id")
@@ -71,13 +71,13 @@ class TestObjectTokens {
         // == create
         val descr = "hello token"
         val putResponse = restTemplate.putWithBody("/objects/$objectId/tokens",
-                """{"description": "$descr"}""", String::class.java)
+                """{"description": "$descr"}""")
         assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         // == store variables
         val id = JsonPath.parse(putResponse.body).read<Int>("$.id")
         ids.add(id)
-        TestObjectGroup.tpl = restTemplate
+        tpl = restTemplate
 
         // == get
         val getResponse = restTemplate.getForEntity("/objects/$objectId/tokens/$id", String::class.java)

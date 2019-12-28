@@ -88,7 +88,7 @@ class TestObjectComments {
 
         // == store variables
         id = JsonPath.parse(putResponse.body).read<Int>("$.id")
-        TestObjectGroup.tpl = restTemplate
+        tpl = restTemplate
 
         // == get
         val getResponse = restTemplate.getQueryString("/objects/$objectId/comments/$id")
