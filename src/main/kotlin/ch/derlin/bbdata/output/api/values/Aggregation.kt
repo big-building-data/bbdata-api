@@ -105,7 +105,7 @@ interface AggregationsRepository : CassandraRepository<Aggregation, AggregationP
 }
 
 @RestController
-@Tag(name = "Aggregations", description = "Get aggregated object values")
+@Tag(name = "Values Aggregated", description = "Get aggregated object values")
 class AggregationsController(private val aggregationsRepository: AggregationsRepository,
                              private val cassandraObjectStreamer: CassandraObjectStreamer) {
 

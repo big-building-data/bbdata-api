@@ -9,6 +9,7 @@ import ch.derlin.bbdata.output.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
 import org.joda.time.MutablePeriod
 import org.springframework.http.ResponseEntity
@@ -22,6 +23,7 @@ import javax.validation.constraints.NotNull
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @RestController
+@Tag(name = "Authentication", description = "Login/Logout and manage API keys")
 class ApikeyController(
         private val apikeyRepository: ApikeyRepository,
         private val userRepository: UserRepository) {
