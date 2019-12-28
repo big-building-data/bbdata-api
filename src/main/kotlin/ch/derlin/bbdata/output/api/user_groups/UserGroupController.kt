@@ -48,7 +48,7 @@ class UserGroupController(
     @GetMapping("/userGroups/{id}/users")
     fun getUsers(@UserId userId: Int,
                  @PathVariable(value = "id") id: Int): List<UsergroupMapping> =
-            getOne(userId, id).userMappings // TODO: return users instead ?
+            getOne(userId, id).userMappings // TODO: return users instead ? only for admins ?
 
 }
 

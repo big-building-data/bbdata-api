@@ -56,10 +56,11 @@ data class User(
 
 
         @ManyToMany(fetch = FetchType.LAZY, mappedBy = "users")
-        private val groups: List<UserGroup>? = null,
+        @JsonIgnore
+        val groups: List<UserGroup>? = null,
 
         @OneToMany(cascade = arrayOf(CascadeType.ALL), mappedBy = "user", fetch = FetchType.LAZY)
-        private var userToGroupMappings: List<UsergroupMapping>? = null
+        private val userToGroupMappings: List<UsergroupMapping>? = null
 
 
 ) {
