@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output.api.auth
+package ch.derlin.bbdata.output.api.apikeys
 
 import java.security.MessageDigest
 import java.security.SecureRandom

@@ -2,7 +2,7 @@ package ch.derlin.bbdata.output.security
 
 
 import ch.derlin.bbdata.output.Profiles
-import ch.derlin.bbdata.output.api.auth.AuthRepository
+import ch.derlin.bbdata.output.api.apikeys.ApikeyRepository
 import ch.derlin.bbdata.output.exceptions.BadApikeyException
 import ch.derlin.bbdata.output.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_TOKEN
@@ -52,7 +52,7 @@ class DummyWebMvcConfiguration : WebMvcConfigurer {
 class AuthInterceptor : HandlerInterceptor {
 
     @Autowired
-    lateinit var authRepository: AuthRepository
+    lateinit var apikeyRepository: ApikeyRepository
 
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
@@ -93,18 +93,18 @@ class AuthInterceptor : HandlerInterceptor {
 
         bbuser.toIntOrNull()?.let { userId ->
             // check valid tokens
-            authRepository.checkApikey(userId, bbtoken)?.let {
-                // check if write access is necessary
-                if (it.isReadOnly && writeRequired) {
-                    // check write permissions
-                    throw ForbiddenException("Access denied for user ${userId} : this apikey is read-only")
-                }
-                // every checks passed !
-                return true
+            val apikey = apikeyRepository.findValid(userId, bbtoken).orElseThrow {
+                BadApikeyException("Access denied for user ${userId} : bad apikey")
             }
-            // apikey is null
-            throw BadApikeyException("Access denied for user ${userId} : bad apikey")
+            // check if write access is necessary
+            if (apikey.isReadOnly && writeRequired) {
+                // check write permissions
+                throw ForbiddenException("Access denied for user ${userId} : this apikey is read-only")
+            }
+            // every checks passed !
+            return true
         }
+
         // bbuser is not an int
         throw BadApikeyException("Wrong header $HEADER_USER=${bbuser}. Should be an integer")
 

@@ -32,7 +32,7 @@ class UserGroupController(
             userGroupRepository.findAll()
 
     @Protected
-    @GetMapping("/mine/groups")
+    @GetMapping("/mine/groups") // TODO
     fun getMines(@UserId userId: Int,
                  @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): List<UserGroup> =
             userGroupRepository.findMines(userId, admin)

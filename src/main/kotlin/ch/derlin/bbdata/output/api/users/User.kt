@@ -1,7 +1,7 @@
 package ch.derlin.bbdata.output.api.users
 
-import ch.derlin.bbdata.output.api.auth.Apikey
-import ch.derlin.bbdata.output.api.auth.PasswordDigest
+import ch.derlin.bbdata.output.api.apikeys.Apikey
+import ch.derlin.bbdata.output.api.apikeys.PasswordDigest
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.api.user_groups.UsergroupMapping
 import ch.derlin.bbdata.output.exceptions.AppException
