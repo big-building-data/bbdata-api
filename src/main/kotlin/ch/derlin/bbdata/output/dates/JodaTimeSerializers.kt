@@ -5,6 +5,9 @@ import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.databind.*
 import com.fasterxml.jackson.datatype.joda.JodaModule
 import org.joda.time.DateTime
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.jackson.JsonComponent
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.convert.converter.Converter
@@ -18,27 +21,33 @@ import org.springframework.stereotype.Component
 
 // ============== Jackson / JSON
 
+/*
+@Component
+@ConfigurationProperties("spring.jackson")
+class JacksonProperties {
+    lateinit var serialization: MutableMap<SerializationFeature, Boolean>
+}
+
 @Configuration
 class AppConfig {
-    /**
-     * Make all dates work with the format registered as default to the JodaUtils module.
-     * This will override the default formatter of joda-time.
-     */
+
+    @Autowired
+    private lateinit var jacksonProperties: JacksonProperties
+
     @Bean
-    fun serializingObjectMapper(): ObjectMapper {
-        // register custom joda-time (de-)serializers
+    fun noHateoasObjectMapper(): ObjectMapper {
+        val mapper = ObjectMapper()
+        jacksonProperties.serialization.map { mapper.configure(it.key, it.value) }
         val jodaModule = JodaModule()
         jodaModule.addSerializer(DateTime::class.java, JodaDateTimeSerializer())
         jodaModule.addDeserializer(DateTime::class.java, JodaDateTimeDeserializer())
-
-        // register it to the global object mapper
-        val objectMapper = ObjectMapper()
-        objectMapper.registerModule(jodaModule)
-        return objectMapper
+        mapper.registerModule(jodaModule)
+        return mapper
     }
 }
+*/
 
-
+@JsonComponent
 class JodaDateTimeSerializer : JsonSerializer<DateTime>() {
 
     override fun serialize(value: DateTime, gen: JsonGenerator, serializers: SerializerProvider) =
@@ -46,6 +55,7 @@ class JodaDateTimeSerializer : JsonSerializer<DateTime>() {
 
 }
 
+@JsonComponent
 class JodaDateTimeDeserializer : JsonDeserializer<DateTime>() {
     override fun deserialize(p: JsonParser?, ctxt: DeserializationContext?): DateTime =
             JodaUtils.parse(p!!.valueAsString)
@@ -55,11 +65,11 @@ class JodaDateTimeDeserializer : JsonDeserializer<DateTime>() {
 // ============== @RequestParam support
 
 @Component
-class StringToJodaTimeSQLConverter : Converter<String, DateTime> {
+class StringToJodaTimeConverter : Converter<String, DateTime> {
     override fun convert(source: String): DateTime? = JodaUtils.parse(source)
 }
 
 @Component
-class LongToJodaTimeSQLConverter : Converter<Long, DateTime> {
+class LongToJodaTimeConverter : Converter<Long, DateTime> {
     override fun convert(source: Long): DateTime? = JodaUtils.parse(source)
 }
