@@ -21,4 +21,8 @@ class UserController(val userRepository: UserRepository) {
     @Protected
     @GetMapping("/me/userGroups") // TODO: add flag admin to return list
     fun getMyGroups(@UserId userId: Int): List<UserGroup> = userRepository.getOne(userId).groups!!
+
+    @Protected
+    @GetMapping("/users")
+    fun getAll(): List<User> = userRepository.findAll() // TODO: try to comment this endpoint... HATEOAS ! /search
 }
