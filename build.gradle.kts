@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot") version "2.2.1.RELEASE"
     id("io.spring.dependency-management") version "1.0.8.RELEASE"
+    id("com.gorylenko.gradle-git-properties") version "2.0.0"
     war
     kotlin("jvm") version "1.3.50"
     kotlin("plugin.spring") version "1.3.50"
@@ -24,9 +25,13 @@ repositories {
     mavenCentral()
 }
 
+springBoot {
+    buildInfo() // add build info so it is shown in actuator /info
+}
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.springframework.boot:spring-boot-starter-data-rest")
+    // NO HAL REST: implementation("org.springframework.boot:spring-boot-starter-data-rest")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -49,6 +54,9 @@ dependencies {
 
     // swagger doc
     implementation("org.springdoc:springdoc-openapi-ui:1.2.21")
+
+    // metrics
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
 
     // for XML support
     // implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
