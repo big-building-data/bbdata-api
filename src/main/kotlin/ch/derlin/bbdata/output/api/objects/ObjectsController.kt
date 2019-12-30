@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
+import javax.validation.constraints.Size
 
 @RestController
 @RequestMapping("/objects")
@@ -129,7 +130,14 @@ class NewObjectController(private val objectRepository: ObjectRepository,
                           private val userGroupRepository: UserGroupRepository,
                           private val unitRepository: UnitRepository) {
 
-    class NewObject : Beans.NameDescription() {
+    class NewObject {
+        @NotNull
+        @Size(min = Objects.NAME_MIN, max = Objects.NAME_MAX)
+        val name: String? = null
+
+        @Size(max = Beans.DESCRIPTION_MAX)
+        val description: String? = null
+
         @NotNull
         val owner: Int? = null
 

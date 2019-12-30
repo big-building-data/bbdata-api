@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import java.io.Serializable
 import javax.persistence.*
-import javax.validation.constraints.NotNull
 
 /**
  * date: 30.11.19
@@ -25,13 +24,11 @@ data class UserUgrpMappingId(
 @IdClass(UserUgrpMappingId::class)
 data class UsergroupMapping(
         @Id
-        @NotNull
         @Column(name = "user_id")
         @JsonIgnore
         val userId: Int,
 
         @Id
-        @NotNull
         @Column(name = "ugrp_id")
         @JsonIgnore
         val groupId: Int,

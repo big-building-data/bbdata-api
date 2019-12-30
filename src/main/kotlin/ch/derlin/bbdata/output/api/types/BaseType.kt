@@ -15,9 +15,9 @@ package ch.derlin.bbdata.output.api.types
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIdentityReference
 import com.fasterxml.jackson.annotation.ObjectIdGenerators
+import org.hibernate.validator.constraints.Length
 import javax.persistence.*
 import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.Size
 
 
 @Entity
@@ -28,10 +28,14 @@ data class BaseType(
 
         @Id
         @NotEmpty
-        @Size(min = 1, max = 45)
+        @field:Length(min = 1, max = TYPE_MAX)
         @Column(name = "name")
         var type: String = "",
 
         @OneToMany(cascade = [CascadeType.ALL], mappedBy = "type", fetch = FetchType.LAZY)
         private var units: Collection<Unit> = listOf()
-)
+) {
+    companion object {
+        const val TYPE_MAX = 45
+    }
+}

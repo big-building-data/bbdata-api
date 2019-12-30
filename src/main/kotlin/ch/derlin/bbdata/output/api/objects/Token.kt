@@ -1,10 +1,10 @@
 package ch.derlin.bbdata.output.api.objects
 
 import ch.derlin.bbdata.output.api.apikeys.TokenGenerator
+import org.hibernate.validator.constraints.Length
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import javax.persistence.*
-import javax.validation.constraints.Size
 
 /**
  * date: 23.12.19
@@ -26,7 +26,7 @@ data class Token(
         val objectId: Long,
 
         @Column(name = "token")
-        @Size(min = 32, max = 32)
+        @field:Length(min = 32, max = 32)
         private val token: String,
 
         @Column(name = "description")

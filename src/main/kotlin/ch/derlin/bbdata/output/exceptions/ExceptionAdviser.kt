@@ -66,10 +66,14 @@ class GlobalControllerExceptionHandler : ResponseEntityExceptionHandler() {
             description = "Login error: wrong user and/or apikey provided.")
     fun handleForbidden(ex: AppException): ExceptionBody = ex.body()
 
-    @ExceptionHandler(DataIntegrityViolationException::class)
+    @ExceptionHandler(WrongParamsException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ApiResponse(responseCode = "400",
             description = "Some provided information is incorrect.")
+    fun handleWrongParam(ex: WrongParamsException): ExceptionBody = ex.body()
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(DataIntegrityViolationException::class)
     fun handleDataIntegrityException(ex: DataIntegrityViolationException): ExceptionBody = ex.body()
 
 

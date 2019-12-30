@@ -1,9 +1,8 @@
 package ch.derlin.bbdata.output.api.types
 
 import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
+import org.hibernate.validator.constraints.Length
 import javax.persistence.*
-import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.Size
 
 
 /**
@@ -15,14 +14,12 @@ import javax.validation.constraints.Size
 data class Unit(
 
         @Id
-        @NotEmpty
-        @Size(min = 1, max = 10)
+        @field:Length(min = 1, max = SYMBOL_MAX)
         @Column(name = "symbol")
         private var symbol: String = "",
 
-        @NotEmpty
-        @Size(min = 1, max = 20)
-        @Column(name = "name")
+        @field:Length(min = 1, max = NAME_MAX)
+        @Column(name = "name", unique = true)
         var name: String = "",
 
         @JoinColumn(name = "type", referencedColumnName = "name")
@@ -31,4 +28,9 @@ data class Unit(
 
 ) : NoUpdateOnCreateEntity<String>() {
     override fun getId(): String = symbol
+
+    companion object {
+        const val SYMBOL_MAX = 10
+        const val NAME_MAX = 20
+    }
 }

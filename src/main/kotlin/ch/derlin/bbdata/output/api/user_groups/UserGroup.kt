@@ -5,8 +5,8 @@ import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.users.User
 import com.fasterxml.jackson.annotation.JsonIgnore
+import org.hibernate.validator.constraints.Length
 import javax.persistence.*
-import javax.validation.constraints.NotEmpty
 
 /**
  * date: 30.11.19
@@ -21,7 +21,7 @@ data class UserGroup(
         private val id: Int? = null,
 
         @Column(name = "name")
-        @NotEmpty
+        @field:Length(min = NAME_MIN, max = NAME_MAX)
         val name: String = "",
 
         @ManyToMany(mappedBy = "allowedUserGroups", fetch = FetchType.LAZY)
@@ -48,4 +48,9 @@ data class UserGroup(
 
 ) : NoUpdateOnCreateEntity<Int?>() {
     override fun getId(): Int? = id
+
+    companion object {
+        const val NAME_MIN = 3
+        const val NAME_MAX = 45
+    }
 }

@@ -4,14 +4,14 @@ package ch.derlin.bbdata.output.api.object_groups
  * date: 20.11.19
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
+import ch.derlin.bbdata.output.Beans.DESCRIPTION_MAX
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
+import org.hibernate.validator.constraints.Length
 import javax.persistence.*
-import javax.validation.constraints.NotNull
-import javax.validation.constraints.Size
 
 @Entity
 @Table(name = "ogrps")
@@ -21,12 +21,11 @@ data class ObjectGroup(
         @Column(name = "id")
         var id: Long? = null,
 
-        @NotNull
-        @Size(min = 1, max = 45)
+        @field:Length(min = NAME_MIN, max = NAME_MAX)
         @Column(name = "name")
         var name: String? = null,
 
-        @Size(max = 255)
+        @field:Length(max = DESCRIPTION_MAX)
         @Column(name = "description")
         var description: String? = null,
 
@@ -72,6 +71,11 @@ data class ObjectGroup(
     fun withObjects(): ObjectGroup {
         this._objectsToReturn = objects
         return this
+    }
+
+    companion object {
+        const val NAME_MIN = 3
+        const val NAME_MAX = 45
     }
 }
 

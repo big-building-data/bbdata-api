@@ -1,6 +1,5 @@
 package ch.derlin.bbdata.output
 
-import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 /**
@@ -8,23 +7,27 @@ import javax.validation.constraints.Size
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
+/*
+@kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
+@kotlin.annotation.Target(AnnotationTarget.FIELD, AnnotationTarget.ANNOTATION_CLASS)
+@ConstraintComposition
+@Constraint(validatedBy = [])
+@Size(min = 3, max = 60)
+annotation class NameSize(
+        val message: String = "Invalid name.",
+        val groups: Array<KClass<*>> = [],
+        val payload: Array<KClass<*>> = [])
+*/
+
 object Beans {
 
-    open class Name {
-        @NotNull
-        @Size(min = 3, max = 60)
-        val name: String = ""
-    }
+    const val DESCRIPTION_MAX = 255
 
     open class Description {
 
-        @Size(max = 255)
+        @Size(max = DESCRIPTION_MAX)
         val description: String? = null
     }
 
-    open class NameDescription : Name() {
-        // TODO: multiple inheritance ?
-        @Size(max = 255)
-        val description: String? = null
-    }
+
 }

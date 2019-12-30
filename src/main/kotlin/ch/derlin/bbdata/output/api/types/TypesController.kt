@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import javax.validation.Valid
+import javax.validation.constraints.NotEmpty
+import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
 /**
@@ -23,13 +25,16 @@ class TypesController(private val unitRepository: UnitRepository,
                       private val baseTypeRepository: BaseTypeRepository) {
 
     class NewUnit { // do not use a data class !
-        @Size(min = 1, max = 10)
+        @NotEmpty
+        @Size(max = Unit.SYMBOL_MAX)
         val symbol: String = ""
 
-        @Size(min = 1, max = 20)
+        @NotEmpty
+        @Size(max = Unit.NAME_MAX)
         val name: String = ""
 
-        @Size(min = 1, max = 45)
+        @NotEmpty
+        @Size(max = BaseType.TYPE_MAX)
         val type: String = ""
     }
 
@@ -41,11 +46,10 @@ class TypesController(private val unitRepository: UnitRepository,
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PostMapping("/units")
-    fun addUnit(@Valid @RequestBody newUnit: NewUnit) {
-        baseTypeRepository.findById(newUnit.type).map {
-            unitRepository.save(Unit(symbol = newUnit.symbol, name = newUnit.name, type = it))
-        }.orElseThrow { WrongParamsException("The type '${newUnit.type}' is not valid.") }
+    fun addUnit(@Valid @NotNull @RequestBody newUnit: NewUnit): Unit {
+        val type = baseTypeRepository.findById(newUnit.type).orElseThrow {
+            WrongParamsException("The type '${newUnit.type}' is not valid.")
+        }
+        return unitRepository.saveAndFlush(Unit(symbol = newUnit.symbol, name = newUnit.name, type = type))
     }
-
-
 }

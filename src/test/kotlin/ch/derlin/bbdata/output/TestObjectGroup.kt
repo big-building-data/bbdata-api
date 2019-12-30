@@ -1,7 +1,11 @@
 package ch.derlin.bbdata.output
 
 import com.jayway.jsonpath.JsonPath
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.extension.ExtendWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.beans.factory.annotation.Autowired
@@ -48,26 +52,31 @@ class TestObjectGroup {
     fun `1-0 test create object group fail`() {
         // == create no name
         var putResponse = restTemplate.putWithBody("/objectGroups",
-                """{"name": "", "owner": 1, "description": "test"}""")
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+                """{"owner": 1, "description": "test"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+
+        // == create short name
+        putResponse = restTemplate.putWithBody("/objectGroups",
+                """{"name": "a", "owner": 1, "description": "test"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create no owner
         putResponse = restTemplate.putWithBody("/objectGroups",
-                """{"name": "$name", "description": "test"}""")
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+                """{"name": "$name"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create wrong owner
         putResponse = restTemplate.putWithBody("/objectGroups",
                 """{"name": "$name", "owner": -1, "description": "test"}""")
-        Assertions.assertEquals(HttpStatus.NOT_FOUND, putResponse.statusCode)
+        assertEquals(HttpStatus.NOT_FOUND, putResponse.statusCode)
     }
 
     @Test
     fun `1-1 test create object group`() {
         // == create
         val putResponse = restTemplate.putWithBody("/objectGroups",
-                """{"name": "$name", "owner": 1, "description": "test"}""")
-        Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
+                """{"name": "$name", "owner": 1}""")
+        assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         // == store variables
         id = JsonPath.parse(putResponse.body).read<Int>("$.id")
@@ -79,24 +88,44 @@ class TestObjectGroup {
 
         // check some json variables
         val json = JsonPath.parse(getResponse.body)
-        Assertions.assertTrue(json.read<String>("$.owner.name").equals("admin"))
-        Assertions.assertTrue(json.read<String>("$.description").equals("test"))
+        assertEquals("admin", json.read<String>("$.owner.name"))
+    }
+    
+    @Test
+    fun `1-2 test edit object group`(){
+        // == change name + description
+        var postResponse = restTemplate.postWithBody("/objectGroups/$id",
+                """{"name": "xxx", "description": "test"}""")
+        assertEquals(HttpStatus.OK, postResponse.statusCode)
+
+        var json = JsonPath.parse(postResponse.body)
+        assertEquals("xxx", json.read<String>("$.name"))
+        assertEquals("test", json.read<String>("$.description"))
+
+        // == change name only
+        postResponse = restTemplate.postWithBody("/objectGroups/$id",
+                """{"name": "$name"}""")
+        assertEquals(HttpStatus.OK, postResponse.statusCode)
+
+        json = JsonPath.parse(postResponse.body)
+        assertEquals(name, json.read<String>("$.name"))
+        assertEquals("test", json.read<String>("$.description"))
     }
 
     @Test
     fun `2-1 test add object`() {
         val putResponse = restTemplate.putQueryString("/objectGroups/$id/objects?objectId=1")
-        Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
+        assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         val json = restTemplate.getQueryJson("/objectGroups/${id}/objects").second
-        Assertions.assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size > 0)
+        assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size > 0)
     }
 
     @Test
     fun `2-2 test get objects`() {
         val json = restTemplate.getQueryJson("/objectGroups/${id}?withObjects=true").second
         val objs1 = json.read<List<String>>("$.objects")
-        Assertions.assertTrue(objs1.size > 0)
+        assertTrue(objs1.size > 0)
 
         val objs2 = restTemplate.getQueryString("/objectGroups/${id}/objects").body!!
         JSONAssert.assertEquals(objs1.toString(), objs2, false)
@@ -105,62 +134,62 @@ class TestObjectGroup {
     @Test
     fun `2-4 test object withObjects`() {
         val respFalse = restTemplate.getQueryString("/objectGroups/$id?withObjects=false")
-        Assertions.assertFalse(respFalse.body!!.contains("\"objects\""))
+        assertFalse(respFalse.body!!.contains("\"objects\""))
 
         val respTrue = restTemplate.getQueryString("/objectGroups/$id?withObjects=true")
-        Assertions.assertTrue(respTrue.body!!.contains("\"objects\""))
+        assertTrue(respTrue.body!!.contains("\"objects\""))
     }
 
     @Test
     fun `2-5 test remove object`() {
         val putResponse = restTemplate.deleteQueryString("/objectGroups/$id/objects?objectId=1")
-        Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
+        assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         val putResponse2 = restTemplate.deleteQueryString("/objectGroups/$id/objects?objectId=1")
-        Assertions.assertEquals(HttpStatus.NOT_MODIFIED, putResponse2.statusCode)
+        assertEquals(HttpStatus.NOT_MODIFIED, putResponse2.statusCode)
     }
 
     @Test
     fun `3-1 test objectGroup withObjects`() {
         val respFalse = restTemplate.getQueryString("/objectGroups?withObjects=false")
-        Assertions.assertFalse(respFalse.body!!.contains("\"objects\""))
+        assertFalse(respFalse.body!!.contains("\"objects\""))
 
         val respTrue = restTemplate.getQueryString("/objectGroups?withObjects=true")
-        Assertions.assertTrue(respTrue.body!!.contains("\"objects\""))
+        assertTrue(respTrue.body!!.contains("\"objects\""))
     }
 
 
     @Test
     fun `3-1 test add permission`() {
         val putResp1 = restTemplate.putQueryString("/objectGroups/$id/permissions?userGroup=1")
-        Assertions.assertEquals(HttpStatus.OK, putResp1.statusCode)
+        assertEquals(HttpStatus.OK, putResp1.statusCode)
         val putResp2 = restTemplate.putQueryString("/objectGroups/$id/permissions?userGroup=1")
-        Assertions.assertEquals(HttpStatus.NOT_MODIFIED, putResp2.statusCode)
+        assertEquals(HttpStatus.NOT_MODIFIED, putResp2.statusCode)
 
         val json = restTemplate.getQueryJson("/objectGroups/$id/permissions").second
-        Assertions.assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size > 0)
+        assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size > 0)
     }
 
     @Test
     fun `3-1 test remove permission`() {
         val putResp1 = restTemplate.deleteQueryString("/objectGroups/$id/permissions?userGroup=1")
-        Assertions.assertEquals(HttpStatus.OK, putResp1.statusCode)
+        assertEquals(HttpStatus.OK, putResp1.statusCode)
         val putResp2 = restTemplate.deleteQueryString("/objectGroups/$id/permissions?userGroup=1")
-        Assertions.assertEquals(HttpStatus.NOT_MODIFIED, putResp2.statusCode)
+        assertEquals(HttpStatus.NOT_MODIFIED, putResp2.statusCode)
 
         val json = restTemplate.getQueryJson("/objectGroups/$id/permissions").second
-        Assertions.assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size == 0)
+        assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size == 0)
     }
 
     @Test
     fun `5-0 test remove object group`() {
         val putResponse = restTemplate.deleteQueryString("/objectGroups/$id")
-        Assertions.assertEquals(putResponse.statusCode, HttpStatus.OK)
+        assertEquals(putResponse.statusCode, HttpStatus.OK)
 
         val putResponse2 = restTemplate.deleteQueryString("/objectGroups/$id")
-        Assertions.assertEquals(putResponse2.statusCode, HttpStatus.NOT_MODIFIED)
+        assertEquals(putResponse2.statusCode, HttpStatus.NOT_MODIFIED)
 
         val getStatus = restTemplate.getQueryJson("/objectGroups/$id").first
-        Assertions.assertEquals(HttpStatus.NOT_FOUND, getStatus)
+        assertEquals(HttpStatus.NOT_FOUND, getStatus)
     }
 }

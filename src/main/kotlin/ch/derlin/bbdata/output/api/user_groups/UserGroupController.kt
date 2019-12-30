@@ -1,6 +1,5 @@
 package ch.derlin.bbdata.output.api.user_groups
 
-import ch.derlin.bbdata.output.Beans
 import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.exceptions.ForbiddenException
@@ -10,11 +9,10 @@ import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import javax.websocket.server.PathParam
+import javax.validation.constraints.Size
 
 /**
  * date: 06.12.19
@@ -58,12 +56,18 @@ class AddDeleteUserGroupController(
         private val userGroupRepository: UserGroupRepository,
         private val userGroupMappingRepository: UserGroupMappingRepository) {
 
+    class NewUserGroup {
+        @NotNull
+        @Size(min = UserGroup.NAME_MIN, max = UserGroup.NAME_MAX)
+        val name: String? = null
+    }
+
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("/userGroups")
     fun createUserGroup(@UserId userId: Int,
-                        @Valid @NotNull @RequestBody nameBody: Beans.Name): UserGroup {
+                        @Valid @NotNull @RequestBody newUserGroupBody: NewUserGroup): UserGroup {
         // create
-        val ugrp = userGroupRepository.saveAndFlush(UserGroup(name = nameBody.name))
+        val ugrp = userGroupRepository.saveAndFlush(UserGroup(name = newUserGroupBody.name!!))
         // add permission
         userGroupMappingRepository.save(UsergroupMapping(userId = userId, groupId = ugrp.id!!, isAdmin = true))
         return ugrp

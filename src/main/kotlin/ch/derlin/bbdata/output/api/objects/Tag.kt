@@ -3,9 +3,9 @@ package ch.derlin.bbdata.output.api.objects
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIdentityReference
 import com.fasterxml.jackson.annotation.ObjectIdGenerators
+import org.hibernate.validator.constraints.Length
 import java.io.Serializable
 import javax.persistence.*
-import javax.validation.constraints.Size
 
 
 /**
@@ -15,7 +15,7 @@ import javax.validation.constraints.Size
 
 data class TagId(
         @Column(name = "name")
-        @Size(max = 25)
+        @field:Length(max = 25)
         val name: String = "",
 
         @Column(name = "object_id")

@@ -8,6 +8,7 @@ import ch.derlin.bbdata.output.exceptions.AppException
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.Generated
 import org.hibernate.annotations.GenerationTime
+import org.hibernate.validator.constraints.Length
 import org.joda.time.DateTime
 import javax.persistence.*
 import javax.validation.constraints.NotEmpty
@@ -30,18 +31,16 @@ data class User(
         @Column(name = "id")
         var id: Int? = null,
 
-        @NotEmpty
-        @Size(min = 1, max = 45)
+        @field:Length(min = NAME_MIN, max = NAME_MAX)
         @Column(name = "name")
         var name: String = "",
 
+        @field:Length(min = PASSWORD_MIN, max = PASSWORD_MAX)
         @Basic(fetch = FetchType.LAZY)
-        @Size(min = 5)
         @Column(name = "password")
         private var password: String? = null,
 
-        // @Pattern(regexp="[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message="Invalid email")//if the field contains email address consider using this annotation to enforce field validation
-        @Size(min = 1, max = 45)
+        @field:Length(min = 1, max = EMAIL_MAX)
         @Column(name = "email")
         var email: String? = null,
 
@@ -68,14 +67,15 @@ data class User(
     // TODO: where to put NewX classes ? controller or model ?
     class NewUser {
         @NotNull
-        @Size(min = 1, max = 45)
+        @Size(min = NAME_MIN, max = NAME_MAX)
         val name: String? = null
 
         @NotNull
-        @Size(min = 5)
+        @Size(min = PASSWORD_MIN, max = PASSWORD_MAX)
         val password: String? = null
 
-        @NotNull
+        @NotEmpty
+        @Size(max = EMAIL_MAX)
         @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message = "Invalid email")
         val email: String? = null
 
@@ -84,6 +84,12 @@ data class User(
     }
 
     companion object {
+
+        const val NAME_MIN = 1
+        const val NAME_MAX = 45
+        const val EMAIL_MAX = 45
+        const val PASSWORD_MIN = 5
+        const val PASSWORD_MAX = 45
 
         fun hashPassword(password: String): String {
             try {

@@ -5,7 +5,7 @@ package ch.derlin.bbdata.output.api.object_groups
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
-import ch.derlin.bbdata.output.Beans
+import ch.derlin.bbdata.output.Beans.DESCRIPTION_MAX
 import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
@@ -23,6 +23,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
+import javax.validation.constraints.Size
 
 @RestController
 @RequestMapping("/objectGroups")
@@ -30,9 +31,24 @@ import javax.validation.constraints.NotNull
 class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRepository,
                              private val userGroupRepository: UserGroupRepository) {
 
-    class NewObjectGroup : Beans.NameDescription() {
+    class NewObjectGroup {
+        @NotNull
+        @Size(min = ObjectGroup.NAME_MIN, max = ObjectGroup.NAME_MAX)
+        val name: String? = null
+
+        @Size(max = DESCRIPTION_MAX)
+        val description: String? = null
+
         @NotNull
         val owner: Int? = null
+    }
+
+    class EditableFields {
+        @Size(min = ObjectGroup.NAME_MIN, max = ObjectGroup.NAME_MAX)
+        val name: String? = null
+
+        @Size(max = DESCRIPTION_MAX)
+        val description: String? = null
     }
 
     @Protected
@@ -59,7 +75,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("")
     fun createOne(@UserId userId: Int,
-                  @Valid @RequestBody newOgrp: NewObjectGroup): ObjectGroup {
+                  @Valid @NotNull @RequestBody newOgrp: NewObjectGroup): ObjectGroup {
 
         val owner = userGroupRepository.findMine(userId, newOgrp.owner!!).orElseThrow {
             ItemNotFoundException("userGroup (${newOgrp.owner})")
@@ -72,6 +88,20 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
                         owner = owner
                 )
         )
+    }
+
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @PostMapping("/{id}")
+    fun editOne(@UserId userId: Int,
+                @PathVariable("id") id: Long,
+                @Valid @NotNull @RequestBody editableFields: EditableFields): ObjectGroup {
+
+        val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
+            ItemNotFoundException("objectGroup (${id})")
+        }
+        editableFields.name?.let { ogrp.name = it }
+        editableFields.description?.let { ogrp.description = it }
+        return objectGroupsRepository.saveAndFlush(ogrp)
     }
 
     @Protected
@@ -96,7 +126,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     @DeleteMapping("/{id}")
     @SimpleModificationStatusResponse
     fun deleteOneById(@UserId userId: Int, @PathVariable(value = "id") id: Long): ResponseEntity<String> {
-        if(!objectGroupsRepository.findOne(userId, id).isPresent){
+        if (!objectGroupsRepository.findOne(userId, id).isPresent) {
             return CommonResponses.notModifed()
         }
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {

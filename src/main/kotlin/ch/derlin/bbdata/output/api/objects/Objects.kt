@@ -1,14 +1,15 @@
 package ch.derlin.bbdata.output.api.objects
 
+import ch.derlin.bbdata.output.Beans.DESCRIPTION_MAX
 import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
 import ch.derlin.bbdata.output.api.types.Unit
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.Generated
 import org.hibernate.annotations.GenerationTime
+import org.hibernate.validator.constraints.Length
 import org.joda.time.DateTime
 import javax.persistence.*
-import javax.validation.constraints.Size
 
 
 /**
@@ -26,11 +27,11 @@ data class Objects(
         @Column(name = "id")
         val id: Long? = null,
 
-        @Size(min = 1, max = 60)
+        @field:Length(min = NAME_MIN, max = NAME_MAX)
         @Column(name = "name")
         var name: String? = null,
 
-        @Size(max = 255)
+        @field:Length(max = DESCRIPTION_MAX)
         @Column(name = "description")
         var description: String? = null,
 
@@ -76,4 +77,8 @@ data class Objects(
 
     fun getToken(id: Int): Token? = tokens.find { it.id == id }
 
+    companion object {
+        const val NAME_MIN = 1
+        const val NAME_MAX = 60
+    }
 }

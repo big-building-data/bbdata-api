@@ -4,7 +4,6 @@ import org.joda.time.DateTime
 import org.springframework.boot.actuate.info.Info
 import org.springframework.boot.actuate.info.InfoContributor
 import org.springframework.stereotype.Component
-import java.time.LocalDateTime
 
 
 /**
