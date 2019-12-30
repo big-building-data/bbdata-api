@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.io.Serializable
 import javax.servlet.http.HttpServletResponse
 
+
 /**
  * date: 10.12.19
  * @author Lucy Linder <lucy.derlin@gmail.com>
@@ -67,6 +68,10 @@ interface RawValueRepository : CassandraRepository<RawValue, RawValuePK> {
     @Query("SELECT * FROM raw_values WHERE object_id = :objectId AND month IN :months " +
             "AND timestamp >= :dfrom AND timestamp <= :dto")
     fun findByTimestampBetween(objectId: Int, months: List<String>, dfrom: DateTime, dto: DateTime): Iterable<RawValue>
+
+    @Query("SELECT * FROM raw_values WHERE object_id = :objectId AND month = :month " +
+            "AND timestamp <= :before ORDER BY timestamp DESC limit 1")
+    fun getLatest(objectId: Int, month: String, before: DateTime): RawValue?
 }
 
 @RestController
@@ -82,10 +87,10 @@ class RawValuesController(private val rawValueRepository: RawValueRepository,
             @RequestHeader(value = "Content-Type") contentType: String,
             @RequestParam(name = "ids", required = true) ids: List<Long>,
             @RequestParam(name = "from", required = true) from: DateTime,
-            @RequestParam(name = "to", required = false) to: DateTime?,
+            @RequestParam(name = "to", required = false) optionalTo: DateTime?,
             response: HttpServletResponse) {
 
-        val to = to ?: DateTime.now()
+        val to = optionalTo ?: DateTime.now()
         val months = CassandraUtils.monthsBetween(YearMonth(from), YearMonth(to))
         cassandraObjectStreamer.stream(contentType, response, userId, ids, {
             rawValueRepository.findByTimestampBetween(it, months, from, to)
@@ -93,5 +98,25 @@ class RawValuesController(private val rawValueRepository: RawValueRepository,
 
     }
 
+    @Protected
+    @GetMapping("/values/latest", produces = arrayOf("application/json", "text/plain"))
+    fun getLatestValue(
+            @UserId userId: Int,
+            @RequestHeader(value = "Content-Type") contentType: String,
+            @RequestParam(name = "ids", required = true) ids: List<Long>,
+            @RequestParam(name = "before", required = false) optionalBefore: DateTime?,
+            response: HttpServletResponse) {
+        val before = optionalBefore ?: DateTime.now()
+        val monthBefore = YearMonth(before)
+        val searchMonths = CassandraUtils.monthsBetween(
+                monthBefore.minusMonths(CassandraUtils.MAX_SEARCH_DEPTH), monthBefore)
+        cassandraObjectStreamer.stream(contentType, response, userId, ids, { objectId ->
+            val res = searchMonths.asSequence()
+                    .map { rawValueRepository.getLatest(objectId, it, before) }
+                    .dropWhile { it == null }
+                    .firstOrNull()
+            if (res == null) listOf() else listOf(res)
+        })
+    }
 
 }
