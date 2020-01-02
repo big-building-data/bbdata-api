@@ -3,6 +3,7 @@ package ch.derlin.bbdata.output.api.user_groups
 import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.users.User
+import ch.derlin.bbdata.output.api.users.UserController
 import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.output.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
@@ -69,7 +70,7 @@ class UserGroupMappingController(
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("/userGroups/{id}/users/new")
     fun createUser(@UserId userId: Int,
-                   @Valid @RequestBody newUser: User.NewUser,
+                   @Valid @RequestBody newUser: UserController.NewUser,
                    @PathVariable(value = "id") id: Int,
                    @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): User {
         // ensure the user has the right to add a member to the group

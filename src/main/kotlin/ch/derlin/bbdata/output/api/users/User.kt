@@ -64,25 +64,6 @@ data class User(
 
 ) {
 
-    // TODO: where to put NewX classes ? controller or model ?
-    class NewUser {
-        @NotNull
-        @Size(min = NAME_MIN, max = NAME_MAX)
-        val name: String? = null
-
-        @NotNull
-        @Size(min = PASSWORD_MIN, max = PASSWORD_MAX)
-        val password: String? = null
-
-        @NotEmpty
-        @Size(max = EMAIL_MAX)
-        @Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", message = "Invalid email")
-        val email: String? = null
-
-        fun toUser(): User = User(name = name!!, password = hashPassword(password!!), email = email!!)
-
-    }
-
     companion object {
 
         const val NAME_MIN = 1
