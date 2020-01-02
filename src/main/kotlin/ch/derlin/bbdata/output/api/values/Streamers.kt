@@ -12,8 +12,6 @@ import javax.servlet.http.HttpServletResponse
  */
 
 interface StreamableCsv {
-
-    fun csvHeaders(): List<String>
     fun csvValues(vararg args: Any): List<Any?>
 }
 
@@ -24,13 +22,14 @@ class CassandraObjectStreamer(
         private val mapper: ObjectMapper) {
 
 
-    fun stream(contentType: String,
+    fun stream(contentType: String?,
                response: HttpServletResponse,
                userId: Int, ids: List<Long>,
+               csvHeaders: List<String>,
                valuesGenerator: (Int) -> Iterable<StreamableCsv>,
                writable: Boolean = false) {
         if (contentType != null && contentType.contains("text")) {
-            streamCsv(response.outputStream, userId, ids, valuesGenerator, writable)
+            streamCsv(response.outputStream, userId, ids, csvHeaders, valuesGenerator, writable)
         } else {
             streamJson(response.outputStream, userId, ids, valuesGenerator, writable)
         }
@@ -68,17 +67,14 @@ class CassandraObjectStreamer(
 
     fun streamCsv(outputStream: OutputStream,
                   userId: Int, ids: List<Long>,
+                  headers: List<String>,
                   valuesGenerator: (Int) -> Iterable<StreamableCsv>,
                   writable: Boolean = false) {
         outputStream.writer().use { w ->
-            var first = true
+            w.write(headers.joinToString(",") + "\n")
             ids.map { objectId ->
                 objectsRepository.findById(objectId, userId, writable = false).map {
                     valuesGenerator(objectId.toInt()).forEach {
-                        if (first) {
-                            w.write(it.csvHeaders().joinToString(",") + "\n")
-                            first = false
-                        }
                         w.write(it.csvValues().joinToString(",") + "\n")
                     }
                 }

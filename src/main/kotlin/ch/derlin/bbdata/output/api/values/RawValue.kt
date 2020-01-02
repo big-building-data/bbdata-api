@@ -58,7 +58,9 @@ data class RawValue(
     override fun csvValues(vararg args: Any): List<Any?> =
             listOf(key.objectId, key.timestamp?.let { JodaUtils.format(it) }, value, comment)
 
-    override fun csvHeaders(): List<String> = listOf("object_id", "timestamp", "value", "comment")
+    companion object {
+        val csvHeaders: List<String> = listOf("object_id", "timestamp", "value", "comment")
+    }
 
 }
 
@@ -92,7 +94,7 @@ class RawValuesController(private val rawValueRepository: RawValueRepository,
 
         val to = optionalTo ?: DateTime.now()
         val months = CassandraUtils.monthsBetween(YearMonth(from), YearMonth(to))
-        cassandraObjectStreamer.stream(contentType, response, userId, ids, {
+        cassandraObjectStreamer.stream(contentType, response, userId, ids, RawValue.csvHeaders, {
             rawValueRepository.findByTimestampBetween(it, months, from, to)
         })
 
@@ -110,7 +112,7 @@ class RawValuesController(private val rawValueRepository: RawValueRepository,
         val monthBefore = YearMonth(before)
         val searchMonths = CassandraUtils.monthsBetween(
                 monthBefore.minusMonths(CassandraUtils.MAX_SEARCH_DEPTH), monthBefore)
-        cassandraObjectStreamer.stream(contentType, response, userId, ids, { objectId ->
+        cassandraObjectStreamer.stream(contentType, response, userId, ids, RawValue.csvHeaders, { objectId ->
             val res = searchMonths.asSequence()
                     .map { rawValueRepository.getLatest(objectId, it, before) }
                     .dropWhile { it == null }

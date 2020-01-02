@@ -88,11 +88,13 @@ data class Aggregation(
             last, getLastTimestamp(),
             min, max, sum, getMean(), getStd(), count, comment)
 
-    override fun csvHeaders(): List<String> = listOf(
-            "object_id", "timestamp",
-            "last", "last_timestamp",
-            "min", "max", "sum", "mean", "std", "count", "comment"
-    )
+    companion object {
+        val csvHeaders: List<String> = listOf(
+                "object_id", "timestamp",
+                "last", "last_timestamp",
+                "min", "max", "sum", "mean", "std", "count", "comment"
+        )
+    }
 
 }
 
@@ -124,7 +126,7 @@ class AggregationsController(private val aggregationsRepository: AggregationsRep
 
         val to = to ?: DateTime.now()
         val months = CassandraUtils.monthsBetween(YearMonth(from), YearMonth(to))
-        cassandraObjectStreamer.stream(contentType, response, userId, ids, {
+        cassandraObjectStreamer.stream(contentType, response, userId, ids, Aggregation.csvHeaders, {
             aggregationsRepository.findByTimestampBetween(quarters, it, months, from, to)
         })
 
@@ -142,7 +144,7 @@ class AggregationsController(private val aggregationsRepository: AggregationsRep
 
         val to = to ?: DateTime.now()
         val months = CassandraUtils.monthsBetween(YearMonth(from), YearMonth(to))
-        cassandraObjectStreamer.stream(contentType, response, userId, ids, {
+        cassandraObjectStreamer.stream(contentType, response, userId, ids, Aggregation.csvHeaders, {
             aggregationsRepository.findByTimestampBetween(hours, it, months, from, to)
         })
 
