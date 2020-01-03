@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output.security
+package ch.derlin.bbdata.output.api.values
 
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.beans.factory.annotation.Autowired
@@ -17,18 +17,18 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
-// ------ userId resolution in controllers: @UserId userId: Int
+// ------ contentType resolution in controllers: @CType contentType: String
 
 @kotlin.annotation.Retention(AnnotationRetention.RUNTIME)
 @kotlin.annotation.Target(AnnotationTarget.VALUE_PARAMETER)
 @Parameter(hidden = true) // hide it in OpenAPI doc
-annotation class UserId
+annotation class CType
 
 @Component
-class UserIdHandlerMethodArgumentResolver : HandlerMethodArgumentResolver {
+class ContentTypeHandlerMethodArgumentResolver : HandlerMethodArgumentResolver {
     override fun supportsParameter(methodParameter: MethodParameter): Boolean {
-        return methodParameter.getParameterType().equals(Int::class.java) &&
-                methodParameter.hasParameterAnnotation(UserId::class.java)
+        return methodParameter.getParameterType().equals(String::class.java) &&
+                methodParameter.hasParameterAnnotation(CType::class.java)
     }
 
     @Throws(Exception::class)
@@ -36,19 +36,18 @@ class UserIdHandlerMethodArgumentResolver : HandlerMethodArgumentResolver {
                                  @Nullable modelAndViewContainer: ModelAndViewContainer?,
                                  nativeWebRequest: NativeWebRequest,
                                  @Nullable webDataBinderFactory: WebDataBinderFactory?): Any? {
-        return nativeWebRequest.getAttribute(SecurityConstants.HEADER_USER, 0)?.let {
-            (it as String).toIntOrNull()
-        }
+        return nativeWebRequest.getHeader("accept") // accept first (springdoc)
+                ?: nativeWebRequest.getHeader("Content-Type") ?: "application/json"
     }
 }
 
 
 @Configuration
-class UserIdWebConfig : WebMvcConfigurer {
+class CTypeWebConfig: WebMvcConfigurer {
     @Autowired
-    private lateinit var useridResolver: UserIdHandlerMethodArgumentResolver
+    private lateinit var contentTypeHandlerMethodArgumentResolver: ContentTypeHandlerMethodArgumentResolver
 
     override fun addArgumentResolvers(argumentResolvers: MutableList<HandlerMethodArgumentResolver>) {
-        argumentResolvers.add(useridResolver)
+        argumentResolvers.add(contentTypeHandlerMethodArgumentResolver)
     }
 }

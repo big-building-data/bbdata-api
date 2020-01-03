@@ -7,6 +7,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonUnwrapped
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
 import org.joda.time.YearMonth
@@ -17,7 +21,6 @@ import org.springframework.data.cassandra.repository.CassandraRepository
 import org.springframework.data.cassandra.repository.Query
 import org.springframework.stereotype.Repository
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.io.Serializable
@@ -89,11 +92,11 @@ data class Aggregation(
             min, max, sum, getMean(), getStd(), count, comment)
 
     companion object {
-        val csvHeaders: List<String> = listOf(
-                "object_id", "timestamp",
-                "last", "last_timestamp",
-                "min", "max", "sum", "mean", "std", "count", "comment"
-        )
+        const val csvHeadersString = "object_id,timestamp," +
+                "last,last_timestamp," +
+                "min,max,sum,mean,std,count,comment"
+
+        val csvHeaders: List<String> = csvHeadersString.split(",")
     }
 
 }
@@ -115,10 +118,14 @@ class AggregationsController(private val aggregationsRepository: AggregationsRep
     val hours = 60
 
     @Protected
-    @GetMapping("/values/quarters", produces = arrayOf("application/json", "text/plain"))
+    @GetMapping("/values/quarters", produces = ["application/json", "text/plain"])
+    @ApiResponse(content = [
+        Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = Aggregation::class))),
+        Content(mediaType = "text/plain", schema = Schema(example = Aggregation.csvHeadersString))
+    ])
     fun getQuarterAggregationsStream(
             @UserId userId: Int,
-            @RequestHeader(value = "Content-Type") contentType: String,
+            @CType contentType: String,
             @RequestParam(name = "ids", required = true) ids: List<Long>,
             @RequestParam(name = "from", required = true) from: DateTime,
             @RequestParam(name = "to", required = false) to: DateTime?,
@@ -134,9 +141,13 @@ class AggregationsController(private val aggregationsRepository: AggregationsRep
 
     @Protected
     @GetMapping("/values/hours", produces = arrayOf("application/json", "text/plain"))
+    @ApiResponse(content = [
+        Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = Aggregation::class))),
+        Content(mediaType = "text/plain", schema = Schema(example = Aggregation.csvHeadersString))
+    ])
     fun getHoursAggregationsStream(
             @UserId userId: Int,
-            @RequestHeader(value = "Content-Type") contentType: String,
+            @CType contentType: String,
             @RequestParam(name = "ids", required = true) ids: List<Long>,
             @RequestParam(name = "from", required = true) from: DateTime,
             @RequestParam(name = "to", required = false) to: DateTime?,

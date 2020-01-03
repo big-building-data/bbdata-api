@@ -5,6 +5,7 @@ import ch.derlin.bbdata.output.Profiles
 import ch.derlin.bbdata.output.api.apikeys.ApikeyRepository
 import ch.derlin.bbdata.output.exceptions.BadApikeyException
 import ch.derlin.bbdata.output.exceptions.ForbiddenException
+import ch.derlin.bbdata.output.exceptions.UnauthorizedException
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_TOKEN
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_USER
 import ch.derlin.bbdata.output.security.SecurityConstants.SCOPE_WRITE
@@ -62,7 +63,7 @@ class AuthInterceptor : HandlerInterceptor {
         // allow options method to support CORS requests
         if (request.method.equals("options", ignoreCase = true)) {
             response.status = HttpStatus.OK.value()
-            return false
+            return true
         }
 
         // allow non-bbdata endpoints, such as doc
@@ -85,10 +86,8 @@ class AuthInterceptor : HandlerInterceptor {
 
         // missing one of the two headers...
         if (bbuser == "" || bbtoken == "") {
-            response.getWriter().write("This resource is protected. "
+            throw UnauthorizedException("This resource is protected. "
                     + "Missing authorization headers: %s=<user_id:int>, %s=<token:string>");
-            response.status = HttpStatus.UNAUTHORIZED.value()
-            return false
         }
 
         bbuser.toIntOrNull()?.let { userId ->

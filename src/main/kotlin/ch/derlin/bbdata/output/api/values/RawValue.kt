@@ -6,6 +6,10 @@ import ch.derlin.bbdata.output.security.UserId
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonUnwrapped
+import io.swagger.v3.oas.annotations.media.ArraySchema
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
 import org.joda.time.YearMonth
@@ -15,7 +19,6 @@ import org.springframework.data.cassandra.repository.CassandraRepository
 import org.springframework.data.cassandra.repository.Query
 import org.springframework.stereotype.Repository
 import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.io.Serializable
@@ -59,7 +62,8 @@ data class RawValue(
             listOf(key.objectId, key.timestamp?.let { JodaUtils.format(it) }, value, comment)
 
     companion object {
-        val csvHeaders: List<String> = listOf("object_id", "timestamp", "value", "comment")
+        const val csvHeadersString = "object_id,timestamp,value,comment"
+        val csvHeaders: List<String> = csvHeadersString.split(",")
     }
 
 }
@@ -83,10 +87,14 @@ class RawValuesController(private val rawValueRepository: RawValueRepository,
 
 
     @Protected
-    @GetMapping("/values", produces = arrayOf("application/json", "text/plain"))
+    @GetMapping("/values", produces = ["application/json", "text/plain"])
+    @ApiResponse(content = [
+        Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = RawValue::class))),
+        Content(mediaType = "text/plain", schema = Schema(example = RawValue.csvHeadersString))
+    ])
     fun getValuesStream(
             @UserId userId: Int,
-            @RequestHeader(value = "Content-Type") contentType: String,
+            @CType contentType: String,
             @RequestParam(name = "ids", required = true) ids: List<Long>,
             @RequestParam(name = "from", required = true) from: DateTime,
             @RequestParam(name = "to", required = false) optionalTo: DateTime?,
@@ -101,10 +109,13 @@ class RawValuesController(private val rawValueRepository: RawValueRepository,
     }
 
     @Protected
-    @GetMapping("/values/latest", produces = arrayOf("application/json", "text/plain"))
+    @GetMapping("/values/latest", produces = ["application/json", "text/plain"])
+    @ApiResponse(content = [
+        Content(mediaType = "application/json", schema = Schema(implementation = RawValue::class)),
+        Content(mediaType = "text/plain", schema = Schema(example = RawValue.csvHeadersString))])
     fun getLatestValue(
             @UserId userId: Int,
-            @RequestHeader(value = "Content-Type") contentType: String,
+            @CType contentType: String,
             @RequestParam(name = "ids", required = true) ids: List<Long>,
             @RequestParam(name = "before", required = false) optionalBefore: DateTime?,
             response: HttpServletResponse) {

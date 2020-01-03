@@ -60,6 +60,12 @@ class GlobalControllerExceptionHandler : ResponseEntityExceptionHandler() {
                     "using the provided authentication (no right, read-only apikey accessing writable resources)")
     fun handleItemNotFound(ex: ItemNotFoundException): ExceptionBody = ex.body()
 
+    @ExceptionHandler(UnauthorizedException::class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ApiResponse(responseCode = "401",
+            description = "This resource is protected.")
+    fun handleUnauthorized(ex: AppException): ExceptionBody = ex.body()
+
     @ExceptionHandler(ForbiddenException::class, BadApikeyException::class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ApiResponse(responseCode = "403",

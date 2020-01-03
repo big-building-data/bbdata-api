@@ -12,11 +12,14 @@ open class AppException(val details: Any) : Throwable() {
 class ItemNotFoundException(itemName: String = "resource") :
         AppException("The ${itemName} was not found or can't be accessed with this apikey.")
 
-class ForbiddenException(msg: String = "This resource is protected.") :
+class UnauthorizedException(msg: String = "This resource is protected.") :
+        AppException(msg)
+
+class ForbiddenException(msg: String = "You don't have the right to access this resource.") :
         AppException(msg)
 
 class BadApikeyException(msg: String = "") :
         AppException(msg)
 
-class WrongParamsException(msg: String = ""):
+class WrongParamsException(msg: String = "") :
         AppException(msg)

@@ -29,8 +29,10 @@ class CassandraObjectStreamer(
                valuesGenerator: (Int) -> Iterable<StreamableCsv>,
                writable: Boolean = false) {
         if (contentType != null && contentType.contains("text")) {
+            response.contentType = "text/csv"
             streamCsv(response.outputStream, userId, ids, csvHeaders, valuesGenerator, writable)
         } else {
+            response.contentType = "application/json"
             streamJson(response.outputStream, userId, ids, valuesGenerator, writable)
         }
     }
