@@ -27,8 +27,8 @@ import javax.annotation.PostConstruct
                 version = "1.0.1",
                 description = """
 This document describes the different endpoints available through the bbdata output api endpoint, 
-a json REST api to let you manage, view, and consult objects and values.
-                """,
+a json REST api to let you manage, view, and consult objects and values. Find more information, including
+common errors codes and more, by visiting <a href="/#more-info">our landing page</a>.""",
                 contact = Contact(url = "http://icosys.ch", name = "Lucy Linder", email = "lucy.derlin@gmail.com")
         )
 )
