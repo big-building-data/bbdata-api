@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 @Component
 class TimeInfoContributor : InfoContributor {
     override fun contribute(builder: Info.Builder) {
-        // this will be shown in the /info actuator endpoint
+        // this will be shown in the /info actuator endpoint (springboot-actuator)
         builder.withDetail("server-time", DateTime())
     }
 }
