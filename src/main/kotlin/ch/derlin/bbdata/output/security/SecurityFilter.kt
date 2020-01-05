@@ -22,6 +22,7 @@ import java.nio.charset.Charset
 import java.util.*
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+import kotlin.reflect.full.findAnnotation
 
 // ========================
 
@@ -73,6 +74,7 @@ class AuthInterceptor : HandlerInterceptor {
 
         // get security annotation and scope
         val securityAnnotation = handler.method.getAnnotation(Protected::class.java)
+
         if (securityAnnotation == null) {
             // "free access" endpoints, do nothing
             return true
@@ -113,17 +115,22 @@ class AuthInterceptor : HandlerInterceptor {
         // Basic Authorization header has the format: "Basic <base64-encoded user:pass>"
         val auth = request.getHeader("Authorization")
         if (auth != null && auth.startsWith("Basic")) {
-            val decoded = String(
-                    Base64.getDecoder().decode(auth.replaceFirst("Basic ", "").toByteArray()),
-                    charset = UTF_8_CHARSET
-            ).split(":")
+            try {
+                val decoded = String(
+                        Base64.getDecoder().decode(auth.replaceFirst("Basic ", "").toByteArray()),
+                        charset = UTF_8_CHARSET
+                ).split(":")
 
-            if (decoded.size == 2) {
-                request.setAttribute(HEADER_USER, decoded[0])
-                request.setAttribute(HEADER_TOKEN, decoded[1])
-                return
+                if (decoded.size == 2) {
+                    request.setAttribute(HEADER_USER, decoded[0])
+                    request.setAttribute(HEADER_TOKEN, decoded[1])
+                    return
+                }
+            }catch (ex: Exception){
+                throw BadApikeyException("The Basic Authentication provided (Base64) is invalid.")
             }
         }
+
         // If not working, extract from the headers
         request.setAttribute(HEADER_USER, request.getHeader(HEADER_USER) ?: "")
         request.setAttribute(HEADER_TOKEN, request.getHeader(HEADER_TOKEN) ?: "")
