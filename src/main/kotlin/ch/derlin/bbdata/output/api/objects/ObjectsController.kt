@@ -34,7 +34,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     @Protected
     @PageableAsQueryParam
     @GetMapping("")
-    fun getAll(
+    fun getObjects(
             @UserId userId: Int,
             @RequestParam(name = "writable", required = false, defaultValue = "false") writable: Boolean,
             @RequestParam(name = "tags", required = false, defaultValue = "") unparsedTags: String,
@@ -50,7 +50,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
 
     @Protected
     @GetMapping("/{id}")
-    fun getById(
+    fun getObject(
             @UserId userId: Int,
             @PathVariable(value = "id") id: Long,
             @RequestParam(name = "writable", required = false, defaultValue = "false") writable: Boolean = false
@@ -98,7 +98,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
     @PostMapping("{id}/enable")
-    fun objectEnable(
+    fun enableObject(
             @UserId userId: Int,
             @PathVariable(value = "id") id: Long): ResponseEntity<String> =
             enableDisable(userId, id, disabled = false)
@@ -106,7 +106,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
     @PostMapping("{id}/disable")
-    fun objectDisable(
+    fun disableObject(
             @UserId userId: Int,
             @PathVariable(value = "id") id: Long): ResponseEntity<String> =
             enableDisable(userId, id, disabled = true)

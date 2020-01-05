@@ -39,7 +39,7 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
 
     @Protected
     @GetMapping("/{objectId}/comments")
-    fun getAllComments(
+    fun getComments(
             @UserId userId: Int,
             @PathVariable("objectId") objectId: Long): List<Comment> {
 
@@ -51,7 +51,7 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
 
     @Protected
     @GetMapping("/{objectId}/comments", params = arrayOf("forDate"))
-    fun getAllCommentsForDate(
+    fun getCommentsForDate(
             @UserId userId: Int,
             @PathVariable("objectId") objectId: Long,
             @RequestParam("forDate") forDate: DateTime): List<Comment> {
@@ -80,8 +80,8 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
 
         return commentRepository.saveAndFlush(Comment(
                 objectId = obj.id!!,
-                from = newComment.from!!,
-                to = newComment.to!!,
+                from = newComment.from,
+                to = newComment.to,
                 comment = newComment.comment!!
         ))
     }

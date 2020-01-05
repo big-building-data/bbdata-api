@@ -26,7 +26,7 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @GetMapping("{objectId}/tokens")
-    fun getTokens(
+    fun getObjectTokens(
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long): List<Token> {
         val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
@@ -37,7 +37,7 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @GetMapping("{objectId}/tokens/{id}")
-    fun getToken(
+    fun getObjectToken(
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long,
             @PathVariable(value = "id") id: Int): Token {
@@ -49,7 +49,7 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("{objectId}/tokens")
-    fun addToken(
+    fun addObjectToken(
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long,
             @Valid @RequestBody descriptionBody: Beans.Description?): Token {
@@ -64,7 +64,7 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PostMapping("{objectId}/tokens/{id}")
-    fun editToken(
+    fun editObjectToken(
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long,
             @PathVariable(value = "id") id: Int,
@@ -84,7 +84,7 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
     @DeleteMapping("{objectId}/tokens/{id}")
-    fun deleteToken(
+    fun deleteObjectToken(
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long,
             @PathVariable(value = "id") id: Int): ResponseEntity<String> {

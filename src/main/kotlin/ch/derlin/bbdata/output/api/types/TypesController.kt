@@ -39,7 +39,7 @@ class TypesController(private val unitRepository: UnitRepository,
     }
 
     @GetMapping("/types")
-    fun getBaseTypes(): List<BaseType> = baseTypeRepository.findAll()
+    fun getTypes(): List<BaseType> = baseTypeRepository.findAll()
 
     @GetMapping("/units")
     fun getUnits(): List<Unit> = unitRepository.findAll()

@@ -59,7 +59,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
             content = arrayOf(Content(
                     array = ArraySchema(schema = Schema(implementation = ObjectGroup::class))
             )))
-    fun getAll(@UserId userId: Int,
+    fun getObjectGroups(@UserId userId: Int,
                @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
                @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean)
             : List<ObjectGroup> {
@@ -74,7 +74,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("")
-    fun createOne(@UserId userId: Int,
+    fun createObjectGroup(@UserId userId: Int,
                   @Valid @NotNull @RequestBody newOgrp: NewObjectGroup): ObjectGroup {
 
         val owner = userGroupRepository.findMine(userId, newOgrp.owner!!).orElseThrow {
@@ -92,7 +92,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PostMapping("/{id}")
-    fun editOne(@UserId userId: Int,
+    fun editObjectGroup(@UserId userId: Int,
                 @PathVariable("id") id: Long,
                 @Valid @NotNull @RequestBody editableFields: EditableFields): ObjectGroup {
 
@@ -110,7 +110,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
             responseCode = "200",
             description = "default response. Note: if *withObject* is false, the `objects` array will be missing.",
             content = arrayOf(Content(schema = Schema(implementation = ObjectGroup::class))))
-    fun getOneById(@UserId userId: Int,
+    fun getObjectGroup(@UserId userId: Int,
                    @PathVariable(value = "id") id: Long,
                    @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
                    @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): ObjectGroup {
@@ -125,7 +125,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     @Protected(SecurityConstants.SCOPE_WRITE)
     @DeleteMapping("/{id}")
     @SimpleModificationStatusResponse
-    fun deleteOneById(@UserId userId: Int, @PathVariable(value = "id") id: Long): ResponseEntity<String> {
+    fun deleteObjectGroup(@UserId userId: Int, @PathVariable(value = "id") id: Long): ResponseEntity<String> {
         if (!objectGroupsRepository.findOne(userId, id).isPresent) {
             return CommonResponses.notModifed()
         }

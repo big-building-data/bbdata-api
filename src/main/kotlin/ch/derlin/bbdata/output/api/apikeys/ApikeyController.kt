@@ -59,7 +59,7 @@ class ApikeyController(
 
     @GetMapping("/apikeys")
     @Protected(SecurityConstants.SCOPE_WRITE)
-    fun getAll(@UserId userId: Int): List<Apikey> = apikeyRepository.findByUserId(userId)
+    fun getApikeys(@UserId userId: Int): List<Apikey> = apikeyRepository.findByUserId(userId)
 
     @PutMapping("/apikeys")
     @Protected(SecurityConstants.SCOPE_WRITE)

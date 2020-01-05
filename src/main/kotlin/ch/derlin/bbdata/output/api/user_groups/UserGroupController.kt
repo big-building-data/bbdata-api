@@ -26,27 +26,27 @@ class UserGroupController(
 
     @Protected
     @GetMapping("/userGroups")
-    fun getAll(@UserId userId: Int): List<UserGroup> =
+    fun getUserGroups(@UserId userId: Int): List<UserGroup> =
             userGroupRepository.findAll()
 
     @Protected
     @GetMapping("/mine/groups") // TODO
-    fun getMines(@UserId userId: Int,
+    fun getMyUserGroups(@UserId userId: Int,
                  @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): List<UserGroup> =
             userGroupRepository.findMines(userId, admin)
 
     @Protected
     @GetMapping("/userGroups/{id}")
-    fun getOne(@UserId userId: Int,
+    fun getUserGroup(@UserId userId: Int,
                @PathVariable(value = "id") id: Int): UserGroup =
             // TODO: admins only ? return list of users ?
             userGroupRepository.findById(id).orElseThrow { ItemNotFoundException("usergroup (${id})") }
 
     @Protected
     @GetMapping("/userGroups/{id}/users")
-    fun getUsers(@UserId userId: Int,
+    fun getUsersInGroup(@UserId userId: Int,
                  @PathVariable(value = "id") id: Int): List<UsergroupMapping> =
-            getOne(userId, id).userMappings // TODO: return users instead ? only for admins ?
+            getUserGroup(userId, id).userMappings // TODO: return users instead ? only for admins ?
 
 }
 

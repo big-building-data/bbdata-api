@@ -24,7 +24,7 @@ class UserGroupMappingController(
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
     @PutMapping("/userGroups/{id}/users")
-    fun addOrUpdateUserMapping(@UserId userId: Int,
+    fun addUserToGroup(@UserId userId: Int,
                                @PathVariable(value = "id") id: Int,
                                @RequestParam(name = "userId", required = true) newUserId: Int,
                                @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean
@@ -53,7 +53,7 @@ class UserGroupMappingController(
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
     @DeleteMapping("/userGroups/{id}/users")
-    fun deleteUserMapping(@UserId userId: Int,
+    fun removeUserFromGroup(@UserId userId: Int,
                           @PathVariable(value = "id") id: Int,
                           @RequestParam(name = "userId", required = true) userIdToDelete: Int
     ): ResponseEntity<String> {
@@ -69,7 +69,7 @@ class UserGroupMappingController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("/userGroups/{id}/users/new")
-    fun createUser(@UserId userId: Int,
+    fun createUserInGroup(@UserId userId: Int,
                    @Valid @RequestBody newUser: UserController.NewUser,
                    @PathVariable(value = "id") id: Int,
                    @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): User {

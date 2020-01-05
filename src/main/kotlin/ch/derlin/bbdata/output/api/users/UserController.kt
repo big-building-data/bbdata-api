@@ -47,5 +47,5 @@ class UserController(val userRepository: UserRepository) {
 
     @Protected
     @GetMapping("/users")
-    fun getAll(): List<User> = userRepository.findAll() // TODO: try to comment this endpoint... HATEOAS ! /search
+    fun getUsers(): List<User> = userRepository.findAll() // TODO: try to comment this endpoint... HATEOAS ! /search
 }
