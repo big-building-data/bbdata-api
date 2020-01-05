@@ -40,6 +40,7 @@ class OutputApiApplication {
         // Setting Spring Boot SetTimeZone
         JodaUtils.setDefaultTimeZoneUTC()
         JodaUtils.defaultPattern(JodaUtils.Format.ISO_SECONDS)
+        JodaUtils.acceptableDateRange(from = "2016-01-01")
     }
 }
 
