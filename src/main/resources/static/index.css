@@ -1,0 +1,114 @@
+/* == UTILS == */
+
+.tt {
+    font-family: monospace;
+}
+
+code { /* ensure it wraps on mobile */
+    white-space: pre-wrap !important;
+}
+
+/* == TITLES == */
+
+h2, h3, h4, h5, h6 {
+    text-transform: uppercase;
+    letter-spacing: 0.2rem;
+}
+
+h2 {
+    font-size: 1.8rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+h4 {
+    font-size: 1.2rem;
+}
+
+h5 {
+    font-size: 1rem;
+}
+
+h3::before {
+    content: "⇨";
+    display: inline-block;
+    padding-right: 5px;
+}
+
+h3::after {
+    content: "⇦";
+    display: inline-block;
+    padding-left: 5px;
+}
+
+/* == HEADER == */
+
+.header {
+    text-align: center;
+}
+
+.header .title sub {
+    color: #33C3F0;
+}
+
+.value-prop {
+    margin-top: 1rem;
+}
+
+.value-props {
+    margin-top: 4rem;
+    margin-bottom: 4rem;
+}
+
+.value-img {
+    display: block;
+    text-align: center;
+    margin: 2.5rem auto 0;
+    max-width: 100px;
+}
+
+/* == MORE INFO == */
+
+.more-info-section {
+    margin-top: 3em;
+}
+
+/* Larger than phone */
+@media (min-width: 550px) {
+    /* header: top margin + padding to header images */
+    .header {
+        margin-top: 18rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    .value-props {
+        margin-top: 9rem;
+        margin-bottom: 7rem;
+    }
+
+    .value-img {
+        margin-bottom: 1rem;
+    }
+
+    /* make anchors in title stylish */
+    h2 > a, h3 > a {
+        color: #aaa;
+        text-decoration: none;
+    }
+
+    h2:hover > a, h3:hover > a {
+        color: black;
+    }
+
+    h2:hover > a, h3 > a:hover {
+        background: #1EAEDB33;
+    }
+
+    /* add padding to sections */
+    .doc-section {
+        padding: 3rem 0;
+    }
+
+}

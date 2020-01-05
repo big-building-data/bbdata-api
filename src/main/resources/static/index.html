@@ -8,98 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- FONT -->
     <link href="https://fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
-
     <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
-
-    <style type="text/css" rel="stylesheet">
-        .tt {
-            font-family: monospace;
-        }
-
-        .header .title sub {
-            color: #33C3F0;
-        }
-
-        code {
-            white-space: pre-wrap !important;
-        }
-
-        h2, h3, h4, h5, h6 {
-            text-transform: uppercase;
-            letter-spacing: 0.2rem;
-        }
-
-        .header {
-            text-align: center;
-        }
-
-        .more-info-section {
-            margin-top: 3em;
-        }
-
-        .value-prop {
-            margin-top: 1rem;
-        }
-
-        .value-props {
-            margin-top: 4rem;
-            margin-bottom: 4rem;
-        }
-
-        .value-img {
-            display: block;
-            text-align: center;
-            margin: 2.5rem auto 0;
-            max-width: 100px;
-        }
-
-        /* Larger than phone */
-        @media (min-width: 550px) {
-            .header {
-                margin-top: 18rem;
-                border-bottom: 1px solid #eee;
-            }
-
-            h5 > a, h6 > a {
-                color: #aaa;
-                text-decoration: none;
-            }
-
-            h4:hover > a, h5:hover > a, h6:hover > a {
-                color: black;
-            }
-
-            h4:hover > a, h5 > a:hover, h6 > a:hover {
-                background: #1EAEDB33;
-            }
-
-            .doc-section {
-                padding: 3rem 0;
-            }
-
-            .value-props {
-                margin-top: 9rem;
-                margin-bottom: 7rem;
-            }
-
-            .value-img {
-                margin-bottom: 1rem;
-            }
-        }
-
-        h6::before {
-            content: "⇨";
-            display: inline-block;
-            padding-right: 5px;
-        }
-
-        h6::after {
-            content: "⇦";
-            display: inline-block;
-            padding-left: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
 
@@ -107,8 +18,10 @@
 –––––––––––––––––––––––––––––––––––––––––––––––––– -->
 <div class="container">
 
+    <!-- Header
+    –––––––––––––––––––––––––––––––––––––––––––––––––– -->
     <section class="header">
-        <h2 class="title">B<sub>ig</sub> B<sub>uilding</sub> Data</h2>
+        <h1 class="title">B<sub>ig</sub> B<sub>uilding</sub> Data</h1>
         <a class="button button-primary" href="/doc">Documentation</a>
         <div class="value-props row">
             <div class="four columns value-prop">
@@ -126,19 +39,54 @@
         </div>
     </section>
 
+    <!-- Documentation links
+    –––––––––––––––––––––––––––––––––––––––––––––––––– -->
     <div class="doc-section" id="doc">
-        <h5>Full documentation <a href="#doc">¶</a></h5>
+        <h2>Full documentation <a href="#doc">¶</a></h2>
         <p>Available are the <a href="/doc">Swagger UI</a> and
             the <a href="/docspec" target="_blank">OpenAPI 3.0 JSON file</a>.
             The latter can be imported in many tools such as
             <a href="https://www.getpostman.com/" target="_blank">PostMan</a>.</p>
     </div>
 
+    <!-- More info
+    –––––––––––––––––––––––––––––––––––––––––––––––––– -->
     <div class="doc-section" id="more-info">
-        <h5>Additional information <a href="#more-info">¶</a></h5>
-        <div class="more-info-section" id="more-info-dates">
+        <h2>Additional information <a href="#more-info">¶</a></h2>
 
-            <h6>Date format <a href="#more-info-dates">¶</a></h6>
+        <!-- Authentication
+        –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+        <div class="more-info-section" id="more-info-auth">
+            <h3>Authentication <a href="#more-info-auth">¶</a></h3>
+            <h4>Getting an apikey</h4>
+            <p>
+                To access most of the endpoints, you need an APIKEY. Apikeys can be read-only or read-and-write.
+                To create an apikey, you need first to login using your username/password. This will
+                create a read-and-write apikey limited in time. Using the former, you can access the Apikeys endpoint
+                to generate new apikeys.
+            </p>
+
+            <h4>Using an apikey</h4>
+            <p>
+                Once you have an apikey, you need to include it in queries using one of the following methods.
+            </p>
+            <p>
+                <em>Headers</em> include the two headers <code>bbuser: your-user-id</code> and
+                <code>bbtoken: your-apikey-secret</code>. Example:
+            </p>
+            <pre><code>curl -H "bbuser: 1" -H "bbtoken: 007237385b79dbb11917b472986d9a60" &lt;url&gt;</code></pre>
+            <p>
+                <em>Basic authentication</em> this uses the common <code>Authorization</code> header, where
+                <code>userid:secret</code> is transmitted as a base64 string. Example:
+            </p>
+            <pre><code>curl --user "1:007237385b79dbb11917b472986d9a60" &lt;url&gt;</code></pre>
+            <p>As a rule of thumb, any non-GET endpoint will require a read-and-write apikey.</p>
+        </div>
+
+        <!-- Date format
+        –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+        <div class="more-info-section" id="more-info-dates">
+            <h3>Date format <a href="#more-info-dates">¶</a></h3>
             The API manipulates many dates. For output, the format follows the
             <b><a href="https://www.w3.org/TR/NOTE-datetime" target="_blank">ISO format</a></b>,
             but <b>skips the timezone</b> information, which is ALWAYS interpreted as <b>UTC</b>:
@@ -176,12 +124,18 @@
                     <td>2020</td>
                     <td>2020-01-01T00:00</td>
                 </tr>
+                <tr style="color: darkred">
+                    <td>20</td>
+                    <td><strike>0020-01-01T00:00</strike> Invalid !</td>
+                </tr>
                 </tbody>
             </table>
         </div>
 
+        <!-- Common Responses
+        –––––––––––––––––––––––––––––––––––––––––––––––––– -->
         <div class="more-info-section" id="more-info-status-codes">
-            <h6>Common responses <a href="#more-info-status-codes">¶</a></h6>
+            <h3>Common responses <a href="#more-info-status-codes">¶</a></h3>
             The API uses consistent HTTP status codes throughout the various endpoints. Below are the most common:
 
             <table style="margin: 1em">
