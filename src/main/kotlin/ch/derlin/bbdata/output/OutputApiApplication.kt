@@ -8,8 +8,12 @@ import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.security.SecurityScheme
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
+import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.FilterType
+import org.springframework.web.servlet.config.annotation.CorsRegistry
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import javax.annotation.PostConstruct
 
 
@@ -39,6 +43,14 @@ class OutputApiApplication {
     }
 }
 
+// CORS configuration: allow everything from all origin
+@Configuration
+class CORSConfigurer : WebMvcConfigurer {
+    override fun addCorsMappings(registry: CorsRegistry) {
+        registry.addMapping("/*")
+                .allowedOrigins("*")
+    }
+}
 
 fun main(args: Array<String>) {
     runApplication<OutputApiApplication>(*args)
