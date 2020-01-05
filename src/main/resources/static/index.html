@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>BBData</title>
+    <meta name="description" content="BBData landing page">
+    <meta name="author" content="Lucy Linder">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- FONT -->
+    <link href="https://fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css">
+
+    <style type="text/css" rel="stylesheet">
+        .tt {
+            font-family: monospace;
+        }
+
+        code {
+            white-space: pre-wrap !important;
+        }
+
+        h2, h3, h4, h5, h6 {
+            text-transform: uppercase;
+            letter-spacing: 0.2rem;
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .more-info-section {
+            margin-top: 3em;
+        }
+
+        .value-prop {
+            margin-top: 1rem;
+        }
+
+        .value-props {
+            margin-top: 4rem;
+            margin-bottom: 4rem;
+        }
+
+        .value-img {
+            display: block;
+            text-align: center;
+            margin: 2.5rem auto 0;
+            max-width: 100px;
+        }
+
+        /* Larger than phone */
+        @media (min-width: 550px) {
+            .header {
+                margin-top: 18rem;
+                border-bottom: 1px solid #eee;
+            }
+
+            h5 > a, h6 > a {
+                color: #aaa;
+                text-decoration: none;
+            }
+
+            h4:hover > a, h5:hover > a, h6:hover > a {
+                color: black;
+            }
+
+            h4:hover > a, h5 > a:hover, h6 > a:hover {
+                background: #1EAEDB33;
+            }
+
+            .doc-section {
+                padding: 3rem 0;
+            }
+
+            .value-props {
+                margin-top: 9rem;
+                margin-bottom: 7rem;
+            }
+
+            .value-img {
+                margin-bottom: 1rem;
+            }
+        }
+
+        h6::before {
+            content: "⇨";
+            display: inline-block;
+            padding-right: 5px;
+        }
+
+        h6::after {
+            content: "⇦";
+            display: inline-block;
+            padding-left: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Primary Page Layout
+–––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<div class="container">
+
+    <section class="header">
+        <h2 class="title">B<sub>ig</sub> B<sub>uilding</sub> Data</h2>
+        <a class="button button-primary" href="/doc">Documentation</a>
+        <div class="value-props row">
+            <div class="four columns value-prop">
+                <img class="value-img" src="images/connectivity.svg">
+                A house for all your sensor &amp; data.
+            </div>
+            <div class="four columns value-prop">
+                <img class="value-img" src="images/storage.svg">
+                Redundant, fast &amp; secured data storage.
+            </div>
+            <div class="four columns value-prop">
+                <img class="value-img" src="images/api.svg">
+                A single REST API covering all your needs.
+            </div>
+        </div>
+    </section>
+
+    <div class="doc-section" id="doc">
+        <h5>Full documentation <a href="#doc">¶</a></h5>
+        <p>Available are the <a href="/doc">Swagger UI</a> and
+            the <a href="/docspec" target="_blank">OpenAPI 3.0 JSON file</a>.
+            The latter can be imported in many tools such as
+            <a href="https://www.getpostman.com/" target="_blank">PostMan</a>.</p>
+    </div>
+
+    <div class="doc-section" id="more-info">
+        <h5>Additional information <a href="#more-info">¶</a></h5>
+        <div class="more-info-section" id="more-info-dates">
+
+            <h6>Date format <a href="#more-info-dates">¶</a></h6>
+            The API manipulates many dates. For output, the format follows the
+            <b><a href="https://www.w3.org/TR/NOTE-datetime" target="_blank">ISO format</a></b>,
+            but <b>skips the timezone</b> information, which is ALWAYS interpreted as <b>UTC</b>:
+            <pre><code>YYYY-MM-ddTHH:mm:ss</code></pre>
+
+            This is the same for input, but in this case the date can be truncated from the right (again following the
+            standard).
+            Here are some examples:
+
+            <table style="margin: 1em">
+                <thead>
+                <tr>
+                    <th>Input</th>
+                    <th>Interpretation</th>
+                </tr>
+                </thead>
+                <tbody class="tt">
+                <tr>
+                    <td>2020-03-21T08:14</td>
+                    <td>2020-03-21T08:14</td>
+                </tr>
+                <tr>
+                    <td>2020-03-21T08</td>
+                    <td>2020-03-21T08:00</td>
+                </tr>
+                <tr>
+                    <td>2020-03-21</td>
+                    <td>2020-03-21T00:00</td>
+                </tr>
+                <tr>
+                    <td>2020-03</td>
+                    <td>2020-03-01T00:00</td>
+                </tr>
+                <tr>
+                    <td>2020</td>
+                    <td>2020-01-01T00:00</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="more-info-section" id="more-info-status-codes">
+            <h6>Common responses <a href="#more-info-status-codes">¶</a></h6>
+            The API uses consistent HTTP status codes throughout the various endpoints. Below are the most common:
+
+            <table style="margin: 1em">
+                <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Meaning</th>
+                    <th>Description</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>200</td>
+                    <td>Success</td>
+                    <td>Everything worked as expected</td>
+                </tr>
+                <tr>
+                    <td>304</td>
+                    <td>Not Modified</td>
+                    <td>Not an error <em>per se</em>, but the call didn't modify any resource.
+                        This will happen for example if you ask to delete a non-existant resource.
+                    </td>
+                </tr>
+                <tr>
+                    <td>400</td>
+                    <td>Bad Request</td>
+                    <td>Some provided information (query parameters, body, etc.) is invalid: wrong format, missing
+                        property,
+                        etc.
+                    </td>
+                </tr>
+                <tr>
+                    <td>401</td>
+                    <td>Unauthorized</td>
+                    <td>The resource is protected and the requests lacks credential information.</td>
+                </tr>
+                <tr>
+                    <td>403</td>
+                    <td>Forbidden</td>
+                    <td>The resource is protected the provided credentials are invalid.
+                        This can be because of wrong credentials or because the apikey/user is not allowed to manage
+                        this
+                        resource.
+                    </td>
+                </tr>
+                <tr>
+                    <td>500</td>
+                    <td>Internal Server Error</td>
+                    <td>We made a mistake. Sincere apologies.</td>
+                </tr>
+                </tbody>
+            </table>
+
+            For any status code above 3XX, you can expect a body of the following structure:
+            <pre><code>{ "exception": "string", "details": object }</code></pre>
+
+            The <code>exception</code> field is a single camelcase identifier for the exception,
+            while <code>details</code> is populated differently depending on the status code.
+
+            For <b>400 - Bad Request</b>, a JSON object that lists all wrong parameters.
+            The structure is thus <code>"property": "detailed message"</code>. Example:
+            <pre><code>{
+  "exception" : "WrongParamsException",
+  "details" : {
+    "owner" : "must not be null",
+    "name" : "size must be between 3 and 45"
+  }
+}</code></pre>
+            For <b>status codes ≠ 400</b>, the details is a string with either a clear message or an abstract of the
+            exception's associated message. Examples:
+            <pre><code>{
+  "exception" : "HttpMediaTypeNotSupportedException",
+  "details" : "Content type 'application/x-www-form-urlencoded;charset=UTF-8' not supported"
+}</code></pre>
+            <pre><code>{
+  "exception" : "ItemNotFoundException",
+  "details" : "The object group (101) was not found or can't be accessed with this apikey."
+}</code></pre>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+</html>
