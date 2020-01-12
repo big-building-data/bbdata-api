@@ -48,9 +48,9 @@ INSERT INTO `objects` (`id`, `name`, `description`, `ugrp_id`, `unit_symbol`) VA
     (13370, 'aggr extended', 'test for agg extended', 1, 'V');
 
 
-INSERT INTO `objects_ogrps` (`ogrp_id`, `object_id`) VALUES 
-    (1, 1),
-    (1, 2),
+INSERT INTO `objects_ogrps` (`ogrp_id`, `object_id`) VALUES
+    -- (1, 1), automatically added by trigger
+    -- (1, 2),
     (2, 3),
     (2, 4);
 
