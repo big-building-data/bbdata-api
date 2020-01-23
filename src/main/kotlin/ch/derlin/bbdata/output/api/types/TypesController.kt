@@ -1,8 +1,13 @@
 package ch.derlin.bbdata.output.api.types
 
+import ch.derlin.bbdata.output.api.user_groups.UserGroupMappingRepository
+import ch.derlin.bbdata.output.api.user_groups.UserUgrpMappingId
+import ch.derlin.bbdata.output.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
+import ch.derlin.bbdata.output.security.SecurityConstants.ADMIN_GROUP
+import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -22,7 +27,8 @@ import javax.validation.constraints.Size
 @RestController
 @Tag(name = "Basics", description = "Manage generic types and units")
 class TypesController(private val unitRepository: UnitRepository,
-                      private val baseTypeRepository: BaseTypeRepository) {
+                      private val baseTypeRepository: BaseTypeRepository,
+                      private val userGroupMappingRepository: UserGroupMappingRepository) {
 
     class NewUnit { // do not use a data class !
         @NotEmpty
@@ -46,7 +52,10 @@ class TypesController(private val unitRepository: UnitRepository,
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PostMapping("/units")
-    fun addUnit(@Valid @NotNull @RequestBody newUnit: NewUnit): Unit {
+    fun addUnit(@UserId userId: Int, @Valid @NotNull @RequestBody newUnit: NewUnit): Unit {
+        if (!userGroupMappingRepository.existsById(UserUgrpMappingId(userId = userId, groupId = ADMIN_GROUP)))
+            throw ForbiddenException("Only users part of the 'admin' group can add new units.")
+
         val type = baseTypeRepository.findById(newUnit.type).orElseThrow {
             WrongParamsException("The type '${newUnit.type}' is not valid.")
         }

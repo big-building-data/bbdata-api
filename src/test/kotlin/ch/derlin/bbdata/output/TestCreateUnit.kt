@@ -23,6 +23,7 @@ import kotlin.random.Random
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class TestCreateUnit {
 
+    // TODO: also check with security on that only admins can create units !
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
 

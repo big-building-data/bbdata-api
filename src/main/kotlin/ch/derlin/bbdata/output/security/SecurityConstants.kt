@@ -9,4 +9,5 @@ object SecurityConstants {
     const val HEADER_TOKEN = "bbtoken"
     const val SCOPE_READ = "read"
     const val SCOPE_WRITE = "write"
+    const val ADMIN_GROUP = 1
 }
