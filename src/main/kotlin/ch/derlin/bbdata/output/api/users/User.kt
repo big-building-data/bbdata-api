@@ -42,6 +42,7 @@ data class User(
 
         @field:Length(min = 1, max = EMAIL_MAX)
         @Column(name = "email")
+        @JsonIgnore // TODO
         var email: String? = null,
 
         @Column(name = "creationdate", insertable = false, updatable = false)
