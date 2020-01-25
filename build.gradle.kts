@@ -58,6 +58,10 @@ dependencies {
     // metrics
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
+    // kafka
+    // see compatibility matrix at https://spring.io/projects/spring-kafka
+    implementation("org.springframework.kafka:spring-kafka")
+
     // for XML support
     // implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
 }

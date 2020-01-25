@@ -12,6 +12,7 @@ import ch.derlin.bbdata.output.exceptions.WrongParamsException
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.joda.time.DateTime
 import org.joda.time.YearMonth
+import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
@@ -32,7 +33,8 @@ class InputController(
         private val rawValueRepository: RawValueRepository,
         private val objectStatsRepository: ObjectStatsRepository,
         private val objectStatsCounterRepository: ObjectStatsCounterRepository,
-        private val mapper: ObjectMapper
+        private val mapper: ObjectMapper,
+        private val kafkaTemplate: KafkaTemplate<String, String>
 ) {
 
     private val MAX_LAG: Long = 2000 // in millis
@@ -94,7 +96,7 @@ class InputController(
     }
 
     @PostMapping("/measures")
-    fun postNewMeasure(@Valid @NotNull @RequestBody measure: NewValue) {
+    fun postNewMeasure(@Valid @NotNull @RequestBody measure: NewValue): String {
 
         // check that date is in the past
         // val now = DateTime()
@@ -129,6 +131,7 @@ class InputController(
 
         // publish to Kafka
         val json = mapper.writer().writeValueAsString(NewValueAugmented.create(measure, obj))
-        print(json) // TODO
+        val ack = kafkaTemplate.sendDefault(json).get()
+        return ack.producerRecord.value()
     }
 }
