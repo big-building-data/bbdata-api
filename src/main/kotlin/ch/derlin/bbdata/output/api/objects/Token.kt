@@ -4,6 +4,7 @@ import ch.derlin.bbdata.output.api.apikeys.TokenGenerator
 import org.hibernate.validator.constraints.Length
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
+import java.util.*
 import javax.persistence.*
 
 /**
@@ -12,7 +13,9 @@ import javax.persistence.*
  */
 
 @Repository
-interface TokenRepository : JpaRepository<Token, Int>
+interface TokenRepository : JpaRepository<Token, Int> {
+    fun getByObjectIdAndToken(objectId: Long, token: String): Optional<Token>
+}
 
 @Entity
 @Table(name = "tokens")

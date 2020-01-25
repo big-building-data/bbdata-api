@@ -33,3 +33,6 @@ out/
 
 ### Mac ###
 .DS_STORE
+
+### Other ###
+other/cassandra/data

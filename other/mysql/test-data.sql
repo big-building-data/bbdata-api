@@ -68,4 +68,7 @@ INSERT INTO `comments` (`object_id`, `dfrom`, `dto`, `comment`) VALUES
     (1, '2019-01-01T10:00', '2020-01-01T10:00', 'comment on one full year'),
     (1, '2019-12-31T20:00', '2020-01-01T02:00', 'happy new year !');
 
+INSERT INTO `tokens` (`id`, `token`, `object_id`, `description`) VALUES
+    (1, '012345678901234567890123456789ab', 1, 'test');
+
 COMMIT;
