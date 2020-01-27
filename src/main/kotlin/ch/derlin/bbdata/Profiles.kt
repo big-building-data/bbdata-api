@@ -6,8 +6,18 @@ package ch.derlin.bbdata
  */
 
 object Profiles {
+
+    // USED IN CODE
+    // Makes sense for the output api only: "unsecured" will disable the bbuser/bbtoken check and
+    // automatically set bbuser=1
     const val UNSECURED = "unsecured"
     const val NOT_UNSECURED = "!$UNSECURED"
 
-    const val NO_CASSANDRA = "noc"
+    // CONFIGURED THROUGH PROPERTIES FILES (but can be used in tests)
+    // Turn off the cassandra entrypoints (this means neither /values nor input endpoints)
+    const val NO_CASSANDRA = "noc" // constant used in tests
+    // Do not register components under bbdata.api.input
+    const val OUTPUT_ONLY = "output"
+    // Do not register components under bbdata.api.output
+    const val INPUT_ONLY = "input"
 }

@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.info.Contact
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.security.SecurityScheme
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
@@ -25,14 +26,15 @@ import javax.annotation.PostConstruct
                 title = "BBData",
                 version = "1.0.1",
                 description = """
-This document describes the different endpoints available through the bbdata output api endpoint, 
+This document describes the different endpoints available through the bbdata API, 
 a json REST api to let you manage, view, and consult objects and values. Find more information, including
 common errors codes and more, by visiting <a href="/#more-info">our landing page</a>.""",
                 contact = Contact(url = "http://icosys.ch", name = "Lucy Linder", email = "lucy.derlin@gmail.com")
         )
 )
 @SecurityScheme(name = "auth", type = SecuritySchemeType.HTTP, scheme = "basic")
-class OutputApiApplication {
+@EnableConfigurationProperties
+class BBDataApplication {
 
     @PostConstruct
     fun init() {
@@ -53,5 +55,5 @@ class CORSConfigurer : WebMvcConfigurer {
 }
 
 fun main(args: Array<String>) {
-    runApplication<OutputApiApplication>(*args)
+    runApplication<BBDataApplication>(*args)
 }

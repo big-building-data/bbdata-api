@@ -7,6 +7,7 @@ import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.objects.TokenRepository
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.PostMapping
@@ -21,6 +22,7 @@ import javax.validation.constraints.NotNull
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @RestController
+@Tag(name = "Input", description = "Submit new object values")
 class InputController(
         private val objectsRepository: ObjectRepository,
         private val tokensRepository: TokenRepository,
