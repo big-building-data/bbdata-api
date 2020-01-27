@@ -1,11 +1,11 @@
 package ch.derlin.bbdata.output.api.apikeys
 
-import ch.derlin.bbdata.output.Beans
+import ch.derlin.bbdata.common.Beans
 import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.users.UserRepository
-import ch.derlin.bbdata.output.dates.DurationParser
-import ch.derlin.bbdata.output.exceptions.ForbiddenException
+import ch.derlin.bbdata.common.dates.DurationParser
+import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId

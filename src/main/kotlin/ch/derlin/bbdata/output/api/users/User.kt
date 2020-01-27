@@ -4,17 +4,13 @@ import ch.derlin.bbdata.output.api.apikeys.Apikey
 import ch.derlin.bbdata.output.api.apikeys.PasswordDigest
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.api.user_groups.UsergroupMapping
-import ch.derlin.bbdata.output.exceptions.AppException
+import ch.derlin.bbdata.common.exceptions.AppException
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.Generated
 import org.hibernate.annotations.GenerationTime
 import org.hibernate.validator.constraints.Length
 import org.joda.time.DateTime
 import javax.persistence.*
-import javax.validation.constraints.NotEmpty
-import javax.validation.constraints.NotNull
-import javax.validation.constraints.Pattern
-import javax.validation.constraints.Size
 
 
 /**

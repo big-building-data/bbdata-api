@@ -1,6 +1,6 @@
 package ch.derlin.bbdata.output.api.values
 
-import ch.derlin.bbdata.output.dates.JodaUtils
+import ch.derlin.bbdata.common.dates.JodaUtils
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
 import com.fasterxml.jackson.annotation.JsonIgnore

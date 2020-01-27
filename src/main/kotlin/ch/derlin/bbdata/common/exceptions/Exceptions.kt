@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output.exceptions
+package ch.derlin.bbdata.common.exceptions
 
 /**
  * date: 15.12.19

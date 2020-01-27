@@ -1,5 +1,6 @@
 package ch.derlin.bbdata.output
 
+import ch.derlin.bbdata.*
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.AfterAll

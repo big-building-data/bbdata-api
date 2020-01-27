@@ -1,6 +1,6 @@
 package ch.derlin.bbdata.output.api.objects
 
-import ch.derlin.bbdata.output.Beans.DESCRIPTION_MAX
+import ch.derlin.bbdata.common.Beans.DESCRIPTION_MAX
 import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
 import ch.derlin.bbdata.output.api.types.Unit
 import ch.derlin.bbdata.output.api.user_groups.UserGroup

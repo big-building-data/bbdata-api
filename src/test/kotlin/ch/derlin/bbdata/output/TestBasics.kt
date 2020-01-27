@@ -1,5 +1,7 @@
 package ch.derlin.bbdata.output
 
+import ch.derlin.bbdata.Profiles
+import ch.derlin.bbdata.getQueryJson
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
@@ -11,7 +13,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import kotlin.random.Random
 
 /**
  * date: 28.12.19

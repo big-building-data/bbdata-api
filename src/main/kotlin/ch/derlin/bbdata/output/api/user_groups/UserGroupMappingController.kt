@@ -5,8 +5,8 @@ import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.users.User
 import ch.derlin.bbdata.output.api.users.UserController
 import ch.derlin.bbdata.output.api.users.UserRepository
-import ch.derlin.bbdata.output.exceptions.ForbiddenException
-import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
+import ch.derlin.bbdata.common.exceptions.ForbiddenException
+import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId

@@ -2,8 +2,8 @@ package ch.derlin.bbdata.output.api.types
 
 import ch.derlin.bbdata.output.api.user_groups.UserGroupMappingRepository
 import ch.derlin.bbdata.output.api.user_groups.UserUgrpMappingId
-import ch.derlin.bbdata.output.exceptions.ForbiddenException
-import ch.derlin.bbdata.output.exceptions.WrongParamsException
+import ch.derlin.bbdata.common.exceptions.ForbiddenException
+import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.SecurityConstants.ADMIN_GROUP

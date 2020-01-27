@@ -1,32 +1,27 @@
-package ch.derlin.bbdata.output.input
+package ch.derlin.bbdata.input
 
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.objects.TokenRepository
 import ch.derlin.bbdata.output.api.values.*
-import ch.derlin.bbdata.output.dates.JodaUtils.format
-import ch.derlin.bbdata.output.exceptions.AppException
-import ch.derlin.bbdata.output.exceptions.ForbiddenException
-import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
-import ch.derlin.bbdata.output.exceptions.WrongParamsException
+import ch.derlin.bbdata.common.exceptions.ForbiddenException
+import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.joda.time.DateTime
-import org.joda.time.YearMonth
+import org.springframework.context.annotation.Profile
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import javax.validation.Valid
-import javax.validation.constraints.Min
 import javax.validation.constraints.NotNull
-import javax.validation.constraints.Size
 
 
 /**
  * date: 24.01.20
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
-//@RestController
+@RestController
 class InputController(
         private val objectsRepository: ObjectRepository,
         private val tokensRepository: TokenRepository,

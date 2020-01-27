@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output
+package ch.derlin.bbdata
 
 import org.springframework.context.EnvironmentAware
 import org.springframework.core.env.Environment

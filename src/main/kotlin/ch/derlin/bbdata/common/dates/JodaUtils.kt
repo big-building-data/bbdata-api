@@ -1,6 +1,5 @@
-package ch.derlin.bbdata.output.dates
+package ch.derlin.bbdata.common.dates
 
-import ch.derlin.bbdata.output.exceptions.WrongParamsException
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
 import org.joda.time.format.DateTimeFormat

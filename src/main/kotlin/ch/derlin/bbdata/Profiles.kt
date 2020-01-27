@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output
+package ch.derlin.bbdata
 
 /**
  * date: 19.12.19

@@ -4,7 +4,7 @@ package ch.derlin.bbdata.output.api.object_groups
  * date: 20.11.19
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
-import ch.derlin.bbdata.output.Beans.DESCRIPTION_MAX
+import ch.derlin.bbdata.common.Beans.DESCRIPTION_MAX
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import com.fasterxml.jackson.annotation.JsonIgnore

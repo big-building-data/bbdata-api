@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output
+package ch.derlin.bbdata.common
 
 import javax.validation.constraints.Size
 

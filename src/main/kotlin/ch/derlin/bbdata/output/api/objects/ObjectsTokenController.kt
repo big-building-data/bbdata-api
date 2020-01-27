@@ -1,9 +1,9 @@
 package ch.derlin.bbdata.output.api.objects
 
-import ch.derlin.bbdata.output.Beans
+import ch.derlin.bbdata.common.Beans
 import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
-import ch.derlin.bbdata.output.exceptions.ItemNotFoundException
+import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId

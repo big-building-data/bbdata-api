@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output.input
+package ch.derlin.bbdata.input
 
 import ch.derlin.bbdata.output.api.values.RawValue
 import ch.derlin.bbdata.output.api.values.RawValuePK

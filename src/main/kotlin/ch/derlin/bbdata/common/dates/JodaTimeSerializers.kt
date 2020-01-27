@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output.dates
+package ch.derlin.bbdata.common.dates
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser

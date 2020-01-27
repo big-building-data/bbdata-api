@@ -1,5 +1,7 @@
 package ch.derlin.bbdata.output
 
+import ch.derlin.bbdata.Profiles
+import ch.derlin.bbdata.postQueryString
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test

@@ -1,8 +1,7 @@
-package ch.derlin.bbdata.output
+package ch.derlin.bbdata
 
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
-import org.assertj.core.data.MapEntry
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.client.exchange
 import org.springframework.http.*

@@ -1,9 +1,12 @@
 package ch.derlin.bbdata.output
 
+import ch.derlin.bbdata.Profiles
+import ch.derlin.bbdata.deleteQueryString
+import ch.derlin.bbdata.getQueryJson
+import ch.derlin.bbdata.putWithBody
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.ExtendWith
-import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate

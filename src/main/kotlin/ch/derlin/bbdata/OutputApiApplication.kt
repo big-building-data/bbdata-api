@@ -1,6 +1,6 @@
-package ch.derlin.bbdata.output
+package ch.derlin.bbdata
 
-import ch.derlin.bbdata.output.dates.JodaUtils
+import ch.derlin.bbdata.common.dates.JodaUtils
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.info.Contact
@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.security.SecurityScheme
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.FilterType

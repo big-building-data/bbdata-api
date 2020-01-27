@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output.input
+package ch.derlin.bbdata.input
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component

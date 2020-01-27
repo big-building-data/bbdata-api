@@ -1,14 +1,11 @@
-package ch.derlin.bbdata.output.exceptions
+package ch.derlin.bbdata.common.exceptions
 
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.Hidden
 import org.hibernate.exception.ConstraintViolationException
 import org.springframework.boot.web.servlet.error.DefaultErrorAttributes
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.stereotype.Component
@@ -40,8 +37,6 @@ open class ExceptionBody(open val exception: String, open val details: Any?) {
     }
 }
 
-class ExceptionStringBody(exception: String, override val details: String) : ExceptionBody(exception, details)
-
 // for errors thrown at the server-level (404)
 @Component
 class ErrorAttributes : DefaultErrorAttributes() {
@@ -60,42 +55,26 @@ class GlobalControllerExceptionHandler : ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(ItemNotFoundException::class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ApiResponse(responseCode = "404",
-            description = "The resource was not found, either because it does not exist or because it cannot be accessed " +
-                    "using the provided authentication (no right, read-only apikey accessing writable resources)",
-            content = [Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = Schema(implementation = ExceptionStringBody::class))])
+    @Hidden
     fun handleItemNotFound(ex: ItemNotFoundException): ExceptionBody = ex.body()
 
     @ExceptionHandler(UnauthorizedException::class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    @ApiResponse(responseCode = "401",
-            description = "This resource is protected.",
-            content = [Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = Schema(implementation = ExceptionStringBody::class))])
+    @Hidden
     fun handleUnauthorized(ex: UnauthorizedException): ExceptionBody = ex.body()
 
     @ExceptionHandler(ForbiddenException::class, BadApikeyException::class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    @ApiResponse(responseCode = "403",
-            description = "Login error: wrong user and/or apikey provided.",
-            content = [Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = Schema(implementation = ExceptionStringBody::class))])
+    @Hidden
     fun handleForbidden(ex: AppException): ExceptionBody = ex.body()
 
     @ExceptionHandler(WrongParamsException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ApiResponse(responseCode = "400",
-            description = "Some provided information is incorrect.",
-            content = [Content(
-                    mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = Schema(implementation = ExceptionBody::class))])
+    @Hidden
     fun handleWrongParam(ex: WrongParamsException): ExceptionBody = ex.body()
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @Hidden
     @ExceptionHandler(DataIntegrityViolationException::class)
     fun handleDataIntegrityException(ex: DataIntegrityViolationException): ExceptionBody = ex.body()
 

@@ -1,6 +1,7 @@
 package ch.derlin.bbdata.output
 
-import ch.derlin.bbdata.output.dates.JodaUtils
+import ch.derlin.bbdata.*
+import ch.derlin.bbdata.common.dates.JodaUtils
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.ExtendWith

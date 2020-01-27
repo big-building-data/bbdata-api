@@ -1,5 +1,6 @@
 package ch.derlin.bbdata.output
 
+import ch.derlin.bbdata.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
