@@ -9,8 +9,9 @@ open class AppException(val details: Any) : Throwable() {
     val name: String get() = this.javaClass.name.split('.').last()
 }
 
-class ItemNotFoundException(itemName: String = "resource") :
-        AppException("The ${itemName} was not found or can't be accessed with this apikey.")
+
+class ItemNotFoundException(itemName: String = "resource", msg: String? = null) :
+        AppException(msg ?: "The ${itemName} was not found or can't be accessed with this apikey.")
 
 class UnauthorizedException(msg: String = "This resource is protected.") :
         AppException(msg)

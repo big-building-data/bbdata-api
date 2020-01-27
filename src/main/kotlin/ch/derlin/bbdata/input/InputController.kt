@@ -1,17 +1,14 @@
 package ch.derlin.bbdata.input
 
 import ch.derlin.bbdata.common.cassandra.*
-import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
-import ch.derlin.bbdata.output.api.objects.ObjectRepository
-import ch.derlin.bbdata.output.api.objects.Objects
-import ch.derlin.bbdata.output.api.objects.TokenRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
@@ -24,8 +21,7 @@ import javax.validation.constraints.NotNull
 @RestController
 @Tag(name = "Input", description = "Submit new object values")
 class InputController(
-        private val objectsRepository: ObjectRepository,
-        private val tokensRepository: TokenRepository,
+        private val inputRepository: InputRepository,
         private val rawValueRepository: RawValueRepository,
         private val objectStatsRepository: ObjectStatsRepository,
         private val objectStatsCounterRepository: ObjectStatsCounterRepository,
@@ -47,22 +43,23 @@ class InputController(
     ) {
 
         companion object {
-            fun create(v: NewValue, o: Objects) = NewValueAugmented(
-                    objectId = o.id!!,
+            fun create(v: NewValue, m: InputRepository.MeasureMeta) = NewValueAugmented(
+                    objectId = v.objectId!!,
                     timestamp = v.timestamp!!,
                     value = v.value!!,
                     comment = v.comment,
-                    unitName = o.unit.name,
-                    unitSymbol = o.unit.id,
-                    type = o.unit.type!!.type,
-                    owner = o.owner.id!!
+                    unitName = m.unitName,
+                    unitSymbol = m.unitSymbol,
+                    type = m.type,
+                    owner = m.owner
             )
         }
 
     }
 
     @PostMapping("/measures")
-    fun postNewMeasure(@Valid @NotNull @RequestBody measure: NewValue): String {
+    fun postNewMeasure(@Valid @NotNull @RequestBody measure: NewValue,
+                       @RequestParam("simulate", defaultValue = "false") sim: Boolean): String {
 
         // check that date is in the past
         // val now = DateTime()
@@ -71,11 +68,15 @@ class InputController(
         // }
 
         // get metadata
-        val obj = objectsRepository.findById(measure.objectId!!).orElseThrow {
-            ItemNotFoundException("This object does not exist")
+        val meta = inputRepository.getMeasureMeta(measure.objectId!!, measure.token!!).orElseThrow {
+            ItemNotFoundException(msg = "The pair <objectId (${measure.objectId}), token> does not exist")
         }
-        tokensRepository.getByObjectIdAndToken(measure.objectId, measure.token!!).orElseThrow {
-            ForbiddenException("This token is invalid.")
+        // create augmented measure (to post to kafka)
+        val augmentedJson = mapper.writer().writeValueAsString(NewValueAugmented.create(measure, meta))
+
+        if (sim) {
+            // simulation mode: do not save anything !
+            return augmentedJson
         }
 
         // save
@@ -96,8 +97,7 @@ class InputController(
         objectStatsCounterRepository.updateCounter(measure.objectId.toInt())
 
         // publish to Kafka
-        val json = mapper.writer().writeValueAsString(NewValueAugmented.create(measure, obj))
-        val ack = kafkaTemplate.sendDefault(json).get()
+        val ack = kafkaTemplate.sendDefault(augmentedJson).get()
         return ack.producerRecord.value()
     }
 }
