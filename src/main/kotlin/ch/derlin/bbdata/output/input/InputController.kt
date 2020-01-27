@@ -26,7 +26,7 @@ import javax.validation.constraints.Size
  * date: 24.01.20
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
-@RestController
+//@RestController
 class InputController(
         private val objectsRepository: ObjectRepository,
         private val tokensRepository: TokenRepository,
@@ -34,40 +34,10 @@ class InputController(
         private val objectStatsRepository: ObjectStatsRepository,
         private val objectStatsCounterRepository: ObjectStatsCounterRepository,
         private val mapper: ObjectMapper,
-        private val kafkaTemplate: KafkaTemplate<String, String>
+        private val kafkaTemplate: KafkaTemplate<String, String> // note: ignore jetbrains [false] warning
 ) {
 
     private val MAX_LAG: Long = 2000 // in millis
-
-
-    class NewValue {
-
-        @NotNull
-        @Min(value = 0, message = "objectId must be positive.")
-        val objectId: Long? = null
-
-        @NotNull
-        @Size(min = 32, max = 32, message = "wrong size: should be 32 chars long.")
-        val token: String? = null
-
-        @NotNull(message = "Invalid date. Format: YYYY-MM-ddTHH:mm[:ss], range: 2016-01-01T00:00 to 2050-01-01T00:00")
-        val timestamp: DateTime? = null
-
-        @NotNull
-        val value: String? = null
-
-        @Size(max = 1024, message = "too long. Maximum set to 1024.")
-        val comment: String? = null
-
-        fun toRawValue(): RawValue = RawValue(
-                key = RawValuePK(
-                        objectId = objectId!!.toInt(),
-                        month = YearMonth(timestamp).toString(),
-                        timestamp = timestamp),
-                value = value!!,
-                comment = comment
-        )
-    }
 
     data class NewValueAugmented(
             val objectId: Long,
