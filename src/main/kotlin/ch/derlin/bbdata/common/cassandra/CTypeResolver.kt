@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output.api.values
+package ch.derlin.bbdata.common.cassandra
 
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.beans.factory.annotation.Autowired

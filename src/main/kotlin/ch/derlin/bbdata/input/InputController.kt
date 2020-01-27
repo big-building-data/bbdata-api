@@ -1,14 +1,13 @@
 package ch.derlin.bbdata.input
 
+import ch.derlin.bbdata.common.cassandra.*
+import ch.derlin.bbdata.common.exceptions.ForbiddenException
+import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.objects.TokenRepository
-import ch.derlin.bbdata.output.api.values.*
-import ch.derlin.bbdata.common.exceptions.ForbiddenException
-import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.joda.time.DateTime
-import org.springframework.context.annotation.Profile
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody

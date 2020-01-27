@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output.api.values
+package ch.derlin.bbdata.common.cassandra
 
 import org.joda.time.YearMonth
 

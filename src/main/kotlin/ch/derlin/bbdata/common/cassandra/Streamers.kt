@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output.api.values
+package ch.derlin.bbdata.common.cassandra
 
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import com.fasterxml.jackson.databind.ObjectMapper

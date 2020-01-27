@@ -1,7 +1,7 @@
 package ch.derlin.bbdata.input
 
-import ch.derlin.bbdata.output.api.values.RawValue
-import ch.derlin.bbdata.output.api.values.RawValuePK
+import ch.derlin.bbdata.common.cassandra.RawValue
+import ch.derlin.bbdata.common.cassandra.RawValuePK
 import org.joda.time.DateTime
 import org.joda.time.YearMonth
 import javax.validation.constraints.Min
