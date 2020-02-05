@@ -94,7 +94,7 @@ class InputController(
 
         // save new stats
         objectStatsRepository.update(measure.objectId.toInt(), newSamplePeriod, measure.timestamp)
-        objectStatsCounterRepository.updateCounter(measure.objectId.toInt())
+        objectStatsCounterRepository.updateWriteCounter(measure.objectId.toInt())
 
         // publish to Kafka
         val ack = kafkaTemplate.sendDefault(augmentedJson).get()

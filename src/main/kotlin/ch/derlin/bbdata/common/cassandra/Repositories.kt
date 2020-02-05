@@ -41,5 +41,9 @@ interface ObjectStatsRepository : CassandraRepository<ObjectStats, Int> {
 interface ObjectStatsCounterRepository : CassandraRepository<ObjectStatsCounter, Int> {
 
     @Query("UPDATE objects_stats_counter SET n_values = n_values + 1 WHERE object_id = :objectId")
-    fun updateCounter(objectId: Int)
+    fun updateWriteCounter(objectId: Int)
+
+    @Query("UPDATE objects_stats_counter SET n_reads = n_reads + 1 WHERE object_id = :objectId")
+    fun updateReadCounter(objectId: Int)
+
 }

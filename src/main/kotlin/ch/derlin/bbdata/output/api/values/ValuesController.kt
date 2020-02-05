@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse
 @Tag(name = "Objects Values", description = "Get object values/measures")
 class ValuesController(private val rawValueRepository: RawValueRepository,
                        private val aggregationsRepository: AggregationsRepository,
+                       private val objectStatsCounterRepository: ObjectStatsCounterRepository,
                        private val cassandraObjectStreamer: CassandraObjectStreamer) {
 
 
@@ -50,6 +51,7 @@ class ValuesController(private val rawValueRepository: RawValueRepository,
         cassandraObjectStreamer.stream(contentType, response, userId, listOf(id), RawValue.csvHeaders, {
             rawValueRepository.findByTimestampBetween(it, months, from, to)
         })
+        objectStatsCounterRepository.updateReadCounter(id.toInt())
 
     }
 
@@ -75,6 +77,7 @@ class ValuesController(private val rawValueRepository: RawValueRepository,
                     .firstOrNull()
             if (res == null) listOf() else listOf(res)
         })
+        objectStatsCounterRepository.updateReadCounter(id.toInt())
     }
 
     @Protected
@@ -100,7 +103,7 @@ class ValuesController(private val rawValueRepository: RawValueRepository,
         cassandraObjectStreamer.stream(contentType, response, userId, listOf(id), Aggregation.csvHeaders, {
             aggregationsRepository.findByTimestampBetween(minutes, it, months, from, to)
         })
-
+        objectStatsCounterRepository.updateReadCounter(id.toInt())
     }
 
 }
