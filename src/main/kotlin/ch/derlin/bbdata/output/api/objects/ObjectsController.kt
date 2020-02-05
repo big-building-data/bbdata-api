@@ -100,7 +100,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     @PostMapping("{objectId}/enable")
     fun enableObject(
             @UserId userId: Int,
-            @PathVariable(value = "id") id: Long): ResponseEntity<String> =
+            @PathVariable(value = "objectId") id: Long): ResponseEntity<String> =
             enableDisable(userId, id, disabled = false)
 
     @Protected(SecurityConstants.SCOPE_WRITE)
@@ -108,7 +108,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     @PostMapping("{objectId}/disable")
     fun disableObject(
             @UserId userId: Int,
-            @PathVariable(value = "id") id: Long): ResponseEntity<String> =
+            @PathVariable(value = "objectId") id: Long): ResponseEntity<String> =
             enableDisable(userId, id, disabled = true)
 
     private fun enableDisable(userId: Int, id: Long, disabled: Boolean): ResponseEntity<String> {
