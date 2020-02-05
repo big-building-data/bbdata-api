@@ -1,6 +1,7 @@
 package ch.derlin.bbdata.output.api.types
 
 import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.validator.constraints.Length
 import javax.persistence.*
 
@@ -16,7 +17,7 @@ data class Unit(
         @Id
         @field:Length(min = 1, max = SYMBOL_MAX)
         @Column(name = "symbol")
-        private var symbol: String = "",
+        var symbol: String = "",
 
         @field:Length(min = 1, max = NAME_MAX)
         @Column(name = "name", unique = true)
@@ -27,6 +28,7 @@ data class Unit(
         var type: BaseType? = null
 
 ) : NoUpdateOnCreateEntity<String>() {
+    @JsonIgnore
     override fun getId(): String = symbol
 
     companion object {
