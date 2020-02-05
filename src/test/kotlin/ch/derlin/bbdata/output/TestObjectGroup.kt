@@ -115,7 +115,7 @@ class TestObjectGroup {
 
     @Test
     fun `2-1 test add object`() {
-        val putResponse = restTemplate.putQueryString("/objectGroups/$id/objects?objectId=1")
+        val putResponse = restTemplate.putQueryString("/objectGroups/$id/objects/1")
         assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         val json = restTemplate.getQueryJson("/objectGroups/${id}/objects").second
@@ -143,10 +143,10 @@ class TestObjectGroup {
 
     @Test
     fun `2-5 test remove object`() {
-        val putResponse = restTemplate.deleteQueryString("/objectGroups/$id/objects?objectId=1")
+        val putResponse = restTemplate.deleteQueryString("/objectGroups/$id/objects/1")
         assertEquals(HttpStatus.OK, putResponse.statusCode)
 
-        val putResponse2 = restTemplate.deleteQueryString("/objectGroups/$id/objects?objectId=1")
+        val putResponse2 = restTemplate.deleteQueryString("/objectGroups/$id/objects/1")
         assertEquals(HttpStatus.NOT_MODIFIED, putResponse2.statusCode)
     }
 
@@ -162,20 +162,20 @@ class TestObjectGroup {
 
     @Test
     fun `3-1 test add permission`() {
-        val putResp1 = restTemplate.putQueryString("/objectGroups/$id/permissions?userGroup=1")
+        val putResp1 = restTemplate.putQueryString("/objectGroups/$id/userGroups/1")
         assertEquals(HttpStatus.OK, putResp1.statusCode)
-        val putResp2 = restTemplate.putQueryString("/objectGroups/$id/permissions?userGroup=1")
+        val putResp2 = restTemplate.putQueryString("/objectGroups/$id/userGroups/1")
         assertEquals(HttpStatus.NOT_MODIFIED, putResp2.statusCode)
 
-        val json = restTemplate.getQueryJson("/objectGroups/$id/permissions").second
+        val json = restTemplate.getQueryJson("/objectGroups/$id/userGroups").second
         assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size > 0)
     }
 
     @Test
     fun `3-1 test remove permission`() {
-        val putResp1 = restTemplate.deleteQueryString("/objectGroups/$id/permissions?userGroup=1")
+        val putResp1 = restTemplate.deleteQueryString("/objectGroups/$id/userGroups/1")
         assertEquals(HttpStatus.OK, putResp1.statusCode)
-        val putResp2 = restTemplate.deleteQueryString("/objectGroups/$id/permissions?userGroup=1")
+        val putResp2 = restTemplate.deleteQueryString("/objectGroups/$id/userGroups/1")
         assertEquals(HttpStatus.NOT_MODIFIED, putResp2.statusCode)
 
         val json = restTemplate.getQueryJson("/objectGroups/$id/permissions").second

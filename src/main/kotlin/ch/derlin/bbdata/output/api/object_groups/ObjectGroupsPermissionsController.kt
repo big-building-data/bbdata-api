@@ -19,14 +19,14 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/objectGroups")
-@Tag(name = "ObjectGroups Permissions", description = "Manage object groups permissions")
+@Tag(name = "ObjectGroups Permissions", description = "Manage which user group has access to which object group")
 class ObjectGroupsPermissionsController(
         private val objectGroupsRepository: ObjectGroupsRepository,
         private val userGroupRepository: UserGroupRepository) {
 
 
     @Protected
-    @GetMapping("/{objectGroupId}/permissions")
+    @GetMapping("/{objectGroupId}/userGroups")
     fun getPermissions(@UserId userId: Int, @PathVariable(value = "objectGroupId") id: Long): List<UserGroup> {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
@@ -37,20 +37,20 @@ class ObjectGroupsPermissionsController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @PutMapping("/{objectGroupId}/permissions")
+    @PutMapping("/{objectGroupId}/userGroups/{userGroupId}")
     fun addPermission(@UserId userId: Int,
                       @PathVariable(value = "objectGroupId") id: Long,
-                      @RequestParam("userGroup", required = true) userGroupId: Int): ResponseEntity<String> {
+                      @PathVariable("userGroupId") userGroupId: Int): ResponseEntity<String> {
         return addRemovePerms(userId, id, userGroupId, add = true)
     }
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @DeleteMapping("/{objectGroupId}/permissions")
+    @DeleteMapping("/{objectGroupId}/userGroups/{userGroupId}")
     fun removePermission(@UserId userId: Int,
                          @PathVariable(value = "objectGroupId") id: Long,
-                         @RequestParam("userGroup", required = true) userGroupId: Int): ResponseEntity<String> {
+                         @PathVariable("userGroupId") userGroupId: Int): ResponseEntity<String> {
         return addRemovePerms(userId, id, userGroupId, delete = true)
     }
 

@@ -37,10 +37,10 @@ class ObjectGroupsObjectController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @PutMapping("/{objectGroupId}/objects")
+    @PutMapping("/{objectGroupId}/objects/{objectId}")
     fun addObjectToGroup(@UserId userId: Int,
                          @PathVariable(value = "objectGroupId") id: Long,
-                         @RequestParam("objectId", required = true) objectId: Long): ResponseEntity<String> {
+                         @PathVariable("objectId") objectId: Long): ResponseEntity<String> {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
             ItemNotFoundException("object group ($id)")
@@ -61,10 +61,10 @@ class ObjectGroupsObjectController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @DeleteMapping("/{objectGroupId}/objects")
+    @DeleteMapping("/{objectGroupId}/objects/{objectId}")
     fun removeObjectFromGroup(@UserId userId: Int,
                               @PathVariable(value = "objectGroupId") id: Long,
-                              @RequestParam("objectId", required = true) objectId: Long): ResponseEntity<String> {
+                              @PathVariable("objectId") objectId: Long): ResponseEntity<String> {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
             ItemNotFoundException("object group ($id)")
