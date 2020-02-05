@@ -23,11 +23,11 @@ class UserGroupMappingController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @PutMapping("/userGroups/{userGroupId}/users")
+    @PutMapping("/userGroups/{userGroupId}/users/{userId}")
     fun addUserToGroup(@UserId userId: Int,
-                               @PathVariable(value = "userGroupId") id: Int,
-                               @RequestParam(name = "userId", required = true) newUserId: Int,
-                               @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean
+                       @PathVariable(value = "userGroupId") id: Int,
+                       @PathVariable(name = "userId") newUserId: Int,
+                       @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean
     ): ResponseEntity<String> {
         canUserModifyGroup(userId, id) // ensure the user has the right to update members of this group
         // ensure the user we want to update exists
@@ -52,10 +52,10 @@ class UserGroupMappingController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @DeleteMapping("/userGroups/{userGroupId}/users")
+    @DeleteMapping("/userGroups/{userGroupId}/users/{userId}")
     fun removeUserFromGroup(@UserId userId: Int,
                           @PathVariable(value = "userGroupId") id: Int,
-                          @RequestParam(name = "userId", required = true) userIdToDelete: Int
+                          @PathVariable(name = "userId") userIdToDelete: Int
     ): ResponseEntity<String> {
         canUserModifyGroup(userId, id) // ensure the user has the right to delete a member from the group
 
@@ -67,20 +67,20 @@ class UserGroupMappingController(
         return CommonResponses.notModifed()
     }
 
-    @Protected(SecurityConstants.SCOPE_WRITE)
-    @PutMapping("/userGroups/{userGroupId}/users/new")
-    fun createUserInGroup(@UserId userId: Int,
-                   @Valid @RequestBody newUser: UserController.NewUser,
-                   @PathVariable(value = "userGroupId") id: Int,
-                   @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): User {
-        // ensure the user has the right to add a member to the group
-        val mapping = canUserModifyGroup(userId, id)
-        // create both user and mapping (group permission)
-        if (!mapping.isAdmin) throw ForbiddenException("You must be admin to add users.")
-        val user = userRepository.saveAndFlush(newUser.toUser()) // use flush to get the generated ID
-        userGroupMappingRepository.save(UsergroupMapping(userId = user.id!!, groupId = id, isAdmin = admin))
-        return user
-    }
+    // @Protected(SecurityConstants.SCOPE_WRITE)
+    // @PutMapping("/userGroups/{userGroupId}/users/new")
+    // fun createUserInGroup(@UserId userId: Int,
+    //                @Valid @RequestBody newUser: UserController.NewUser,
+    //                @PathVariable(value = "userGroupId") id: Int,
+    //                @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): User {
+    //     // ensure the user has the right to add a member to the group
+    //     val mapping = canUserModifyGroup(userId, id)
+    //     // create both user and mapping (group permission)
+    //     if (!mapping.isAdmin) throw ForbiddenException("You must be admin to add users.")
+    //     val user = userRepository.saveAndFlush(newUser.toUser()) // use flush to get the generated ID
+    //     userGroupMappingRepository.save(UsergroupMapping(userId = user.id!!, groupId = id, isAdmin = admin))
+    //     return user
+    // }
 
     fun canUserModifyGroup(userId: Int, groupId: Int): UsergroupMapping =
             // ensure the user has the right to add a member to the group

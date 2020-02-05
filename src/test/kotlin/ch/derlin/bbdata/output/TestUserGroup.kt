@@ -76,7 +76,7 @@ class TestUserGroup {
 
     @Test
     fun `2-1 test add user`() {
-        val putResponse = restTemplate.putQueryString("/userGroups/$id/users?userId=2")
+        val putResponse = restTemplate.putQueryString("/userGroups/$id/users/2")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         val json = restTemplate.getQueryJson("/userGroups/${id}/users").second
@@ -89,10 +89,10 @@ class TestUserGroup {
 
     @Test
     fun `2-2 test edit user admin`() {
-        val putResponse = restTemplate.putQueryString("/userGroups/$id/users?userId=2&admin=true")
+        val putResponse = restTemplate.putQueryString("/userGroups/$id/users/2?admin=true")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
-        val putResponseNM = restTemplate.putQueryString("/userGroups/$id/users?userId=2&admin=true")
+        val putResponseNM = restTemplate.putQueryString("/userGroups/$id/users/2?admin=true")
         Assertions.assertEquals(HttpStatus.NOT_MODIFIED, putResponseNM.statusCode)
 
         val json = restTemplate.getQueryJson("/userGroups/${id}/users").second
@@ -104,10 +104,10 @@ class TestUserGroup {
 
     @Test
     fun `2-3 test remove user`() {
-        val putResponse = restTemplate.deleteQueryString("/userGroups/$id/users?userId=2")
+        val putResponse = restTemplate.deleteQueryString("/userGroups/$id/users/2")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
-        val putResponse2 = restTemplate.deleteQueryString("/userGroups/$id/users?userId=2")
+        val putResponse2 = restTemplate.deleteQueryString("/userGroups/$id/users/2")
         Assertions.assertEquals(HttpStatus.NOT_MODIFIED, putResponse2.statusCode)
     }
 

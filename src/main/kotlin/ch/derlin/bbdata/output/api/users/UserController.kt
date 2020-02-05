@@ -2,10 +2,15 @@ package ch.derlin.bbdata.output.api.users
 
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.security.Protected
+import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
@@ -37,6 +42,7 @@ class UserController(val userRepository: UserRepository) {
         fun toUser(): User = User(name = name!!, password = User.hashPassword(password!!), email = email!!)
 
     }
+
     @Protected
     @GetMapping("/me")
     fun getMe(@UserId userId: Int): User = userRepository.getOne(userId)
@@ -48,4 +54,13 @@ class UserController(val userRepository: UserRepository) {
     @Protected
     @GetMapping("/users")
     fun getUsers(): List<User> = userRepository.findAll() // TODO: try to comment this endpoint... HATEOAS ! /search
+
+    @Operation(description = "Create a new user. Note that as long as he is not part of any userGroup, he won't have access to resources.")
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @PutMapping("/users")
+    fun createUser(@Valid @RequestBody newUser: NewUser): User {
+        // Note: the user won't be part of any userGroup, so he has to be added through another call
+        // to the ObjectGroupsPermissionController
+        return userRepository.saveAndFlush(newUser.toUser())
+    }
 }

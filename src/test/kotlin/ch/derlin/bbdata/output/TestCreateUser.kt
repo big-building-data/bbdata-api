@@ -33,7 +33,6 @@ class TestCreateUser {
         val password = "x1234567y"
         val email = "lala@lulu.xxx"
 
-        val groupId = 2
         var id: Int? = -1
         var tpl: TestRestTemplate? = null
 
@@ -53,7 +52,7 @@ class TestCreateUser {
 
     @Test
     fun `1-0 test create user fail`() {
-        val url = "/userGroups/$groupId/users/new"
+        val url = "/users"
         // == create empty name
         var putResponse = restTemplate.putWithBody(url, """{"name": ""}""")
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
@@ -78,7 +77,7 @@ class TestCreateUser {
     @Test
     fun `1-1 test create user`() {
         // == create
-        val putResponse = restTemplate.putWithBody("/userGroups/$groupId/users/new",
+        val putResponse = restTemplate.putWithBody("/users",
                 """{"name": "$name", "password": "$password", "email": "$email"}""")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
         val json = JsonPath.parse(putResponse.body)
@@ -98,15 +97,8 @@ class TestCreateUser {
     @Test
     fun `1-2 test create user bis`() {
         // == no duplicate names allowed
-        val putResponse2 = restTemplate.putWithBody("/userGroups/$groupId/users/new",
+        val putResponse2 = restTemplate.putWithBody("/users",
                 """{"name": "$name", "password": "$password", "email": "$email"}""")
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse2.statusCode)
     }
-
-    @Test
-    fun `1-3 test get user in group`() {
-        val json = restTemplate.getQueryJson("/userGroups/$groupId/users").second
-        Assertions.assertEquals(1, json.read<List<Boolean>>("$[?(@.id == $id)].admin").size)
-    }
-
 }
