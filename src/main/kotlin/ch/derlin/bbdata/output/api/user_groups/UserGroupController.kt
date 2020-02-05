@@ -36,16 +36,16 @@ class UserGroupController(
             userGroupRepository.findMines(userId, admin)
 
     @Protected
-    @GetMapping("/userGroups/{id}")
+    @GetMapping("/userGroups/{userGroupId}")
     fun getUserGroup(@UserId userId: Int,
-               @PathVariable(value = "id") id: Int): UserGroup =
+               @PathVariable(value = "userGroupId") id: Int): UserGroup =
             // TODO: admins only ? return list of users ?
             userGroupRepository.findById(id).orElseThrow { ItemNotFoundException("usergroup (${id})") }
 
     @Protected
-    @GetMapping("/userGroups/{id}/users")
+    @GetMapping("/userGroups/{userGroupId}/users")
     fun getUsersInGroup(@UserId userId: Int,
-                 @PathVariable(value = "id") id: Int): List<UsergroupMapping> =
+                 @PathVariable(value = "userGroupId") id: Int): List<UsergroupMapping> =
             getUserGroup(userId, id).userMappings // TODO: return users instead ? only for admins ?
 
 }
@@ -76,9 +76,9 @@ class AddDeleteUserGroupController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @DeleteMapping("/userGroups/{id}")
+    @DeleteMapping("/userGroups/{userGroupId}")
     fun deleteUserGroup(@UserId userId: Int,
-                        @PathVariable("id") id: Int): ResponseEntity<String> {
+                        @PathVariable("userGroupId") id: Int): ResponseEntity<String> {
         if (!userGroupRepository.findById(id).isPresent) {
             return CommonResponses.notModifed()
         }

@@ -91,9 +91,9 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
-    @PostMapping("/{id}")
+    @PostMapping("/{objectGroupId}")
     fun editObjectGroup(@UserId userId: Int,
-                @PathVariable("id") id: Long,
+                @PathVariable("objectGroupId") id: Long,
                 @Valid @NotNull @RequestBody editableFields: EditableFields): ObjectGroup {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
@@ -105,13 +105,13 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     }
 
     @Protected
-    @GetMapping("/{id}")
+    @GetMapping("/{objectGroupId}")
     @ApiResponse(
             responseCode = "200",
             description = "default response. Note: if *withObject* is false, the `objects` array will be missing.",
             content = arrayOf(Content(schema = Schema(implementation = ObjectGroup::class))))
     fun getObjectGroup(@UserId userId: Int,
-                   @PathVariable(value = "id") id: Long,
+                   @PathVariable(value = "objectGroupId") id: Long,
                    @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
                    @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): ObjectGroup {
         val opt =
@@ -123,9 +123,9 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{objectGroupId}")
     @SimpleModificationStatusResponse
-    fun deleteObjectGroup(@UserId userId: Int, @PathVariable(value = "id") id: Long): ResponseEntity<String> {
+    fun deleteObjectGroup(@UserId userId: Int, @PathVariable(value = "objectGroupId") id: Long): ResponseEntity<String> {
         if (!objectGroupsRepository.findOne(userId, id).isPresent) {
             return CommonResponses.notModifed()
         }

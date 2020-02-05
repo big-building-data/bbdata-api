@@ -36,11 +36,11 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
-    @GetMapping("{objectId}/tokens/{id}")
+    @GetMapping("{objectId}/tokens/{tokenId}")
     fun getObjectToken(
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long,
-            @PathVariable(value = "id") id: Int): Token {
+            @PathVariable(value = "tokenId") id: Int): Token {
         val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
@@ -63,11 +63,11 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
-    @PostMapping("{objectId}/tokens/{id}")
+    @PostMapping("{objectId}/tokens/{tokenId}")
     fun editObjectToken(
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long,
-            @PathVariable(value = "id") id: Int,
+            @PathVariable(value = "tokenId") id: Int,
             @Valid @NotNull @RequestBody descriptionBody: Beans.Description?): Token {
 
         val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
@@ -83,11 +83,11 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @DeleteMapping("{objectId}/tokens/{id}")
+    @DeleteMapping("{objectId}/tokens/{tokenId}")
     fun deleteObjectToken(
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long,
-            @PathVariable(value = "id") id: Int): ResponseEntity<String> {
+            @PathVariable(value = "tokenId") id: Int): ResponseEntity<String> {
         val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }

@@ -26,18 +26,18 @@ class StatsController(
 ) {
 
     @Protected
-    @GetMapping("/objects/{id}/stats")
+    @GetMapping("/objects/{objectId}/stats")
     fun getObjectStats(@UserId userId: Int,
-                       @PathParam("id") id: Int): ObjectStats? {
+                       @PathParam("objectId") id: Int): ObjectStats? {
         return objectStatsRepository.findById(id).orElseThrow {
             ItemNotFoundException("object (id=$id)")
         }
     }
 
     @Protected
-    @GetMapping("/objects/{id}/counters")
+    @GetMapping("/objects/{objectId}/counters")
     fun getObjectCounters(@UserId userId: Int,
-                       @PathParam("id") id: Int): ObjectStatsCounter? {
+                       @PathParam("objectId") id: Int): ObjectStatsCounter? {
         return objectStatsCounterRepository.findById(id).orElseThrow {
             ItemNotFoundException("object (id=$id)")
         }

@@ -26,8 +26,8 @@ class ObjectGroupsPermissionsController(
 
 
     @Protected
-    @GetMapping("/{id}/permissions")
-    fun getPermissions(@UserId userId: Int, @PathVariable(value = "id") id: Long): List<UserGroup> {
+    @GetMapping("/{objectGroupId}/permissions")
+    fun getPermissions(@UserId userId: Int, @PathVariable(value = "objectGroupId") id: Long): List<UserGroup> {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
             ItemNotFoundException("objectGroup (${id})")
@@ -37,9 +37,9 @@ class ObjectGroupsPermissionsController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @PutMapping("/{id}/permissions")
+    @PutMapping("/{objectGroupId}/permissions")
     fun addPermission(@UserId userId: Int,
-                      @PathVariable(value = "id") id: Long,
+                      @PathVariable(value = "objectGroupId") id: Long,
                       @RequestParam("userGroup", required = true) userGroupId: Int): ResponseEntity<String> {
         return addRemovePerms(userId, id, userGroupId, add = true)
     }
@@ -47,9 +47,9 @@ class ObjectGroupsPermissionsController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @DeleteMapping("/{id}/permissions")
+    @DeleteMapping("/{objectGroupId}/permissions")
     fun removePermission(@UserId userId: Int,
-                         @PathVariable(value = "id") id: Long,
+                         @PathVariable(value = "objectGroupId") id: Long,
                          @RequestParam("userGroup", required = true) userGroupId: Int): ResponseEntity<String> {
         return addRemovePerms(userId, id, userGroupId, delete = true)
     }

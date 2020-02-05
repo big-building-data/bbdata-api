@@ -87,11 +87,11 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
     }
 
     @Protected
-    @GetMapping("/{objectId}/comments/{id}")
+    @GetMapping("/{objectId}/comments/{commentId}")
     fun getComment(
             @UserId userId: Int,
             @PathVariable("objectId") objectId: Long,
-            @PathVariable("id") id: Int): Comment {
+            @PathVariable("commentId") id: Int): Comment {
 
         val obj = objectRepository.findById(objectId, userId, writable = false).orElseThrow {
             ItemNotFoundException("object ($objectId)")
@@ -103,11 +103,11 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @DeleteMapping("/{objectId}/comments/{id}")
+    @DeleteMapping("/{objectId}/comments/{commentId}")
     fun deleteComment(
             @UserId userId: Int,
             @PathVariable("objectId") objectId: Long,
-            @PathVariable("id") id: Int): ResponseEntity<String> {
+            @PathVariable("commentId") id: Int): ResponseEntity<String> {
 
         val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
             ItemNotFoundException("object ($objectId)")

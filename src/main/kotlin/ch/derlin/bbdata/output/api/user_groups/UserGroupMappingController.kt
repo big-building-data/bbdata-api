@@ -23,9 +23,9 @@ class UserGroupMappingController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @PutMapping("/userGroups/{id}/users")
+    @PutMapping("/userGroups/{userGroupId}/users")
     fun addUserToGroup(@UserId userId: Int,
-                               @PathVariable(value = "id") id: Int,
+                               @PathVariable(value = "userGroupId") id: Int,
                                @RequestParam(name = "userId", required = true) newUserId: Int,
                                @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean
     ): ResponseEntity<String> {
@@ -52,9 +52,9 @@ class UserGroupMappingController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @DeleteMapping("/userGroups/{id}/users")
+    @DeleteMapping("/userGroups/{userGroupId}/users")
     fun removeUserFromGroup(@UserId userId: Int,
-                          @PathVariable(value = "id") id: Int,
+                          @PathVariable(value = "userGroupId") id: Int,
                           @RequestParam(name = "userId", required = true) userIdToDelete: Int
     ): ResponseEntity<String> {
         canUserModifyGroup(userId, id) // ensure the user has the right to delete a member from the group
@@ -68,10 +68,10 @@ class UserGroupMappingController(
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
-    @PutMapping("/userGroups/{id}/users/new")
+    @PutMapping("/userGroups/{userGroupId}/users/new")
     fun createUserInGroup(@UserId userId: Int,
                    @Valid @RequestBody newUser: UserController.NewUser,
-                   @PathVariable(value = "id") id: Int,
+                   @PathVariable(value = "userGroupId") id: Int,
                    @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): User {
         // ensure the user has the right to add a member to the group
         val mapping = canUserModifyGroup(userId, id)

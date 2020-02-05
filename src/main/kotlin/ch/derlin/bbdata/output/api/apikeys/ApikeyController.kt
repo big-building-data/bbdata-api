@@ -79,10 +79,10 @@ class ApikeyController(
     }
 
 
-    @DeleteMapping("/apikeys/{id}")
+    @DeleteMapping("/apikeys/{apikeyId}")
     @SimpleModificationStatusResponse
     @Protected(SecurityConstants.SCOPE_WRITE)
-    fun deleteApikey(@UserId userId: Int, @PathVariable("id") id: Int): ResponseEntity<String> {
+    fun deleteApikey(@UserId userId: Int, @PathVariable("apikeyId") id: Int): ResponseEntity<String> {
         val apikey = apikeyRepository.findByIdAndUserId(id, userId)
         if (apikey == null) return CommonResponses.notModifed()
         apikeyRepository.delete(apikey)

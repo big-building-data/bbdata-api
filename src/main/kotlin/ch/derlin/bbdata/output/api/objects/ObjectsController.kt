@@ -49,10 +49,10 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     }
 
     @Protected
-    @GetMapping("/{id}")
+    @GetMapping("/{objectId}")
     fun getObject(
             @UserId userId: Int,
-            @PathVariable(value = "id") id: Long,
+            @PathVariable(value = "objectId") id: Long,
             @RequestParam(name = "writable", required = false, defaultValue = "false") writable: Boolean = false
     ): Objects? = objectRepository.findById(id, userId, writable).orElseThrow { ItemNotFoundException("object") }
 
@@ -60,19 +60,19 @@ class ObjectController(private val objectRepository: ObjectRepository) {
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @PutMapping("{id}/tags")
+    @PutMapping("{objectId}/tags")
     fun addTags(
             @UserId userId: Int,
-            @PathVariable(value = "id") id: Long,
+            @PathVariable(value = "objectId") id: Long,
             @RequestParam(name = "tags", required = true) tags: List<String>): ResponseEntity<String> =
             addOrDeleteTags(userId, id, tags, add = true)
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @DeleteMapping("{id}/tags")
+    @DeleteMapping("{objectId}/tags")
     fun removeTags(
             @UserId userId: Int,
-            @PathVariable(value = "id") id: Long,
+            @PathVariable(value = "objectId") id: Long,
             @RequestParam(name = "tags", required = true) tags: List<String>): ResponseEntity<String> =
             addOrDeleteTags(userId, id, tags, delete = true)
 
@@ -97,7 +97,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @PostMapping("{id}/enable")
+    @PostMapping("{objectId}/enable")
     fun enableObject(
             @UserId userId: Int,
             @PathVariable(value = "id") id: Long): ResponseEntity<String> =
@@ -105,7 +105,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @PostMapping("{id}/disable")
+    @PostMapping("{objectId}/disable")
     fun disableObject(
             @UserId userId: Int,
             @PathVariable(value = "id") id: Long): ResponseEntity<String> =

@@ -26,8 +26,8 @@ class ObjectGroupsObjectController(
         private val objectRepository: ObjectRepository) {
 
     @Protected
-    @GetMapping("/{id}/objects")
-    fun getObjectsOfGroup(@UserId userId: Int, @PathVariable(value = "id") id: Long): MutableList<Objects> {
+    @GetMapping("/{objectGroupId}/objects")
+    fun getObjectsOfGroup(@UserId userId: Int, @PathVariable(value = "objectGroupId") id: Long): MutableList<Objects> {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
             ItemNotFoundException("object group ($id)")
@@ -37,9 +37,9 @@ class ObjectGroupsObjectController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @PutMapping("/{id}/objects")
+    @PutMapping("/{objectGroupId}/objects")
     fun addObjectToGroup(@UserId userId: Int,
-                         @PathVariable(value = "id") id: Long,
+                         @PathVariable(value = "objectGroupId") id: Long,
                          @RequestParam("objectId", required = true) objectId: Long): ResponseEntity<String> {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
@@ -61,9 +61,9 @@ class ObjectGroupsObjectController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
-    @DeleteMapping("/{id}/objects")
+    @DeleteMapping("/{objectGroupId}/objects")
     fun removeObjectFromGroup(@UserId userId: Int,
-                              @PathVariable(value = "id") id: Long,
+                              @PathVariable(value = "objectGroupId") id: Long,
                               @RequestParam("objectId", required = true) objectId: Long): ResponseEntity<String> {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
