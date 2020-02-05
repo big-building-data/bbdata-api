@@ -1,1 +1,1 @@
-rootProject.name = "output"
+rootProject.name = "bbdata-api"
