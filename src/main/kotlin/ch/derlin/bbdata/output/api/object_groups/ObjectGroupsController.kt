@@ -112,13 +112,10 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
             content = arrayOf(Content(schema = Schema(implementation = ObjectGroup::class))))
     fun getObjectGroup(@UserId userId: Int,
                    @PathVariable(value = "objectGroupId") id: Long,
-                   @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
                    @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): ObjectGroup {
-        val opt =
-                if (writable) objectGroupsRepository.findOneWritable(userId, id)
-                else objectGroupsRepository.findOne(userId, id)
-
-        val ogrp = opt.orElseThrow { ItemNotFoundException("object group ($id)") }
+        val ogrp = objectGroupsRepository.findOne(userId, id).orElseThrow {
+            ItemNotFoundException("object group ($id)")
+        }
         return if (withObjects) ogrp.withObjects() else ogrp
     }
 
