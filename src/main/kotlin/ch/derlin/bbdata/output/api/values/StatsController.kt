@@ -9,6 +9,7 @@ import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import javax.websocket.server.PathParam
 
@@ -19,7 +20,7 @@ import javax.websocket.server.PathParam
 
 
 @RestController
-@Tag(name = "Objects")
+@Tag(name = "Objects Statistics", description = "Get various statistics about object values")
 class StatsController(
         private val objectStatsRepository: ObjectStatsRepository,
         private val objectStatsCounterRepository: ObjectStatsCounterRepository
@@ -28,16 +29,16 @@ class StatsController(
     @Protected
     @GetMapping("/objects/{objectId}/stats")
     fun getObjectStats(@UserId userId: Int,
-                       @PathParam("objectId") id: Int): ObjectStats? {
+                       @PathVariable("objectId") id: Int): ObjectStats? {
         return objectStatsRepository.findById(id).orElseThrow {
             ItemNotFoundException("object (id=$id)")
         }
     }
 
     @Protected
-    @GetMapping("/objects/{objectId}/counters")
+    @GetMapping("/objects/{objectId}/stats/counters")
     fun getObjectCounters(@UserId userId: Int,
-                       @PathParam("objectId") id: Int): ObjectStatsCounter? {
+                       @PathVariable("objectId") id: Int): ObjectStatsCounter? {
         return objectStatsCounterRepository.findById(id).orElseThrow {
             ItemNotFoundException("object (id=$id)")
         }
