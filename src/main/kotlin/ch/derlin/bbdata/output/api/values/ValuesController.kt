@@ -91,11 +91,8 @@ class ValuesController(private val rawValueRepository: RawValueRepository,
             @RequestParam(name = "to", required = false) to: DateTime?,
             @RequestParam(name = "granularity", defaultValue = "hours") granularity: AggregationGranularity? = null,
             response: HttpServletResponse) {
-
-        // val minutes = AggregationGranularity.minutesFromString(granularity).orElseThrow {
-        //     WrongParamsException("granularity should be one of ${AggregationGranularity.allowedValues}, got '$granularity'")
-        // }
-        if(granularity == null) throw WrongParamsException("granularity should be one of ${AggregationGranularity.aceptableValues}")
+        
+        if (granularity == null) throw WrongParamsException("granularity should be one of ${AggregationGranularity.aceptableValues}")
 
         val minutes = granularity.minutes
         val to = to ?: DateTime.now()
