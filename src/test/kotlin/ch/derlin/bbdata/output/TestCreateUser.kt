@@ -101,4 +101,12 @@ class TestCreateUser {
                 """{"name": "$name", "password": "$password", "email": "$email"}""")
         Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse2.statusCode)
     }
+
+    @Test
+    fun `1-3 get user`() {
+        // == no duplicate names allowed
+        val (status, json) = restTemplate.getQueryJson("/users/$id")
+        Assertions.assertEquals(HttpStatus.OK, status)
+        Assertions.assertEquals(name, json.read<String>("$.name"))
+    }
 }

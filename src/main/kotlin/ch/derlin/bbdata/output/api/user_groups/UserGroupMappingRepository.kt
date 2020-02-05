@@ -13,4 +13,6 @@ import org.springframework.transaction.annotation.Transactional
 interface UserGroupMappingRepository : JpaRepository<UsergroupMapping, UserUgrpMappingId> {
     @Transactional
     fun deleteByGroupId(groupId: Int): Unit
+
+    fun getByUserId(userId: Int): List<UsergroupMapping>
 }

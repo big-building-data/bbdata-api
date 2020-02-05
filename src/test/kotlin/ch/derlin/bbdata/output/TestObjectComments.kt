@@ -98,7 +98,7 @@ class TestObjectComments {
         // check some json variables
         val json = JsonPath.parse(getResponse.body)
         assertEquals(objectId, json.read<Int>("$.objectId"))
-        assertTrue(json.read<String>("$.from").matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}".toRegex()))
+        assertTrue(json.read<String>("$.from").isBBDataDatetime())
     }
 
 

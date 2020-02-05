@@ -22,37 +22,6 @@ import javax.validation.constraints.Size
 @RestController
 @Tag(name = "UserGroups", description = "Manage user groups")
 class UserGroupController(
-        private val userGroupRepository: UserGroupRepository) {
-
-    @Protected
-    @GetMapping("/userGroups")
-    fun getUserGroups(@UserId userId: Int): List<UserGroup> =
-            userGroupRepository.findAll()
-
-    @Protected
-    @GetMapping("/mine/groups") // TODO
-    fun getMyUserGroups(@UserId userId: Int,
-                 @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): List<UserGroup> =
-            userGroupRepository.findMines(userId, admin)
-
-    @Protected
-    @GetMapping("/userGroups/{userGroupId}")
-    fun getUserGroup(@UserId userId: Int,
-               @PathVariable(value = "userGroupId") id: Int): UserGroup =
-            // TODO: admins only ? return list of users ?
-            userGroupRepository.findById(id).orElseThrow { ItemNotFoundException("usergroup (${id})") }
-
-    @Protected
-    @GetMapping("/userGroups/{userGroupId}/users")
-    fun getUsersInGroup(@UserId userId: Int,
-                 @PathVariable(value = "userGroupId") id: Int): List<UsergroupMapping> =
-            getUserGroup(userId, id).userMappings // TODO: return users instead ? only for admins ?
-
-}
-
-@RestController
-@Tag(name = "UserGroups", description = "Manage user groups")
-class AddDeleteUserGroupController(
         private val userGroupRepository: UserGroupRepository,
         private val userGroupMappingRepository: UserGroupMappingRepository) {
 
@@ -61,6 +30,12 @@ class AddDeleteUserGroupController(
         @Size(min = UserGroup.NAME_MIN, max = UserGroup.NAME_MAX)
         val name: String? = null
     }
+
+    @Protected
+    @GetMapping("/userGroups")
+    fun getUserGroups(@UserId userId: Int): List<UserGroup> =
+            userGroupRepository.findAll()
+
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("/userGroups")
@@ -72,6 +47,19 @@ class AddDeleteUserGroupController(
         userGroupMappingRepository.save(UsergroupMapping(userId = userId, groupId = ugrp.id!!, isAdmin = true))
         return ugrp
     }
+
+    @Protected
+    @GetMapping("/userGroups/{userGroupId}")
+    fun getUserGroup(@UserId userId: Int,
+                     @PathVariable(value = "userGroupId") id: Int): UserGroup =
+            // TODO: admins only ? return list of users ?
+            userGroupRepository.findById(id).orElseThrow { ItemNotFoundException("usergroup (${id})") }
+
+    @Protected
+    @GetMapping("/userGroups/{userGroupId}/users")
+    fun getUsersInGroup(@UserId userId: Int,
+                        @PathVariable(value = "userGroupId") id: Int): List<UsergroupMapping> =
+            getUserGroup(userId, id).userMappings // TODO: return users instead ? only for admins ?
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)

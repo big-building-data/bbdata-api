@@ -35,20 +35,20 @@ class TestObject {
     @Test
     @Throws(Exception::class)
     fun `1-1 object disable`() {
-        val response1 = restTemplate.postQueryString("/objects/${1}/disable")
+        val response1 = restTemplate.postQueryString("/objects/$id/disable")
         assertEquals(HttpStatus.OK, response1.statusCode)
 
-        val response2 = restTemplate.postQueryString("/objects/${1}/disable")
+        val response2 = restTemplate.postQueryString("/objects/$id/disable")
         assertEquals(HttpStatus.NOT_MODIFIED, response2.statusCode)
     }
 
     @Test
     @Throws(Exception::class)
     fun `1-2 object enable`() {
-        val response1 = restTemplate.postQueryString("/objects/${1}/enable")
+        val response1 = restTemplate.postQueryString("/objects/$id/enable")
         assertEquals(HttpStatus.OK, response1.statusCode)
 
-        val response2 = restTemplate.postQueryString("/objects/${1}/enable")
+        val response2 = restTemplate.postQueryString("/objects/$id/enable")
         assertEquals(HttpStatus.NOT_MODIFIED, response2.statusCode)
     }
 }

@@ -23,6 +23,9 @@ data class UserUgrpMappingId(
 @Table(name = "users_ugrps")
 @IdClass(UserUgrpMappingId::class)
 data class UsergroupMapping(
+        // NOTE: by default, it will be serialized in JSON with only the userInfo (made to be used by the UserGroup
+        // permissions endpoint.
+
         @Id
         @Column(name = "user_id")
         @JsonIgnore
@@ -43,7 +46,8 @@ data class UsergroupMapping(
 
         @ManyToOne(optional = false, fetch = FetchType.LAZY)
         @JoinColumn(name = "ugrp_id", referencedColumnName = "id", insertable = false, updatable = false)
-        private val group: UserGroup? = null
+        @JsonIgnore
+        val group: UserGroup? = null
 
 ) : NoUpdateOnCreateEntity<UserUgrpMappingId>() {
     @JsonIgnore

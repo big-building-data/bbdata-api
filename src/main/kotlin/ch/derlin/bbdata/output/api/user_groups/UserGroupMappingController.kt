@@ -21,6 +21,7 @@ class UserGroupMappingController(
         private val userGroupMappingRepository: UserGroupMappingRepository,
         private val userRepository: UserRepository) {
 
+
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
     @PutMapping("/userGroups/{userGroupId}/users/{userId}")
@@ -54,8 +55,8 @@ class UserGroupMappingController(
     @SimpleModificationStatusResponse
     @DeleteMapping("/userGroups/{userGroupId}/users/{userId}")
     fun removeUserFromGroup(@UserId userId: Int,
-                          @PathVariable(value = "userGroupId") id: Int,
-                          @PathVariable(name = "userId") userIdToDelete: Int
+                            @PathVariable(value = "userGroupId") id: Int,
+                            @PathVariable(name = "userId") userIdToDelete: Int
     ): ResponseEntity<String> {
         canUserModifyGroup(userId, id) // ensure the user has the right to delete a member from the group
 
