@@ -5,6 +5,7 @@ import ch.derlin.bbdata.common.cassandra.RawValuePK
 import org.joda.time.DateTime
 import org.joda.time.YearMonth
 import javax.validation.constraints.Min
+import javax.validation.constraints.NotEmpty
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
 
@@ -27,6 +28,7 @@ class NewValue {
     val timestamp: DateTime? = null
 
     @NotNull
+    @NotEmpty
     val value: String? = null
 
     @Size(max = 1024, message = "too long. Maximum set to 1024.")
