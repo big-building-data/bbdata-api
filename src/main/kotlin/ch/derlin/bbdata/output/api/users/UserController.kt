@@ -1,7 +1,7 @@
 package ch.derlin.bbdata.output.api.users
 
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
-import ch.derlin.bbdata.output.api.user_groups.UserGroup
+import ch.derlin.bbdata.output.api.user_groups.UserGroupMappingController
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
@@ -20,7 +20,8 @@ import javax.validation.constraints.Size
  */
 @RestController
 @Tag(name = "Users", description = "Get or create users")
-class UserController(val userRepository: UserRepository) {
+class UserController(private val userRepository: UserRepository,
+                     private val userGroupMappingController: UserGroupMappingController) {
 
     // TODO: where to put NewX classes ? controller or model ?
     class NewUser {
@@ -51,12 +52,20 @@ class UserController(val userRepository: UserRepository) {
         ItemNotFoundException("user ($userId)")
     }
 
-    @Operation(description = "Create a new user. Note that as long as he is not part of any userGroup, he won't have access to resources.")
+    @Operation(description = "Create a new user. Note that if no userGroupId is set, " +
+            "the user won't have access to any resources until you explicitly add it to a userGroup.")
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("/users")
-    fun createUser(@Valid @RequestBody newUser: NewUser): User {
+    fun createUser(
+            @UserId userId: Int,
+            @RequestParam(name = "userGroupId", required = false) userGroupId: Int?,
+            @Valid @RequestBody newUser: NewUser): User {
         // Note: the user won't be part of any userGroup, so he has to be added through another call
         // to the ObjectGroupsPermissionController
-        return userRepository.saveAndFlush(newUser.toUser())
+        val user = userRepository.saveAndFlush(newUser.toUser())
+        userGroupId?.let {
+            userGroupMappingController.addUserToGroup(userId, it, newUserId = user.id!!, admin = false)
+        }
+        return user
     }
 }
