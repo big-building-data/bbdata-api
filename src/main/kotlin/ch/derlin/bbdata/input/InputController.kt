@@ -2,6 +2,7 @@ package ch.derlin.bbdata.input
 
 import ch.derlin.bbdata.common.cassandra.*
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
+import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
@@ -19,7 +20,7 @@ import javax.validation.constraints.NotNull
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @RestController
-@Tag(name = "Input", description = "Submit new object values")
+@Tag(name = "Objects Values", description = "Submit and query objects values")
 class InputController(
         private val inputRepository: InputRepository,
         private val rawValueRepository: RawValueRepository,
@@ -57,15 +58,15 @@ class InputController(
 
     }
 
-    @PostMapping("/measures")
+    @PostMapping("objects/values")
     fun postNewMeasure(@Valid @NotNull @RequestBody measure: NewValue,
                        @RequestParam("simulate", defaultValue = "false") sim: Boolean): String {
 
         // check that date is in the past
-        // val now = DateTime()
-        // if (measure.timestamp!!.getMillis() > now.millis + MAX_LAG) {
-        //     throw WrongParamsException("date should be in the past: input='${measure.timestamp}', now='$now'")
-        // }
+        val now = DateTime()
+        if (measure.timestamp!!.getMillis() > now.millis + MAX_LAG) {
+            throw WrongParamsException("date should be in the past: input='${measure.timestamp}', now='$now'")
+        }
 
         // get metadata
         val meta = inputRepository.getMeasureMeta(measure.objectId!!, measure.token!!).orElseThrow {
@@ -88,7 +89,7 @@ class InputController(
         val objectStatsCounter = objectStatsCounterRepository.findById(objectId).orElse(ObjectStatsCounter())
 
         // compute new stats
-        val deltaMs = Math.abs(measure.timestamp!!.millis - (objectStats.lastTimestamp ?: measure.timestamp).millis)
+        val deltaMs = Math.abs(measure.timestamp.millis - (objectStats.lastTimestamp ?: measure.timestamp).millis)
         val nRecords = objectStatsCounter.nValues
         val newSamplePeriod = (objectStats.avgSamplePeriod * (nRecords - 1) + deltaMs) / nRecords
 

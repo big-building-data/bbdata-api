@@ -24,7 +24,6 @@ data class RawValuePK(
         val month: String? = null,
 
         @PrimaryKeyColumn(name = "timestamp", ordinal = 2, type = PrimaryKeyType.CLUSTERED)
-        @JsonProperty("timestamp")
         val timestamp: DateTime? = null
 ) : Serializable
 

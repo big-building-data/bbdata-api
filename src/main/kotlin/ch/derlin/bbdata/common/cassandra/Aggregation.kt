@@ -31,7 +31,6 @@ data class AggregationPK(
         val month: String? = null,
 
         @PrimaryKeyColumn(name = "timestamp", ordinal = 3, type = PrimaryKeyType.CLUSTERED, ordering = Ordering.DESCENDING)
-        @JsonProperty("timestamp")
         val timestamp: DateTime? = null
 ) : Serializable
 

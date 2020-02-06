@@ -1,6 +1,8 @@
 package ch.derlin.bbdata.common.cassandra
 
 import com.datastax.driver.core.DataType
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.annotation.JsonProperty
 import org.joda.time.DateTime
 import org.springframework.data.cassandra.core.mapping.CassandraType
 import org.springframework.data.cassandra.core.mapping.Column
@@ -22,20 +24,22 @@ data class ObjectStats(
 
         @Column("last_ts")
         val lastTimestamp: DateTime? = null
-) {
-    fun computeUpdatedPeriod() = avgSamplePeriod
-}
+)
 
 @Table("objects_stats_counter")
 data class ObjectStatsCounter(
+        // !! if only one letter before the first uppercase, e.g. "nReads" jackson will convert it to "nreads"
+        // see https://stackoverflow.com/q/30205006 for an explanation
         @PrimaryKey("object_id")
         val objectId: Int = -1,
 
         @Column("n_reads")
+        @get:JsonProperty("nReads")
         @CassandraType(type = DataType.Name.COUNTER)
         val nReads: Long = 0,
 
         @Column("n_values")
+        @get:JsonProperty("nValues")
         @CassandraType(type = DataType.Name.COUNTER)
         val nValues: Long = 0
 )

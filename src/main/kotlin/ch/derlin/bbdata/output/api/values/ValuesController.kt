@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse
 
 
 @RestController
-@Tag(name = "Objects Values", description = "Get object values/measures")
+@Tag(name = "Objects Values", description = "Submit and query objects values")
 class ValuesController(private val rawValueRepository: RawValueRepository,
                        private val aggregationsRepository: AggregationsRepository,
                        private val objectStatsCounterRepository: ObjectStatsCounterRepository,
