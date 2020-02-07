@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.FilterType
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import javax.annotation.PostConstruct
 
 
 @SpringBootApplication
@@ -36,13 +35,15 @@ common errors codes and more, by visiting <a href="/#more-info">our landing page
 @EnableConfigurationProperties
 class BBDataApplication {
 
-    @PostConstruct
-    fun init() {
-        // Setting Spring Boot SetTimeZone
+    init {
+        // UTC timezone is central !
         JodaUtils.setDefaultTimeZoneUTC()
-        JodaUtils.defaultPattern(JodaUtils.Format.ISO_SECONDS)
-        JodaUtils.acceptableDateRange(from = "2016-01-01")
+        // the following set the default datetime handling, but that can
+        // be overriden using properties (see CustomConfigProperties)
+        JodaUtils.defaultPattern = JodaUtils.FMT_ISO_MILLIS
+        JodaUtils.setAcceptableDateRange(from = "2016-01-01")
     }
+
 }
 
 // CORS configuration: allow everything from all origin

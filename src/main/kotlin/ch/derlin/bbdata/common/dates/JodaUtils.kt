@@ -15,36 +15,21 @@ import java.util.*
  */
 object JodaUtils {
 
-    /**
-     * available formats: they are standard ISO, but without the Z at the end. The date is assumed to be in UTC
-     * (see [.setDefaultTimeZoneUTC].
-     */
-    enum class Format constructor(
-            /**
-             * @return the format as a string.
-             */
-            val value: String) {
-        /**
-         * minutes granularity. Format: `yyyy-MM-dd'T'HH:mm`
-         */
-        ISO_MINUTES("yyyy-MM-dd'T'HH:mm"),
-        /**
-         * seconds granularity. Format: `yyyy-MM-dd'T'HH:mm:ss`
-         */
-        ISO_SECONDS("yyyy-MM-dd'T'HH:mm:ss"),
-        /**
-         * milliseconds granularity. Format: `yyyy-MM-dd'T'HH:mm:ss.SSS`
-         */
-        ISO_MILLIS("yyyy-MM-dd'T'HH:mm:ss.SSS")
-    }
+    val FMT_ISO_MINUTES = "yyyy-MM-dd'T'HH:mm'Z'"
+    val FMT_ISO_SECONDS = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    val FMT_ISO_MILLIS = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 
+    var defaultPattern: String = FMT_ISO_MILLIS
+        set(value) {
+            field = value
+            defaultFormatter = getFormatter(field)
+        }
 
-    private var defaultPattern = Format.ISO_MILLIS
     private var defaultFormatter = getFormatter(defaultPattern)
     private var minDate: DateTime? = null
     private var maxDate: DateTime? = null
 
-    // ------------------------------------- configure
+// ------------------------------------- configure
 
     /**
      * Set the default timezone to UTC for both [java.util] and [org.joda.time].
@@ -55,16 +40,6 @@ object JodaUtils {
     }
 
     /**
-     * Change the default pattern used. This method should be called at initialization time, not afterwards.
-     *
-     * @param pattern the new pattern to use by default.
-     */
-    fun defaultPattern(pattern: Format) {
-        defaultPattern = pattern
-        defaultFormatter = getFormatter(pattern)
-    }
-
-    /**
      * Treat dates outside of the interval from-to as incorrect dates,
      * Further calls to [.parse] will fail
      * with an [IllegalArgumentException] in case the string is in the correct format but outside this range.
@@ -72,12 +47,12 @@ object JodaUtils {
      * @param from minimal correct date, inclusive.
      * @param to   maximal correct date, exclusive.
      */
-    fun acceptableDateRange(from: String, to: String? = null) {
+    fun setAcceptableDateRange(from: String, to: String? = null) {
         minDate = parseOrNull(from)
         if (to != null) maxDate = parseOrNull(to)
     }
 
-    // -------------------------------------- parse
+// -------------------------------------- parse
 
     /**
      * @param epoch millis since epoch
@@ -131,7 +106,7 @@ object JodaUtils {
         return dateTime
     }
 
-    // ---------------------------------- range
+// ---------------------------------- range
 
     /**
      * @param dt a date
@@ -156,39 +131,35 @@ object JodaUtils {
         }
     }
 
-    // ---------------------------------- format
+// ---------------------------------- format
 
     /**
      * @param pattern the pattern to use for the formatter
      * @return a new formatter configured to use the given format pattern
      */
-    fun getFormatter(pattern: Format = defaultPattern): DateTimeFormatter {
-        return DateTimeFormat.forPattern(pattern.value)
-    }
+    fun getFormatter(pattern: String = defaultPattern): DateTimeFormatter = DateTimeFormat.forPattern(pattern)
+
 
     /**
      * @param dt a date
      * @return the date as an ISO string, using the default format (see [.defaultFormat])
      */
-    fun format(dt: DateTime): String {
-        return defaultFormatter.print(dt)
-    }
+    fun format(dt: DateTime): String = defaultFormatter.print(dt)
+
 
     /**
      * @param dt the date as millis since epoch
      * @return the formatted date
      * see [.format]
      */
-    fun format(dt: Long): String {
-        return defaultFormatter.print(dt)
-    }
+    fun format(dt: Long): String = defaultFormatter.print(dt)
+
 
     /**
      * @param dt the date
      * @return the formatted date
      * see [.format]
      */
-    fun format(dt: Date): String {
-        return defaultFormatter.print(DateTime(dt))
-    }
+    fun format(dt: Date): String = defaultFormatter.print(DateTime(dt))
+
 }

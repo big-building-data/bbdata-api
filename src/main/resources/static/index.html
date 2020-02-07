@@ -88,13 +88,14 @@
         <div class="more-info-section" id="more-info-dates">
             <h3>Date format <a href="#more-info-dates">¶</a></h3>
             The API manipulates many dates. For output, the format follows the
-            <b><a href="https://www.w3.org/TR/NOTE-datetime" target="_blank">ISO format</a></b>,
-            but <b>skips the timezone</b> information, which is ALWAYS interpreted as <b>UTC</b>:
-            <pre><code>YYYY-MM-ddTHH:mm:ss</code></pre>
+            <b><a href="https://www.w3.org/TR/NOTE-datetime" target="_blank">ISO UTC format</a></b>,
+            with milliseconds:
+            <pre><code>YYYY-MM-ddTHH:mm:ss.SSSZ</code></pre>
 
-            This is the same for input, but in this case the date can be truncated from the right (again following the
-            standard).
-            Here are some examples:
+            For input, the API is quite lenient and will accept any truncation, as well as timezone information
+            (no timezone means UTC !).
+            In general, the only constraint is that the date is <b>after January 1<sup>rst</sup>, 2016</b>.
+            To make it clearer, here are some examples:
 
             <table style="margin: 1em">
                 <thead>
@@ -105,28 +106,36 @@
                 </thead>
                 <tbody class="tt">
                 <tr>
-                    <td>2020-03-21T08:14</td>
-                    <td>2020-03-21T08:14</td>
+                    <td>2020-03-21T08:14:00.123</td>
+                    <td>2020-03-21T08:14:00.123Z</td>
+                </tr>
+                <tr>
+                    <td>2020-03-21T10:00+02:00</td>
+                    <td>2020-03-21T08:00:00.000Z</td>
+                </tr>
+                <tr>
+                    <td>2020-3-1T1:00</td>
+                    <td>2020-03-01T01:00:00.000Z</td>
                 </tr>
                 <tr>
                     <td>2020-03-21T08</td>
-                    <td>2020-03-21T08:00</td>
+                    <td>2020-03-21T08:00:00.000Z</td>
                 </tr>
                 <tr>
                     <td>2020-03-21</td>
-                    <td>2020-03-21T00:00</td>
+                    <td>2020-03-21T00:00:00.000Z</td>
                 </tr>
                 <tr>
                     <td>2020-03</td>
-                    <td>2020-03-01T00:00</td>
+                    <td>2020-03-01T00:00:00.000Z</td>
                 </tr>
                 <tr>
                     <td>2020</td>
-                    <td>2020-01-01T00:00</td>
+                    <td>2020-01-01T00:00:00.000Z</td>
                 </tr>
                 <tr style="color: darkred">
                     <td>20</td>
-                    <td><strike>0020-01-01T00:00</strike> Invalid !</td>
+                    <td><strike>0020-01-01T00:00:00.000Z</strike> Invalid !</td>
                 </tr>
                 </tbody>
             </table>

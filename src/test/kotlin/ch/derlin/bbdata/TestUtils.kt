@@ -6,7 +6,7 @@ package ch.derlin.bbdata
  */
 
 
-fun String.isBBDataDatetime(): Boolean = this.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}".toRegex())
+fun String.isBBDataDatetime(): Boolean = this.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}Z".toRegex())
 
 fun String.csv2map(): List<Map<String, String>> {
     val splits: List<List<String>> = this.lines().filter { it.isNotEmpty() }.map { it.split(',') }

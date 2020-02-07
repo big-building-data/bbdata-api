@@ -36,7 +36,7 @@ class TestMe {
 
         assertEquals(1, json.read<Int>("$.id"))
         assertEquals("admin", json.read<String>("$.name"))
-        assertTrue(json.read<String>("$.creationdate").isBBDataDatetime())
+        assertTrue(json.read<String>("$.creationdate").isBBDataDatetime(), "proper datetime format")
     }
 
     @Test

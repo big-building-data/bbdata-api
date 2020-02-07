@@ -102,7 +102,7 @@ class TestValues {
         val values = json.readList()
         Assertions.assertEquals(1, values.count())
         Assertions.assertEquals(OID, values[0].get("objectId") as Int)
-        Assertions.assertTrue((values[0].get("timestamp") as String).startsWith(TO))
+        Assertions.assertTrue((values[0].get("timestamp") as String).startsWith(TO.dropLast(1)))
     }
 
     // -------------------

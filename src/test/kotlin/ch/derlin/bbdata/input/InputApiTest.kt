@@ -38,7 +38,7 @@ class InputApiTest {
         val OBJ = 1
         val TOKEN = "012345678901234567890123456789ab"
         val RANDOM_VALUE = Random.nextInt(10000).toString()
-        val NOW = JodaUtils.getFormatter(JodaUtils.Format.ISO_SECONDS).print(DateTime.now(DateTimeZone.UTC))
+        val NOW = JodaUtils.getFormatter(JodaUtils.FMT_ISO_SECONDS).print(DateTime.now(DateTimeZone.UTC))
         val URL = "/objects/values"
 
         var writeCounter: Int = 0
@@ -82,7 +82,7 @@ class InputApiTest {
         val json = JsonPath.parse(resp.body)
         Assertions.assertFalse(resp.body!!.contains("token"))
         Assertions.assertEquals(RANDOM_VALUE, json.read<String>("$.value"))
-        Assertions.assertEquals(NOW, json.read<String>("$.timestamp"))
+        Assertions.assertTrue(json.read<String>("$.timestamp").startsWith(NOW.dropLast(1)))
         Assertions.assertEquals("V", json.read<String>("$.unitSymbol"))
         Assertions.assertEquals("volt", json.read<String>("$.unitName"))
         Assertions.assertEquals(1, json.read<Int>("$.owner"))
@@ -95,7 +95,7 @@ class InputApiTest {
 
         val latestValue = json.read<Map<String,Any>>("$.[0]")
         Assertions.assertEquals(OBJ, latestValue.get("objectId"))
-        Assertions.assertEquals(NOW, latestValue.get("timestamp"))
+        Assertions.assertTrue((latestValue.get("timestamp") as String).startsWith(NOW.dropLast(1)))
         Assertions.assertEquals(RANDOM_VALUE, latestValue.get("value"))
         Assertions.assertNull(latestValue.get("comment"))
 
