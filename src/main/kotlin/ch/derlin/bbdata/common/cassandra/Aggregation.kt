@@ -19,11 +19,9 @@ import java.util.*
 @PrimaryKeyClass
 data class AggregationPK(
         @PrimaryKeyColumn(name = "minutes", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-        @JsonIgnore
         val minutes: Int? = null,
 
         @PrimaryKeyColumn(name = "object_id", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
-        @JsonIgnore
         val objectId: Int? = null,
 
         @PrimaryKeyColumn(name = "date", ordinal = 2, type = PrimaryKeyType.PARTITIONED)
@@ -70,13 +68,13 @@ data class Aggregation(
     fun getLastTimestamp(): String? = lastTimestamp?.let { JodaUtils.format(it) }
 
     override fun csvValues(vararg args: Any): List<Any?> = listOf(
-            key.objectId, key.timestamp?.let { JodaUtils.format(it) },
+            key.objectId, key.minutes, key.timestamp?.let { JodaUtils.format(it) },
             last, getLastTimestamp(),
             min, max, sum, getMean(), getStd(), count, comment)
 
     companion object {
-        const val csvHeadersString = "object_id,timestamp," +
-                "last,last_timestamp," +
+        const val csvHeadersString = "objectId,minutes,timestamp," +
+                "last,lastTimestamp," +
                 "min,max,sum,mean,std,count,comment"
 
         val csvHeaders: List<String> = csvHeadersString.split(",")

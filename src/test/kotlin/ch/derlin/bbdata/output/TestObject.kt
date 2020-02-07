@@ -29,11 +29,10 @@ class TestObject {
     private lateinit var restTemplate: TestRestTemplate
 
     companion object {
-        val id = 1
+        val id = 2 // disabling an object will delete its tokens, so don't do it on object 1 used in other tests
     }
 
     @Test
-    @Throws(Exception::class)
     fun `1-1 object disable`() {
         val response1 = restTemplate.postQueryString("/objects/$id/disable")
         assertEquals(HttpStatus.OK, response1.statusCode)
@@ -43,7 +42,6 @@ class TestObject {
     }
 
     @Test
-    @Throws(Exception::class)
     fun `1-2 object enable`() {
         val response1 = restTemplate.postQueryString("/objects/$id/enable")
         assertEquals(HttpStatus.OK, response1.statusCode)

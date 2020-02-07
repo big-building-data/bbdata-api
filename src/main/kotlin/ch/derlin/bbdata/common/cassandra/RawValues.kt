@@ -2,7 +2,6 @@ package ch.derlin.bbdata.common.cassandra
 
 import ch.derlin.bbdata.common.dates.JodaUtils
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import org.joda.time.DateTime
 import org.springframework.data.cassandra.core.cql.PrimaryKeyType
@@ -16,7 +15,6 @@ import java.io.Serializable
 @PrimaryKeyClass
 data class RawValuePK(
         @PrimaryKeyColumn(name = "object_id", ordinal = 0, type = PrimaryKeyType.PARTITIONED)
-        @JsonIgnore
         val objectId: Int? = null,
 
         @PrimaryKeyColumn(name = "month", ordinal = 1, type = PrimaryKeyType.PARTITIONED)
@@ -43,7 +41,7 @@ data class RawValue(
             listOf(key.objectId, key.timestamp?.let { JodaUtils.format(it) }, value, comment)
 
     companion object {
-        const val csvHeadersString = "object_id,timestamp,value,comment"
+        const val csvHeadersString = "objectId,timestamp,value,comment"
         val csvHeaders: List<String> = csvHeadersString.split(",")
     }
 

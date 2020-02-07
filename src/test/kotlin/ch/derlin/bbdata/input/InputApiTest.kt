@@ -93,7 +93,8 @@ class InputApiTest {
         val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/values/latest", "accept" to "application/json")
         Assertions.assertEquals(HttpStatus.OK, status)
 
-        val latestValue = json.read<Map<String,Any>>("$.[0].values.[0]")
+        val latestValue = json.read<Map<String,Any>>("$.[0]")
+        Assertions.assertEquals(OBJ, latestValue.get("objectId"))
         Assertions.assertEquals(NOW, latestValue.get("timestamp"))
         Assertions.assertEquals(RANDOM_VALUE, latestValue.get("value"))
         Assertions.assertNull(latestValue.get("comment"))
