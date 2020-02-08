@@ -28,6 +28,7 @@ class TestUserGroup {
 
     companion object {
         val name = "usergroup-${Random.nextInt(10000)}"
+        val addedUserId = 2 // should not be 1, since 1 is the owner
         var id: Int? = -1
         var tpl: TestRestTemplate? = null
 
@@ -75,45 +76,83 @@ class TestUserGroup {
     }
 
     @Test
-    fun `2-1 test add user`() {
-        val putResponse = restTemplate.putQueryString("/userGroups/$id/users/2")
+    fun `1-2 test get user groups`(){
+        val (status, json) = restTemplate.getQueryJson("/userGroups")
+        Assertions.assertEquals(HttpStatus.OK, status)
+        Assertions.assertEquals(1, json.read<List<Any>>("$[?(@.id == $id)]").size)
+    }
+
+    @Test
+    fun `1-3 test what user not in group sees`() {
+        // user is not in group
+        val (status, json) = restTemplate.getQueryJson("/me/userGroups", "bbuser" to addedUserId)
+        Assertions.assertEquals(HttpStatus.OK, status)
+        Assertions.assertEquals(0, json.read<List<Any>>("$[?(@.id == $id)]").size)
+
+        // user has still access to basic information about group
+        val getUserGroupResponse = restTemplate.getQueryString("/userGroups/$id", "bbuser" to addedUserId)
+        Assertions.assertEquals(HttpStatus.OK, getUserGroupResponse.statusCode)
+
+        // user cannot see users in group
+        val getUsersInGroupResponse = restTemplate.getQueryString("/userGroups/$id/users", "bbuser" to addedUserId)
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, getUsersInGroupResponse.statusCode)
+
+        // user cannot add users to group
+        val putUserResponse = restTemplate.putQueryString("/userGroups/$id/users/$addedUserId", "bbuser" to addedUserId)
+        Assertions.assertEquals(HttpStatus.NOT_FOUND, putUserResponse.statusCode)
+    }
+
+    @Test
+    fun `2-0 test add user`() {
+        val putResponse = restTemplate.putQueryString("/userGroups/$id/users/$addedUserId")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         val json = restTemplate.getQueryJson("/userGroups/${id}/users").second
         Assertions.assertEquals(2, json.read<List<Any>>("$").size)
 
-        val u = json.read<List<Boolean>>("$[?(@.id == 2)].admin")
+        val u = json.read<List<Boolean>>("$[?(@.id == $addedUserId)].admin")
         Assertions.assertEquals(1, u.size)
         Assertions.assertFalse(u[0]) // not admin
     }
 
     @Test
-    fun `2-2 test edit user admin`() {
-        val putResponse = restTemplate.putQueryString("/userGroups/$id/users/2?admin=true")
+    fun `2-1 test what non-admins can see`() {
+        // can see users
+        val (status, _) = restTemplate.getQueryJson("/userGroups/${id}/users", "bbuser" to addedUserId)
+        Assertions.assertEquals(HttpStatus.OK, status)
+
+        // cannot add users
+        val putResponse = restTemplate.putQueryString("/userGroups/$id/users/$addedUserId", "bbuser" to addedUserId)
+        Assertions.assertEquals(HttpStatus.FORBIDDEN, putResponse.statusCode)
+    }
+
+    @Test
+    fun `3-0 test edit user admin`() {
+        val putResponse = restTemplate.putQueryString("/userGroups/$id/users/$addedUserId?admin=true")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
-        val putResponseNM = restTemplate.putQueryString("/userGroups/$id/users/2?admin=true")
+        val putResponseNM = restTemplate.putQueryString("/userGroups/$id/users/$addedUserId?admin=true")
         Assertions.assertEquals(HttpStatus.NOT_MODIFIED, putResponseNM.statusCode)
 
         val json = restTemplate.getQueryJson("/userGroups/${id}/users").second
-        val u = json.read<List<Boolean>>("$[?(@.id == 2)].admin")
+        val u = json.read<List<Boolean>>("$[?(@.id == $addedUserId)].admin")
         Assertions.assertEquals(1, u.size)
         Assertions.assertTrue(u[0]) // now admin
     }
 
 
     @Test
-    fun `2-3 test remove user`() {
-        val putResponse = restTemplate.deleteQueryString("/userGroups/$id/users/2")
+    fun `4-0 test remove user`() {
+        val putResponse = restTemplate.deleteQueryString("/userGroups/$id/users/$addedUserId")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
 
-        val putResponse2 = restTemplate.deleteQueryString("/userGroups/$id/users/2")
+        val putResponse2 = restTemplate.deleteQueryString("/userGroups/$id/users/$addedUserId")
         Assertions.assertEquals(HttpStatus.NOT_MODIFIED, putResponse2.statusCode)
     }
 
 
     @Test
-    fun `3-0 test remove user group`() {
+    fun `5-0 test remove user group`() {
         val putResponse = restTemplate.deleteQueryString("/userGroups/$id")
         Assertions.assertEquals(putResponse.statusCode, HttpStatus.OK)
 

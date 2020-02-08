@@ -22,7 +22,7 @@ interface ObjectRepository : JpaRepository<Objects, Long> {
     fun findAll(userId: Int, writable: Boolean, search: String = "",
                 pageable: Pageable = Pageable.unpaged()): List<Objects>
 
-    @Query("SELECT o FROM Objects o INNER JOIN o.userPerms p INNER JOIN o.tags t " +
+    @Query("SELECT DISTINCT o FROM Objects o INNER JOIN o.userPerms p INNER JOIN o.tags t " +
             "WHERE t.name IN :tags " +
             "AND p.userId = :userId " +
             "AND (p.writable = true OR p.writable = :writable) " +

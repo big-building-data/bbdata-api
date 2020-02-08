@@ -34,20 +34,7 @@ class TestCreateUser {
         val email = "lala@lulu.xxx"
 
         var id: Int? = -1
-        var tpl: TestRestTemplate? = null
-
-        @AfterAll
-        @JvmStatic
-        fun cleanup() {
-            tpl?.let { tpl ->
-                id?.let {
-                    try {
-                        tpl.deleteQueryString("/userGroups/$it")
-                    } catch (e: Exception) {
-                    }
-                }
-            }
-        }
+        val userGroupId = 2
     }
 
     @Test
@@ -84,7 +71,6 @@ class TestCreateUser {
 
         // == store variables
         id = json.read<Int>("$.id")
-        tpl = restTemplate
 
         // == check response
         // same name
@@ -103,10 +89,32 @@ class TestCreateUser {
     }
 
     @Test
-    fun `1-3 get user`() {
+    fun `1-3 get users`() {
+        // == no duplicate names allowed
+        val (status, json) = restTemplate.getQueryJson("/users")
+        Assertions.assertEquals(HttpStatus.OK, status)
+        Assertions.assertEquals(1, json.read<List<Any>>("$[?(@.name == '$name')]").size)
+    }
+
+    @Test
+    fun `1-4 get user`() {
         // == no duplicate names allowed
         val (status, json) = restTemplate.getQueryJson("/users/$id")
         Assertions.assertEquals(HttpStatus.OK, status)
         Assertions.assertEquals(name, json.read<String>("$.name"))
+    }
+
+    @Test
+    fun `2-1 test create user with userGroup`() {
+        // == create
+        val putResponse = restTemplate.putWithBody("/users?userGroupId=$userGroupId",
+                """{"name": "$name-withGroup", "password": "$password", "email": "$email"}""")
+        Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
+        id =  JsonPath.parse(putResponse.body).read<Int>("$.id")
+
+        // == get using user
+        val getResponse = restTemplate.getQueryJson("/userGroups/$userGroupId/users/$id")
+        Assertions.assertEquals(HttpStatus.OK, getResponse.first)
+        Assertions.assertEquals(id!!, getResponse.second.read<Int>("$.id"))
     }
 }

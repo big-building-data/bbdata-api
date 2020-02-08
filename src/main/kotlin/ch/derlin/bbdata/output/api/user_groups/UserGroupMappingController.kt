@@ -1,11 +1,9 @@
 package ch.derlin.bbdata.output.api.user_groups
 
+import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
-import ch.derlin.bbdata.output.api.users.User
-import ch.derlin.bbdata.output.api.users.UserController
 import ch.derlin.bbdata.output.api.users.UserRepository
-import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
@@ -13,7 +11,6 @@ import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import javax.validation.Valid
 
 @RestController
 @Tag(name = "UserGroups", description = "Manage user groups")
@@ -23,6 +20,17 @@ class UserGroupMappingController(
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @GetMapping("/userGroups/{userGroupId}/users/{userId}")
+    fun getUserInGroup(@UserId userId: Int,
+                       @PathVariable(value = "userGroupId") userGroupId: Int,
+                       @PathVariable(name = "userId") userIdToGet: Int): UsergroupMapping {
+        ensureUserCanAccessGroup(userId, userGroupId, requireAdminRight = false)
+        return userGroupMappingRepository.findById(UserUgrpMappingId(userIdToGet, userGroupId)).orElseThrow {
+            ItemNotFoundException("user ($userIdToGet) for userGroup ($userGroupId)")
+        }
+    }
+
+    @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
     @PutMapping("/userGroups/{userGroupId}/users/{userId}")
     fun addUserToGroup(@UserId userId: Int,
@@ -30,7 +38,8 @@ class UserGroupMappingController(
                        @PathVariable(name = "userId") newUserId: Int,
                        @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean
     ): ResponseEntity<String> {
-        canUserModifyGroup(userId, id) // ensure the user has the right to update members of this group
+        // ensure the user has the right to update members of this group
+        ensureUserCanAccessGroup(userId, id, requireAdminRight = true)
         // ensure the user we want to update exists
         userRepository.findById(newUserId).orElseThrow { ItemNotFoundException("user ($newUserId)") }
         // do the deed, either updating or creating a new mapping
@@ -58,8 +67,9 @@ class UserGroupMappingController(
                             @PathVariable(value = "userGroupId") id: Int,
                             @PathVariable(name = "userId") userIdToDelete: Int
     ): ResponseEntity<String> {
-        canUserModifyGroup(userId, id) // ensure the user has the right to delete a member from the group
-
+        // ensure the user has the right to update members of this group
+        ensureUserCanAccessGroup(userId, id, requireAdminRight = true)
+        // only remove if exists
         val optional = userGroupMappingRepository.findById(UserUgrpMappingId(userIdToDelete, id))
         if (optional.isPresent()) {
             userGroupMappingRepository.delete(optional.get())
@@ -83,9 +93,13 @@ class UserGroupMappingController(
     //     return user
     // }
 
-    fun canUserModifyGroup(userId: Int, groupId: Int): UsergroupMapping =
-            // ensure the user has the right to add a member to the group
-            userGroupMappingRepository.findById(UserUgrpMappingId(userId, groupId)).orElseThrow {
-                ItemNotFoundException("usergroup (${groupId})")
-            }
+    fun ensureUserCanAccessGroup(userId: Int, groupId: Int, requireAdminRight: Boolean = false): UsergroupMapping {
+        // ensure the user has the right to add a member to the group
+        val mapping = userGroupMappingRepository.findById(UserUgrpMappingId(userId, groupId)).orElseThrow {
+            ItemNotFoundException("usergroup (${groupId})")
+        }
+        if (requireAdminRight && !mapping.isAdmin)
+            throw ForbiddenException("You must be admin to add users.")
+        return mapping
+    }
 }

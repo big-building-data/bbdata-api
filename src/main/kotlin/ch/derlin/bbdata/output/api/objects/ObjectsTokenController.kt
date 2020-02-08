@@ -69,7 +69,7 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
             @PathVariable(value = "objectId") objectId: Long,
             @PathVariable(value = "tokenId") id: Int,
             @Valid @NotNull @RequestBody descriptionBody: Beans.Description?): Token {
-
+        // TODO: return ok/not modified ?
         val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }

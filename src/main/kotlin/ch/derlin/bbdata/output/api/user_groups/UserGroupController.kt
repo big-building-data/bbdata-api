@@ -59,7 +59,9 @@ class UserGroupController(
     @GetMapping("/userGroups/{userGroupId}/users")
     fun getUsersInGroup(@UserId userId: Int,
                         @PathVariable(value = "userGroupId") id: Int): List<UsergroupMapping> =
-            getUserGroup(userId, id).userMappings // TODO: return users instead ? only for admins ?
+            userGroupRepository.findMine(userId, id, admin = false).orElseThrow {
+                ItemNotFoundException("userGroup ($id)")
+            }.userMappings // TODO: return users instead ? only for admins ?
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)

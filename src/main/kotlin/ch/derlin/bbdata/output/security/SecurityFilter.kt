@@ -29,7 +29,8 @@ import javax.servlet.http.HttpServletResponse
 @Profile(Profiles.UNSECURED)
 class DummyAuthInterceptor : HandlerInterceptor {
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
-        request.setAttribute(HEADER_USER, "1")
+        // for tests: allow the header "bbuser"
+        request.setAttribute(HEADER_USER, request.getHeader(HEADER_USER) ?: "1")
         return true
     }
 }
@@ -125,7 +126,7 @@ class AuthInterceptor : HandlerInterceptor {
                     request.setAttribute(HEADER_TOKEN, decoded[1])
                     return
                 }
-            }catch (ex: Exception){
+            } catch (ex: Exception) {
                 throw BadApikeyException("The Basic Authentication provided (Base64) is invalid.")
             }
         }

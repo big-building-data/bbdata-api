@@ -32,13 +32,31 @@ class TestObjectCreate {
     private lateinit var restTemplate: TestRestTemplate
 
     @Test
-    @Throws(Exception::class)
-    fun `0-1 create object`() {
+    fun `1-1 create object fail`(){
+        // empty name
+        var resp = restTemplate.putWithBody("/objects",
+                """{"name": "", "owner": 1, "unitSymbol": "V"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode)
+        // wrong unit
+        resp = restTemplate.putWithBody("/objects",
+                """{"name": "", "owner": 1, "unitSymbol": "@badUnit"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode)
+        // missing owner
+        resp = restTemplate.putWithBody("/objects",
+                """{"name": "", "unitSymbol": "V"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode)
+        // wrong owner
+        resp = restTemplate.putWithBody("/objects",
+                """{"name": "", "owner": 19123187, "unitSymbol": "V"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode)
+    }
+
+    @Test
+    fun `1-2 create object`() {
         // == create
-        val putResponse = restTemplate.putWithBody(
-                "/objects",
+        val putResponse = restTemplate.putWithBody("/objects",
                 """{"name": "hello", "owner": 1, "unitSymbol": "V"}""")
-        assertEquals(putResponse.statusCode, HttpStatus.OK)
+        assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         // == get
         val id = JsonPath.parse(putResponse.body).read<Int>("$.id")
