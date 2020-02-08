@@ -52,9 +52,8 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     @GetMapping("/{objectId}")
     fun getObject(
             @UserId userId: Int,
-            @PathVariable(value = "objectId") id: Long,
-            @RequestParam(name = "writable", required = false, defaultValue = "false") writable: Boolean = false
-    ): Objects? = objectRepository.findById(id, userId, writable).orElseThrow { ItemNotFoundException("object") }
+            @PathVariable(value = "objectId") id: Long
+    ): Objects? = objectRepository.findById(id, userId, writable = false).orElseThrow { ItemNotFoundException("object") }
 
     // ======== TAGS
 
