@@ -110,3 +110,10 @@ return asJacksonMapping(ogrpList)
 * directly save into cassandra from the input API ?
 * add salt to passwords in MySQL !!
 * we can delete usergroups, but not users. Users that are part of no groups are useless... ??
+
+## Permissions, gosh
+
+* userGroups: 
+    - any can see the userGroup basic infos /userGroups, /userGroups/{id}
+    - users part of the group can see other users /userGroups/{id}/users
+    - admins only can modify group (add users, etc.)
