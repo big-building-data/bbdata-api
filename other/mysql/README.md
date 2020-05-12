@@ -14,7 +14,7 @@ flush privileges;
 
 ```bash
 # create schema
-mysql -u root < bbdata-structure.sql
+mysql -u root < bbdata2-structure.sql
 # insert data
 mysql -u root bbdata2 < test-data.sql
 ```

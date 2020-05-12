@@ -4,6 +4,7 @@ import ch.derlin.bbdata.common.cassandra.*
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
+import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -75,10 +76,9 @@ class ValuesController(
         // check/prepare params
         val before = optionalBefore ?: DateTime.now()
         val monthBefore = YearMonth(before)
-        checkObject(userId, objectId)
+        val obj = checkObject(userId, objectId)
         // do the search, one month at a time, stop when one is found
-        val searchMonths = CassandraUtils.monthsBetween(
-                monthBefore.minusMonths(CassandraUtils.MAX_SEARCH_DEPTH), monthBefore)
+        val searchMonths = CassandraUtils.monthsBetween(YearMonth(obj.creationdate), monthBefore)
         val valuesIter = searchMonths.asSequence()
                 .map { rawValueRepository.getLatest(objectId.toInt(), it, before) }
                 .dropWhile { it == null }
@@ -119,11 +119,10 @@ class ValuesController(
         objectStatsCounterRepository.updateReadCounter(objectId.toInt())
     }
 
-    private fun checkObject(userId: Int, objectId: Long) {
-        objectsRepository.findById(objectId, userId, writable = false).orElseThrow {
-            ItemNotFoundException("object ($objectId)")
-        }
-    }
+    private fun checkObject(userId: Int, objectId: Long): Objects =
+            objectsRepository.findById(objectId, userId, writable = false).orElseThrow {
+                ItemNotFoundException("object ($objectId)")
+            }
 
 
 }

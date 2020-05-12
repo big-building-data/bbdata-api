@@ -38,14 +38,14 @@ INSERT INTO `ogrps` (`id`, `name`, `ugrp_id`) VALUES
     (2, 'temp', 1);
 
 
-INSERT INTO `objects` (`id`, `name`, `description`, `ugrp_id`, `unit_symbol`) VALUES 
-    (1, 'volts box 1', '', 1, 'V'),
-    (2, 'volts box 2', NULL, 1, 'V'),
-    (3, 'tmp box 1', NULL, 1, '°C'),
-    (4, 'tmp box 2', NULL, 1, '°C'),
-    (3008, 'blueFactory sensor', 'test values endpoint', 1, 'W'),
-    (6602, 'aggr simple', 'test for aggr simple', 1, 'lx'),
-    (13370, 'aggr extended', 'test for agg extended', 1, 'V');
+INSERT INTO `objects` (`id`, `name`, `description`, `ugrp_id`, `unit_symbol`, `creationdate`) VALUES
+    (1, 'volts box 1', '', 1, 'V', '2019-01-01'),
+    (2, 'volts box 2', NULL, 1, 'V', '2019-01-01'),
+    (3, 'tmp box 1', NULL, 1, '°C', '2019-01-01'),
+    (4, 'tmp box 2', NULL, 1, '°C', DEFAULT),
+    (3008, 'blueFactory sensor', 'test values endpoint', 1, 'W', DEFAULT),
+    (6602, 'aggr simple', 'test for aggr simple', 1, 'lx', '2019-01-01'),
+    (13370, 'aggr extended', 'test for agg extended', 1, 'V', '2019-01-01');
 
 
 INSERT INTO `objects_ogrps` (`ogrp_id`, `object_id`) VALUES
