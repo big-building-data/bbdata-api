@@ -1,4 +1,4 @@
-START TRANSACTION; 
+START TRANSACTION;
 
 INSERT INTO `types` VALUES ('string'), ('float'), ('bool'), ('int');
 

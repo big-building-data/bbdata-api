@@ -1,4 +1,4 @@
-# Dev setup
+# Dev setup local
 
 Given a running mysql instance in localhost (with no root password), here are the steps to follow.
 
@@ -17,4 +17,21 @@ flush privileges;
 mysql -u root < bbdata2-structure.sql
 # insert data
 mysql -u root bbdata2 < test-data.sql
+```
+
+# Dev setup docker
+
+Create the image:
+```bash
+docker build -t bbdata-mysql .
+``` 
+
+Launch the image:
+```bash
+docker run -p 3306:3306 --rm --name bbsql bbdata-mysql
+```
+
+Connect:
+```bash
+mysql -h 127.0.0.1 -u bbdata-admin --password=bbdata bbdata2
 ```
