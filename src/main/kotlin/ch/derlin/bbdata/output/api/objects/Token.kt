@@ -30,7 +30,7 @@ data class Token(
 
         @Column(name = "token")
         @field:Length(min = 32, max = 32)
-        private val token: String,
+        val token: String,
 
         @Column(name = "description")
         var description: String? = null

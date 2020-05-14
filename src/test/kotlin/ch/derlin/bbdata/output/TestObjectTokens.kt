@@ -61,7 +61,7 @@ class TestObjectTokens {
         val getResponse = restTemplate.getQueryString("/objects/$objectId/tokens/$id")
         JSONAssert.assertEquals(putResponse.body, getResponse.body, false)
 
-        // check some json variables
+        // check some json variables TODO check token length !
         val json = JsonPath.parse(getResponse.body)
         assertEquals(objectId, json.read<Int>("$.objectId"))
         assertNull(json.read<String>("$.description"))
