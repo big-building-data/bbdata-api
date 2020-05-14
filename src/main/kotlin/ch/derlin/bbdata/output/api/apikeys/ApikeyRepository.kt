@@ -14,7 +14,7 @@ import java.util.*
 interface ApikeyRepository :  JpaRepository<Apikey, Int> {
 
     fun findByUserId(userId: Int): List<Apikey>
-    fun findByIdAndUserId(id: Int, userId: Int): Apikey?
+    fun findByIdAndUserId(id: Int, userId: Int): Optional<Apikey>
 
     @Query("SELECT a FROM Apikey a WHERE a.userId = :userId AND a.secret = :secret " +
             "AND (a.expirationDate IS NULL OR a.expirationDate > CURRENT_TIMESTAMP)")

@@ -15,6 +15,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import kotlin.random.Random
 
 /**
  * date: 28.12.19
@@ -57,14 +58,15 @@ class TestApikeys {
         tpl = restTemplate
 
         createApikey()
-        createApikey(expire = "1d")
-        createApikey(expire = "1d-2m-3s")
+        createApikey(expirationDate = "1d")
+        createApikey(expirationDate = "1d-2m-3s")
         createApikey(description = "this is a test")
         createApikey(writable = true)
     }
 
+
     @Test
-    fun `1-2 test apikeys`() {
+    fun `2-1 test apikeys`() {
         secrets.map {
             val resp = restTemplate.getQueryString("/objectGroups", "bbuser" to userId, "bbtoken" to it)
             assertEquals(HttpStatus.OK, resp.statusCode)
@@ -76,14 +78,45 @@ class TestApikeys {
     }
 
     @Test
-    fun `1-3 test get apikeys`() {
+    fun `2-1 test get apikeys`() {
         val pair = restTemplate.getQueryJson("/apikeys", "bbuser" to 1, "bbtoken" to "wr1")
         assertEquals(HttpStatus.OK, pair.first)
         assertEquals(1, pair.second.read<List<String>>("$[?(@.secret=='${secrets.random()}')]").size)
     }
 
     @Test
-    fun `1-4 test delete apikeys`() {
+    fun `3-1 test edit apikeys`() {
+        val id = ids[0]
+
+        // edit all fields
+        var json = editApikey(id, """{"description": "hello", "readOnly": true, "expirationDate": "null"}""")
+        assertEquals(true, json.read<Boolean>("$.readOnly"))
+        assertNull(json.read<String>("$.expirationDate"))
+        assertEquals("hello", json.read<String>("$.description"))
+
+        // edit description only
+        json = editApikey(id, """{"description": "newDescr"}""")
+        assertEquals("newDescr", json.read<String>("$.description"))
+
+        // edit readOnly only
+        json = editApikey(id, """{"readOnly": false}""")
+        assertEquals(false, json.read<Boolean>("$.readOnly"))
+
+        // edit expirationDate only, using a date
+        json = editApikey(id, """{"expirationDate": "2070-01-04Z"}""")
+        assertEquals("2070-01-04T00:00:00.000Z", json.read<String>("$.expirationDate"))
+
+        // edit expirationDate only, using a different date format
+        json = editApikey(id, """{"expirationDate": "2070-01-04T10:00"}""")
+        assertEquals("2070-01-04T10:00:00.000Z", json.read<String>("$.expirationDate"))
+
+        // edit expirationDate only, using a duration TODO: test the result
+        json = editApikey(id, """{"expirationDate": "1d-2h"}""")
+        print(json.read<String>("$.expirationDate"))
+    }
+
+    @Test
+    fun `4-1 test delete apikeys`() {
         ids.zip(secrets).map {
             val resp = restTemplate.deleteQueryString("/apikeys/${it.first}", "bbuser" to userId, "bbtoken" to "wr1")
             assertEquals(HttpStatus.OK, resp.statusCode)
@@ -91,7 +124,7 @@ class TestApikeys {
     }
 
     @Test
-    fun `1-5 test get apikeys after delete`() {
+    fun `4-2 test get apikeys after delete`() {
         val pair = restTemplate.getQueryJson("/apikeys", "bbuser" to 1, "bbtoken" to "wr1")
         assertEquals(HttpStatus.OK, pair.first)
         assertEquals(0, pair.second.read<List<String>>("$[?(@.secret=='${secrets.random()}')]").size)
@@ -99,11 +132,11 @@ class TestApikeys {
 
     // -------
 
-    fun createApikey(writable: Boolean = false, expire: String? = null, description: String? = null): DocumentContext? {
+    fun createApikey(writable: Boolean = false, expirationDate: String? = null, description: String? = null): DocumentContext? {
         // create url
         val pathParams = mutableListOf<String>()
         if (writable) pathParams.add("writable=true")
-        if (expire != null) pathParams.add("expire=$expire")
+        if (expirationDate != null) pathParams.add("expirationDate=$expirationDate")
         val url = "/apikeys" + (if (pathParams.size > 0) "?" + pathParams.joinToString("&") else "")
 
         // make query
@@ -125,9 +158,15 @@ class TestApikeys {
         // check some json variables
         assertEquals(!writable, json.read("$.readOnly"))
         assertEquals(description, json.read<String>("$.description"))
-        assertEquals(expire == null, json.read<String>("$.expirationDate") == null)
+        assertEquals(expirationDate == null, json.read<String>("$.expirationDate") == null)
         assertEquals(32, secrets.last().length)
 
         return json
+    }
+
+    fun editApikey(id: Int, body: String): DocumentContext {
+        val response = restTemplate.postWithBody("/apikeys/$id", body, "bbuser" to 1, "bbtoken" to "wr1")
+        assertEquals(HttpStatus.OK, response.statusCode)
+        return JsonPath.parse(response.body)
     }
 }
