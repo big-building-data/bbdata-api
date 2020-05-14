@@ -30,8 +30,11 @@ class TestObjectCreate {
 
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
-    private var id: Int = -1
-    private val name = "SpringBootTest-safeToRemove"
+
+    companion object {
+        private var id: Int = -1
+        private val name = "SpringBootTest-safeToRemove"
+    }
 
     @Test
     fun `1-1 create object fail`() {

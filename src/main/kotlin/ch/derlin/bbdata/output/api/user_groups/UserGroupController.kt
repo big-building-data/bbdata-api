@@ -8,6 +8,7 @@ import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
@@ -43,8 +44,12 @@ class UserGroupController(
                         @Valid @NotNull @RequestBody newUserGroupBody: NewUserGroup): UserGroup {
         // create
         val ugrp = userGroupRepository.saveAndFlush(UserGroup(name = newUserGroupBody.name!!))
-        // add permission
-        userGroupMappingRepository.save(UsergroupMapping(userId = userId, groupId = ugrp.id!!, isAdmin = true))
+        // add permissions
+        try {
+            userGroupMappingRepository.save(UsergroupMapping(userId = userId, groupId = ugrp.id!!, isAdmin = true))
+        } catch (e: DataIntegrityViolationException) {
+            // Duplicate entry possible if only if ROOT, because this is done in a trigger
+        }
         return ugrp
     }
 
