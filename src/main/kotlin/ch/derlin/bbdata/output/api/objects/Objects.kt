@@ -77,6 +77,9 @@ data class Objects(
 
     fun getToken(id: Int): Token? = tokens.find { it.id == id }
 
+    @JsonIgnore
+    fun getObjectGroups(): List<ObjectGroup>? = objectGroups
+
     companion object {
         const val NAME_MIN = 1
         const val NAME_MAX = 60

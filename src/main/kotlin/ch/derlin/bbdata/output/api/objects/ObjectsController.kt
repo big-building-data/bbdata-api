@@ -14,6 +14,8 @@ import ch.derlin.bbdata.output.api.types.UnitRepository
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
+import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
+import ch.derlin.bbdata.output.api.object_groups.ObjectGroupsController
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
@@ -54,6 +56,13 @@ class ObjectController(private val objectRepository: ObjectRepository) {
             @UserId userId: Int,
             @PathVariable(value = "objectId") id: Long
     ): Objects? = objectRepository.findById(id, userId, writable = false).orElseThrow { ItemNotFoundException("object") }
+
+    @Protected
+    @GetMapping("/{objectId}/objectGroups")
+    fun getGroupsOfObject(
+            @UserId userId: Int,
+            @PathVariable(value = "objectId") id: Long
+    ): List<ObjectGroup>? = objectRepository.findById(id, userId, writable = false).orElseThrow { ItemNotFoundException("object") }.getObjectGroups()
 
     // ======== TAGS
 
@@ -144,6 +153,14 @@ class NewObjectController(private val objectRepository: ObjectRepository,
         val unitSymbol: String = ""
     }
 
+    class EditableFields {
+        @Size(min = Objects.NAME_MIN, max = Objects.NAME_MAX)
+        val name: String? = null
+
+        @Size(max = Beans.DESCRIPTION_MAX)
+        val description: String? = null
+    }
+
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("")
     fun newObject(@UserId userId: Int,
@@ -165,4 +182,18 @@ class NewObjectController(private val objectRepository: ObjectRepository,
                 owner = userGroup
         ))
     }
+
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @PostMapping("/{objectId}")
+    fun editObject(
+            @UserId userId: Int,
+            @PathVariable(value = "objectId") id: Long,
+            @Valid @NotNull @RequestBody editableFields: EditableFields
+    ): Objects? {
+        val obj = objectRepository.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
+        editableFields.name?.let { obj.name = it }
+        editableFields.description?.let { obj.description = it }
+        return objectRepository.saveAndFlush(obj)
+    }
+
 }
