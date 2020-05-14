@@ -24,7 +24,7 @@ INSERT INTO `ugrps` (`id`, `name`) VALUES
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`) VALUES 
     (1, 'admin', 'lucy@lala.com', MD5('testtest')),
-    (2, 'bb', 'bb@lala.com', MD5('testtest'));
+    (2, 'bbb', 'bb@lala.com', MD5('testtest'));
 
 
 INSERT INTO `users_ugrps` (`user_id`, `ugrp_id`, `is_admin`) VALUES 
@@ -34,7 +34,7 @@ INSERT INTO `users_ugrps` (`user_id`, `ugrp_id`, `is_admin`) VALUES
 
 
 INSERT INTO `ogrps` (`id`, `name`, `ugrp_id`) VALUES 
-    (1, 'all', 1),
+    (1, 'misc', 1),
     (2, 'temp', 1);
 
 
@@ -49,16 +49,17 @@ INSERT INTO `objects` (`id`, `name`, `description`, `ugrp_id`, `unit_symbol`, `c
 
 
 INSERT INTO `objects_ogrps` (`ogrp_id`, `object_id`) VALUES
-    -- (1, 1), automatically added by trigger
-    -- (1, 2),
+    (1, 1),
+    (1, 2),
     (2, 3),
     (2, 4);
 
 
-INSERT INTO `apikeys` (`user_id`, `secret`, `readonly`) VALUES 
-    (1, 'ro1', 1),
-    (1, 'wr1', 0),
-    (2, 'wr2', 0);
+INSERT INTO `apikeys`(`id`, `user_id`, `secret`, `readonly`) VALUES
+    (1, 1, 'wr1', 0),
+    (2, 1, 'ro1', 1),
+    (3, 2, 'wr2', 0),
+    (4, 2, 'ro2', 1);
 
 
 INSERT INTO `rights` (`ogrp_id`, `ugrp_id`) VALUES 
