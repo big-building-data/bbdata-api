@@ -6,6 +6,7 @@ import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 /**
@@ -29,7 +30,12 @@ class MeController(private val userRepository: UserRepository,
 
     @Protected
     @GetMapping("/me/userGroups")
-    fun getMyGroups(@UserId userId: Int): List<UsergroupInfo> =
-            userGroupMappingRepository.getByUserId(userId).map { UsergroupInfo(it) }
+    fun getMyGroups(@UserId userId: Int,
+                    @RequestParam("admin", required = false) isAdmin: Boolean = false
+    ): List<UsergroupInfo> {
+        val ugrps = userGroupMappingRepository.getByUserId(userId).map { UsergroupInfo(it) }
+        return if (isAdmin) ugrps.filter { it.admin == true }
+        else ugrps
+    }
 
 }

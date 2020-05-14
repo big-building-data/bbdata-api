@@ -19,7 +19,7 @@ annotation class SimpleModificationStatusResponse
 
 object CommonResponses {
     // TODO: https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10.3.5, 304 should not have a body
-    fun notModifed(msg: String = "No modification.") = ResponseEntity(msg, HttpStatus.NOT_MODIFIED)
+    fun notModifed(msg: String? = null) = ResponseEntity(msg, HttpStatus.NOT_MODIFIED)
 
-    fun ok(msg: String = "Success.") = ResponseEntity(msg, HttpStatus.OK)
+    fun ok(msg: String? = null) = ResponseEntity(msg, HttpStatus.OK)
 }

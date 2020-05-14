@@ -59,12 +59,13 @@ class UserController(private val userRepository: UserRepository,
     fun createUser(
             @UserId userId: Int,
             @RequestParam(name = "userGroupId", required = false) userGroupId: Int?,
+            @RequestParam(name = "admin", required = false) admin: Boolean,
             @Valid @RequestBody newUser: NewUser): User {
         // Note: the user won't be part of any userGroup, so he has to be added through another call
         // to the ObjectGroupsPermissionController
         val user = userRepository.saveAndFlush(newUser.toUser())
         userGroupId?.let {
-            userGroupMappingController.addUserToGroup(userId, it, newUserId = user.id!!, admin = false)
+            userGroupMappingController.addUserToGroup(userId, it, newUserId = user.id!!, admin = admin)
         }
         return user
     }
