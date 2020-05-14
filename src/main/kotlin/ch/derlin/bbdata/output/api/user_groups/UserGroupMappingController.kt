@@ -38,6 +38,8 @@ class UserGroupMappingController(
                        @PathVariable(name = "userId") newUserId: Int,
                        @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean
     ): ResponseEntity<String> {
+        // admin cannot be deleted
+        if (newUserId == 1) throw ForbiddenException("Cannot edit SUPERUSER with ID=1")
         // ensure the user has the right to update members of this group
         ensureUserCanAccessGroup(userId, id, requireAdminRight = true)
         // ensure the user we want to update exists
@@ -67,6 +69,8 @@ class UserGroupMappingController(
                             @PathVariable(value = "userGroupId") id: Int,
                             @PathVariable(name = "userId") userIdToDelete: Int
     ): ResponseEntity<String> {
+        // admin cannot be deleted
+        if (userIdToDelete == 1) throw ForbiddenException("Cannot remove SUPERUSER with ID=1")
         // ensure the user has the right to update members of this group
         ensureUserCanAccessGroup(userId, id, requireAdminRight = true)
         // only remove if exists
