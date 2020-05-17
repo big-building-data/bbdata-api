@@ -12,6 +12,8 @@ import org.springframework.boot.runApplication
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.FilterType
+import org.springframework.context.annotation.Profile
+import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
@@ -45,6 +47,14 @@ class BBDataApplication {
     }
 
 }
+
+// this is only to turn off warnings "Spring Data Cassandra - Could not safely identify store assignment"
+// to work, spring.data.cassandra.repositories.type=none must be set in the properties file
+// if there is a problem, simply delete the class+annotation and remove the property in application.properties
+@Configuration
+@Profile(Profiles.CASSANDRA)
+@EnableCassandraRepositories(basePackages = arrayOf("ch.derlin.bbdata.common.cassandra"))
+class CassandraConfig
 
 // CORS configuration: allow everything from all origin
 @Configuration
