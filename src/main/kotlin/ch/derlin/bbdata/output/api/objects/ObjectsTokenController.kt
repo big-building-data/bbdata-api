@@ -63,14 +63,17 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
             @Valid @RequestBody descriptionBody: Beans.Description?): Token {
 
         // ensure rights
-        objectRepository.findById(objectId, userId, writable = true).orElseThrow {
+        val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
+        if (obj.disabled)
+            throw WrongParamsException(msg = "Object $objectId is disabled.")
 
         return tokenRepository.saveAndFlush(Token.create(objectId, descriptionBody?.description))
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Edit a token description.")
     @PostMapping("{objectId}/tokens/{tokenId}")
     fun editObjectToken(
             @UserId userId: Int,

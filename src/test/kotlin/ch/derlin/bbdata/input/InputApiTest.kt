@@ -3,11 +3,12 @@ package ch.derlin.bbdata.input
 import ch.derlin.bbdata.Profiles
 import ch.derlin.bbdata.common.dates.JodaUtils
 import ch.derlin.bbdata.getQueryJson
+import ch.derlin.bbdata.postQueryString
 import ch.derlin.bbdata.postWithBody
 import com.jayway.jsonpath.JsonPath
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
@@ -57,19 +58,19 @@ class InputApiTest {
     fun `1-0 test submit measure fail`() {
         // test bad timestamps
         var resp = restTemplate.postWithBody(URL, getMeasureBody(ts = "10-01-12T01:00"))
-        Assertions.assertNotEquals(HttpStatus.OK, resp.statusCode, "year 10BC")
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "year 10BC")
         resp = restTemplate.postWithBody(URL, getMeasureBody(ts = ""))
-        Assertions.assertNotEquals(HttpStatus.OK, resp.statusCode, "empty ts")
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "empty ts")
         resp = restTemplate.postWithBody(URL, getMeasureBody(ts = "2080-02-06T12:00"))
-        Assertions.assertNotEquals(HttpStatus.OK, resp.statusCode, "ts in the future")
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "ts in the future")
         // test empty value
         resp = restTemplate.postWithBody(URL, getMeasureBody(value = ""))
-        Assertions.assertNotEquals(HttpStatus.OK, resp.statusCode, "empty value")
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "empty value")
         // test wrong login
         resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 2))
-        Assertions.assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong objectId")
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong objectId")
         resp = restTemplate.postWithBody(URL, getMeasureBody(token = "00000000000000000000000000000000"))
-        Assertions.assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong token")
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong token")
     }
 
 
@@ -77,39 +78,39 @@ class InputApiTest {
     fun `1-1 test submit measure ok`() {
         writeCounter = getWriteCounter()
         val resp = restTemplate.postWithBody(URL, getMeasureBody())
-        Assertions.assertEquals(HttpStatus.OK, resp.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode)
 
         val json = JsonPath.parse(resp.body)
-        Assertions.assertFalse(resp.body!!.contains("token"))
-        Assertions.assertEquals(RANDOM_VALUE, json.read<String>("$.value"))
-        Assertions.assertTrue(json.read<String>("$.timestamp").startsWith(NOW.dropLast(1)))
-        Assertions.assertEquals("V", json.read<String>("$.unitSymbol"))
-        Assertions.assertEquals("volt", json.read<String>("$.unitName"))
-        Assertions.assertEquals(1, json.read<Int>("$.owner"))
+        assertFalse(resp.body!!.contains("token"))
+        assertEquals(RANDOM_VALUE, json.read<String>("$.value"))
+        assertTrue(json.read<String>("$.timestamp").startsWith(NOW.dropLast(1)))
+        assertEquals("V", json.read<String>("$.unitSymbol"))
+        assertEquals("volt", json.read<String>("$.unitName"))
+        assertEquals(1, json.read<Int>("$.owner"))
     }
 
     @Test
     fun `1-2 test get measure`() {
         val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/values/latest", "accept" to "application/json")
-        Assertions.assertEquals(HttpStatus.OK, status)
+        assertEquals(HttpStatus.OK, status)
 
         val latestValue = json.read<Map<String,Any>>("$.[0]")
-        Assertions.assertEquals(OBJ, latestValue.get("objectId"))
-        Assertions.assertTrue((latestValue.get("timestamp") as String).startsWith(NOW.dropLast(1)))
-        Assertions.assertEquals(RANDOM_VALUE, latestValue.get("value"))
-        Assertions.assertNull(latestValue.get("comment"))
+        assertEquals(OBJ, latestValue.get("objectId"))
+        assertTrue((latestValue.get("timestamp") as String).startsWith(NOW.dropLast(1)))
+        assertEquals(RANDOM_VALUE, latestValue.get("value"))
+        assertNull(latestValue.get("comment"))
 
     }
 
     @Test
     fun `1-3 test write counter incremented`() {
         val wc = getWriteCounter()
-        Assertions.assertEquals(writeCounter+1, wc)
+        assertEquals(writeCounter+1, wc)
     }
 
     private fun getWriteCounter(): Int {
         val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/stats/counters")
-        Assertions.assertEquals(HttpStatus.OK, status)
+        assertEquals(HttpStatus.OK, status)
         return json.read<Int>("$.nValues")
     }
 }

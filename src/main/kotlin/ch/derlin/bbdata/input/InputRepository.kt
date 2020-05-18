@@ -1,5 +1,6 @@
 package ch.derlin.bbdata.input
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.*
@@ -19,10 +20,11 @@ class InputRepository {
         val unitSymbol: String = fields[1] as String
         val type: String = fields[2] as String
         val owner: Int = fields[3] as Int
+        val disabled: Boolean = fields[4] as Boolean
 
         companion object {
             val NATIVE_QUERY: String = """
-            SELECT u.name AS "unitName", u.symbol AS "unitSymbol", u.type, o.ugrp_id AS "owner"
+            SELECT u.name AS "unitName", u.symbol AS "unitSymbol", u.type, o.ugrp_id AS "owner", o.disabled
             FROM objects o INNER JOIN tokens t ON o.id = t.object_id INNER JOIN units u ON u.symbol = o.unit_symbol
             WHERE o.id = :objectId AND t.token = :token
             """.trimIndent()

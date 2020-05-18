@@ -1,6 +1,7 @@
 package ch.derlin.bbdata.input
 
 import ch.derlin.bbdata.common.cassandra.*
+import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -71,6 +72,10 @@ class InputController(
         // get metadata
         val meta = inputRepository.getMeasureMeta(measure.objectId!!, measure.token!!).orElseThrow {
             ItemNotFoundException(msg = "The pair <objectId (${measure.objectId}), token> does not exist")
+        }
+        // ensure the object is enabled. This is just a double check, as tokens cannot be created on disabled objects
+        if (meta.disabled) {
+            throw ForbiddenException("Object ${measure.objectId} is disabled.")
         }
         // create augmented measure (to post to kafka)
         val augmentedJson = mapper.writer().writeValueAsString(NewValueAugmented.create(measure, meta))
