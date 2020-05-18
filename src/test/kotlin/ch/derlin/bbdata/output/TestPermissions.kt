@@ -1,7 +1,7 @@
 package ch.derlin.bbdata.output
 
-import ch.derlin.bbdata.JsonEntity
-import ch.derlin.bbdata.Profiles
+import ch.derlin.bbdata.*
+import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
@@ -14,6 +14,7 @@ import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import kotlin.random.Random
 
 /**
  * date: 08.02.20
@@ -76,4 +77,22 @@ class TestPermissions {
             assertTrue(response.body!!.contains("Cannot .* SUPERUSER".toRegex()), "$method: ${response.body}")
         }
     }
+
+    @Test
+    fun `3-1 object groups must be created by owners`() {
+        // try to create an object group with user 2 but specifying group 1 (he's not an admin of)
+        val name = "xxx${Random.nextInt(1000)}"
+        val response = restTemplate.putWithBody("/objectGroups",
+                """{"name": "$name", "owner": 1}""", *USER2)
+
+        if(response.statusCode == HttpStatus.OK) {
+            // FAILED: delete the group before making any assert
+            JsonPath.parse(response.body).read<Int?>("$.id").let { id ->
+                restTemplate.delete("/objectGroups/$id")
+            }
+        }
+        assertEquals(HttpStatus.NOT_FOUND, response.statusCode)
+    }
+
+
 }
