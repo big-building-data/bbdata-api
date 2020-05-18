@@ -13,6 +13,7 @@ import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -26,6 +27,7 @@ class ObjectGroupsPermissionsController(
 
 
     @Protected
+    @Operation(description = "Get the list of user groups having access to an object group you own.")
     @GetMapping("/{objectGroupId}/userGroups")
     fun getPermissions(@UserId userId: Int, @PathVariable(value = "objectGroupId") id: Long): List<UserGroup> {
 
@@ -36,6 +38,8 @@ class ObjectGroupsPermissionsController(
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Give a user group access to an object group you own. " +
+            "If the user group already has access, it simply returns NOT MODIFIED.")
     @SimpleModificationStatusResponse
     @PutMapping("/{objectGroupId}/userGroups/{userGroupId}")
     fun addPermission(@UserId userId: Int,
@@ -46,6 +50,8 @@ class ObjectGroupsPermissionsController(
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Revoke the access of a user group to an object group you own. " +
+            "If the user group doesn't have access, it simply returns NOT MODIFIED.")
     @SimpleModificationStatusResponse
     @DeleteMapping("/{objectGroupId}/userGroups/{userGroupId}")
     fun removePermission(@UserId userId: Int,

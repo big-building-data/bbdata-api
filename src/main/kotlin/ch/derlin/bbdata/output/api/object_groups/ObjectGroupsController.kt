@@ -14,6 +14,7 @@ import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -53,6 +54,8 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
 
     @Protected
     @GetMapping("")
+    @Operation(description = "Get all object groups. You can use the parameter `writable` to only return " +
+            "object groups you own (hence have the right to edit), and `withObjects` to also get the list of objects in each.")
     @ApiResponse(
             responseCode = "200",
             description = "default response. Note: if *withObject* is false, the `objects` array will be missing.",
@@ -60,8 +63,8 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
                     array = ArraySchema(schema = Schema(implementation = ObjectGroup::class))
             )))
     fun getObjectGroups(@UserId userId: Int,
-               @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
-               @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean)
+                        @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
+                        @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean)
             : List<ObjectGroup> {
 
         val ogrpList =
@@ -73,11 +76,15 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Create a new, empty object group.<br>" +
+            "_NOTE_: since users can be _admins_ of multiple user groups, " +
+            "you need to explicitly pass the ID of the user group that will own the new group via `owner`.")
     @PutMapping("")
-    fun createObjectGroup(@UserId userId: Int,
-                  @Valid @NotNull @RequestBody newOgrp: NewObjectGroup): ObjectGroup {
+    fun createObjectGroup(
+            @UserId userId: Int,
+            @Valid @NotNull @RequestBody newOgrp: NewObjectGroup): ObjectGroup {
 
-        val owner = userGroupRepository.findMine(userId, newOgrp.owner!!).orElseThrow {
+        val owner = userGroupRepository.findMine(userId, newOgrp.owner!!, admin = true).orElseThrow {
             ItemNotFoundException("userGroup (${newOgrp.owner})")
         }
 
@@ -91,10 +98,11 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Edit an object group you own, such as its name or description.")
     @PostMapping("/{objectGroupId}")
     fun editObjectGroup(@UserId userId: Int,
-                @PathVariable("objectGroupId") id: Long,
-                @Valid @NotNull @RequestBody editableFields: EditableFields): ObjectGroup {
+                        @PathVariable("objectGroupId") id: Long,
+                        @Valid @NotNull @RequestBody editableFields: EditableFields): ObjectGroup {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
             ItemNotFoundException("objectGroup (${id})")
@@ -106,13 +114,15 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
 
     @Protected
     @GetMapping("/{objectGroupId}")
+    @Operation(description = "Get the details of an object group (name, description). " +
+            "To also get the objects it contains, use the URL parameter `withObjects=true` (default: false).")
     @ApiResponse(
             responseCode = "200",
             description = "default response. Note: if *withObject* is false, the `objects` array will be missing.",
             content = arrayOf(Content(schema = Schema(implementation = ObjectGroup::class))))
     fun getObjectGroup(@UserId userId: Int,
-                   @PathVariable(value = "objectGroupId") id: Long,
-                   @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): ObjectGroup {
+                       @PathVariable(value = "objectGroupId") id: Long,
+                       @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): ObjectGroup {
         val ogrp = objectGroupsRepository.findOne(userId, id).orElseThrow {
             ItemNotFoundException("object group ($id)")
         }
@@ -120,6 +130,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Delete an object group you own.")
     @DeleteMapping("/{objectGroupId}")
     @SimpleModificationStatusResponse
     fun deleteObjectGroup(@UserId userId: Int, @PathVariable(value = "objectGroupId") id: Long): ResponseEntity<String> {

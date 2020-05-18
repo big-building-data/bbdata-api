@@ -13,6 +13,7 @@ import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -26,16 +27,19 @@ class ObjectGroupsObjectController(
         private val objectRepository: ObjectRepository) {
 
     @Protected
+    @Operation(description = "Get all objects belonging to an object group.")
     @GetMapping("/{objectGroupId}/objects")
     fun getObjectsOfGroup(@UserId userId: Int, @PathVariable(value = "objectGroupId") id: Long): MutableList<Objects> {
 
-        val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
+        val ogrp = objectGroupsRepository.findOne(userId, id).orElseThrow {
             ItemNotFoundException("object group ($id)")
         }
         return ogrp.objects
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Add an object to an object group you own. " +
+            "If the object is already present, it simply returns NOT MODIFIED.")
     @SimpleModificationStatusResponse
     @PutMapping("/{objectGroupId}/objects/{objectId}")
     fun addObjectToGroup(@UserId userId: Int,
@@ -60,6 +64,8 @@ class ObjectGroupsObjectController(
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Remove an object to an object group you own. " +
+            "If the object is not present, it simply returns NOT MODIFIED.")
     @SimpleModificationStatusResponse
     @DeleteMapping("/{objectGroupId}/objects/{objectId}")
     fun removeObjectFromGroup(@UserId userId: Int,

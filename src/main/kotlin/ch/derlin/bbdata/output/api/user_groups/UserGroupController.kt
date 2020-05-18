@@ -7,6 +7,7 @@ import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.ResponseEntity
@@ -33,12 +34,14 @@ class UserGroupController(
     }
 
     @Protected
+    @Operation(description = "Get the list of existing user groups.")
     @GetMapping("/userGroups")
     fun getUserGroups(@UserId userId: Int): List<UserGroup> =
             userGroupRepository.findAll()
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Create a new user group. You will automatically be made admin of it, along with user ROOT.")
     @PutMapping("/userGroups")
     fun createUserGroup(@UserId userId: Int,
                         @Valid @NotNull @RequestBody newUserGroupBody: NewUserGroup): UserGroup {
@@ -48,12 +51,14 @@ class UserGroupController(
         try {
             userGroupMappingRepository.save(UsergroupMapping(userId = userId, groupId = ugrp.id!!, isAdmin = true))
         } catch (e: DataIntegrityViolationException) {
-            // Duplicate entry possible if only if ROOT, because this is done in a trigger
+            // Duplicate entry possible only if ROOT, because this is done in a trigger
         }
         return ugrp
     }
 
     @Protected
+    @Operation(description = "Get the details of a user group.<br>" +
+            "_NOTE_: To get the users part of it, use /userGroups/ugID/users instead.")
     @GetMapping("/userGroups/{userGroupId}")
     fun getUserGroup(@UserId userId: Int,
                      @PathVariable(value = "userGroupId") id: Int): UserGroup =
@@ -61,6 +66,7 @@ class UserGroupController(
             userGroupRepository.findById(id).orElseThrow { ItemNotFoundException("usergroup (${id})") }
 
     @Protected
+    @Operation(description = "Get the users belonging to a user group, along with their role (admin or not).")
     @GetMapping("/userGroups/{userGroupId}/users")
     fun getUsersInGroup(@UserId userId: Int,
                         @PathVariable(value = "userGroupId") id: Int): List<UsergroupMapping> =
@@ -71,6 +77,7 @@ class UserGroupController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @SimpleModificationStatusResponse
+    @Operation(description = "Delete a user group you are admin of.")
     @DeleteMapping("/userGroups/{userGroupId}")
     fun deleteUserGroup(@UserId userId: Int,
                         @PathVariable("userGroupId") id: Int): ResponseEntity<String> {

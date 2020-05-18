@@ -4,6 +4,7 @@ import ch.derlin.bbdata.output.api.user_groups.UserGroupMappingRepository
 import ch.derlin.bbdata.output.api.user_groups.UsergroupMapping
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -25,10 +26,12 @@ class MeController(private val userRepository: UserRepository,
     }
 
     @Protected
+    @Operation(description = "Get details about you.")
     @GetMapping("/me")
     fun getMe(@UserId userId: Int): User = userRepository.getOne(userId)
 
     @Protected
+    @Operation(description = "Get all the user groups you belong to, along with your role (admin or not).")
     @GetMapping("/me/userGroups")
     fun getMyGroups(@UserId userId: Int,
                     @RequestParam("admin", required = false) isAdmin: Boolean = false

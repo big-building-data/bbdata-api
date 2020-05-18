@@ -8,6 +8,7 @@ import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -20,6 +21,7 @@ class UserGroupMappingController(
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Get the details of a user part of the user group (such as his role, admin or not).")
     @GetMapping("/userGroups/{userGroupId}/users/{userId}")
     fun getUserInGroup(@UserId userId: Int,
                        @PathVariable(value = "userGroupId") userGroupId: Int,
@@ -31,6 +33,10 @@ class UserGroupMappingController(
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Add a user to a user group you are admin of, or change his role. " +
+            "If the user is already present with the given role, it simply returns NOT MODIFIED. " +
+            "If the user has another role (admin/regular), it will be updated.<br>" +
+            "_NOTE_: user with id=1 cannot be touched.")
     @SimpleModificationStatusResponse
     @PutMapping("/userGroups/{userGroupId}/users/{userId}")
     fun addUserToGroup(@UserId userId: Int,
@@ -63,6 +69,9 @@ class UserGroupMappingController(
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Remove a user from a user group you are admin of. " +
+            "If the user is not part of it, it simply returns NOT MODIFIED.<br>" +
+            "_NOTE_: user with id=1 cannot be touched.")
     @SimpleModificationStatusResponse
     @DeleteMapping("/userGroups/{userGroupId}/users/{userId}")
     fun removeUserFromGroup(@UserId userId: Int,
@@ -82,20 +91,22 @@ class UserGroupMappingController(
         return CommonResponses.notModifed()
     }
 
-    // @Protected(SecurityConstants.SCOPE_WRITE)
-    // @PutMapping("/userGroups/{userGroupId}/users/new")
-    // fun createUserInGroup(@UserId userId: Int,
-    //                @Valid @RequestBody newUser: UserController.NewUser,
-    //                @PathVariable(value = "userGroupId") id: Int,
-    //                @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): User {
-    //     // ensure the user has the right to add a member to the group
-    //     val mapping = canUserModifyGroup(userId, id)
-    //     // create both user and mapping (group permission)
-    //     if (!mapping.isAdmin) throw ForbiddenException("You must be admin to add users.")
-    //     val user = userRepository.saveAndFlush(newUser.toUser()) // use flush to get the generated ID
-    //     userGroupMappingRepository.save(UsergroupMapping(userId = user.id!!, groupId = id, isAdmin = admin))
-    //     return user
-    // }
+    /*
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @PutMapping("/userGroups/{userGroupId}/users/new")
+    fun createUserInGroup(@UserId userId: Int,
+                   @Valid @RequestBody newUser: UserController.NewUser,
+                   @PathVariable(value = "userGroupId") id: Int,
+                   @RequestParam(name = "admin", required = false, defaultValue = "false") admin: Boolean): User {
+        // ensure the user has the right to add a member to the group
+        val mapping = canUserModifyGroup(userId, id)
+        // create both user and mapping (group permission)
+        if (!mapping.isAdmin) throw ForbiddenException("You must be admin to add users.")
+        val user = userRepository.saveAndFlush(newUser.toUser()) // use flush to get the generated ID
+        userGroupMappingRepository.save(UsergroupMapping(userId = user.id!!, groupId = id, isAdmin = admin))
+        return user
+    }
+    */
 
     fun ensureUserCanAccessGroup(userId: Int, groupId: Int, requireAdminRight: Boolean = false): UsergroupMapping {
         // ensure the user has the right to add a member to the group
@@ -103,7 +114,7 @@ class UserGroupMappingController(
             ItemNotFoundException("usergroup (${groupId})")
         }
         if (requireAdminRight && !mapping.isAdmin)
-            throw ForbiddenException("You must be admin to add users.")
+            throw ForbiddenException("You must be admin to execute this action.")
         return mapping
     }
 }

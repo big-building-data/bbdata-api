@@ -8,6 +8,7 @@ import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.SecurityConstants.ADMIN_GROUP
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -44,13 +45,17 @@ class TypesController(private val unitRepository: UnitRepository,
         val type: String = ""
     }
 
+    @Operation(description = "Get the list of data types supported.")
     @GetMapping("/types")
     fun getTypes(): List<BaseType> = baseTypeRepository.findAll()
 
+    @Operation(description = "Get the list of units supported.")
     @GetMapping("/units")
     fun getUnits(): List<Unit> = unitRepository.findAll()
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Create a new unit. " +
+            "__IMPORTANT__: this endpoint is only accessible to the user group ADMIN (id=1).")
     @PostMapping("/units")
     fun addUnit(@UserId userId: Int, @Valid @NotNull @RequestBody newUnit: NewUnit): Unit {
         if (!userGroupMappingRepository.existsById(UserUgrpMappingId(userId = userId, groupId = ADMIN_GROUP)))

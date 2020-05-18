@@ -42,18 +42,20 @@ class UserController(private val userRepository: UserRepository,
 
     }
 
-    @Protected
+    @Protected // TODO: permissions ?
+    @Operation(description = "Get the list of all users registered.")
     @GetMapping("/users")
     fun getUsers(): List<User> = userRepository.findAll() // TODO: try to comment this endpoint... HATEOAS ! /search
 
     @Protected
+    @Operation(description = "Get details about a user.")
     @GetMapping("/users/{userId}")
     fun getUser(@PathVariable("userId") userId: Int): User = userRepository.findById(userId).orElseThrow {
         ItemNotFoundException("user ($userId)")
     }
 
-    @Operation(description = "Create a new user. Note that if no userGroupId is set, " +
-            "the user won't have access to any resources until you explicitly add it to a userGroup.")
+    @Operation(description = "Create a new user. You can use the parameters `userGroupId` and `admin` to " +
+            "also add the created user to a user group you own (see PUT /userGroups/ugID/users/uID for more details).")
     @Protected(SecurityConstants.SCOPE_WRITE)
     @PutMapping("/users")
     fun createUser(
@@ -65,6 +67,7 @@ class UserController(private val userRepository: UserRepository,
         // to the ObjectGroupsPermissionController
         val user = userRepository.saveAndFlush(newUser.toUser())
         userGroupId?.let {
+            // the controller will take care of the permissions
             userGroupMappingController.addUserToGroup(userId, it, newUserId = user.id!!, admin = admin)
         }
         return user

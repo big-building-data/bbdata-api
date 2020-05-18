@@ -7,6 +7,7 @@ import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
 import org.springframework.http.ResponseEntity
@@ -25,6 +26,9 @@ import javax.validation.constraints.NotNull
 class ObjectsCommentController(private val objectRepository: ObjectRepository,
                                private val commentRepository: CommentRepository) {
 
+    // TODO: who can create comment ? Currently: anyone having access
+    // TODO: add a userId column to the comment table !!!!!
+
     class NewComment {
         @NotNull
         val from: DateTime? = null
@@ -36,41 +40,35 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
         val comment: String? = null
     }
 
-
     @Protected
+    @Operation(description = "Get all comments attached to an object. " +
+            "If `forDate` is specified, only return comments covering a given date. " +
+            "For example: if comment C1 covers 2050-01-01 to 2050-02-01, it will be returned for date 2050-01-12, but " +
+            "not for date 2050-03-01.")
     @GetMapping("/{objectId}/comments")
     fun getComments(
             @UserId userId: Int,
-            @PathVariable("objectId") objectId: Long): List<Comment> {
-
-        val obj = objectRepository.findById(objectId, userId, writable = false).orElseThrow {
-            ItemNotFoundException("object ($objectId)")
-        }
-        return obj.comments
-    }
-
-    @Protected
-    @GetMapping("/{objectId}/comments", params = arrayOf("forDate"))
-    fun getCommentsForDate(
-            @UserId userId: Int,
             @PathVariable("objectId") objectId: Long,
-            @RequestParam("forDate") forDate: DateTime): List<Comment> {
+            @RequestParam("forDate", required = false) forDate: DateTime?): List<Comment> {
 
         val obj = objectRepository.findById(objectId, userId, writable = false).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
-        return commentRepository.findForDate(obj.id!!, forDate)
+        if(forDate != null) return commentRepository.findForDate(obj.id!!, forDate)
+        else return obj.comments
     }
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Attach a new comment to an object. " +
+            "A comment is a text that covers/applies to a specific period.")
     @PutMapping("/{objectId}/comments")
     fun createComment(
             @UserId userId: Int,
             @PathVariable("objectId") objectId: Long,
             @Valid @NotNull @RequestBody newComment: NewComment): Comment {
 
-        val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
+        val obj = objectRepository.findById(objectId, userId, writable = false).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
 
@@ -87,6 +85,7 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
     }
 
     @Protected
+    @Operation(description = "Get a comment by ID.")
     @GetMapping("/{objectId}/comments/{commentId}")
     fun getComment(
             @UserId userId: Int,
@@ -102,6 +101,7 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Delete a comment.")
     @SimpleModificationStatusResponse
     @DeleteMapping("/{objectId}/comments/{commentId}")
     fun deleteComment(
@@ -109,7 +109,7 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
             @PathVariable("objectId") objectId: Long,
             @PathVariable("commentId") id: Int): ResponseEntity<String> {
 
-        val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
+        val obj = objectRepository.findById(objectId, userId, writable = false).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
         val comment = commentRepository.findByIdAndObjectId(id, obj.id!!)

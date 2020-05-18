@@ -54,6 +54,9 @@ class ApikeyController(
     }
 
     @PostMapping("/login")
+    @Operation(description = "Login to the API using username/password. " +
+            "It will create and return a writable apikey valid for $AUTOLOGIN_EXPIRE_HOURS hours.<br> " +
+            "To access the other endpoints, use your user ID and the 32-char apikey secret returned.")
     fun login(@Valid @NotNull @RequestBody loginBody: LoginBody): Apikey {
         val optionalUserId = userRepository.findByName(loginBody.username!!).map { it.id }
         if (optionalUserId.isPresent && apikeyRepository.canLogin(optionalUserId.get(), loginBody.password!!) > 0) {
@@ -69,19 +72,22 @@ class ApikeyController(
     }
 
     @Protected
+    @Operation(description = "Logout from the API by deleting the apikey used for the request.")
     @PostMapping("/logout")
     fun logout(@UserId userId: Int, @RequestAttribute(SecurityConstants.HEADER_TOKEN) apikey: String): Unit {
         apikeyRepository.findValid(userId, apikey).map { apikeyRepository.delete(it) }
     }
 
     @GetMapping("/apikeys")
+    @Operation(description = "Get all your apikeys. " +
+            "__IMPORTANT__: while being a get request, this requires endpoint a _writable_ apikey.")
     @Protected(SecurityConstants.SCOPE_WRITE)
     fun getApikeys(@UserId userId: Int): List<Apikey> = apikeyRepository.findByUserId(userId)
 
     @PutMapping("/apikeys")
-    @Operation(description = "Create an apikey. " +
+    @Operation(description = "Create an apikey, writable or read-only.<br>" +
             "`expirationDate`can either be an ISO datetime string (UTC) or a duration (1d, 1d-3h, 3h, etc.). " +
-            "For no expirationDate, either don't use the parameter or set it explicitly to null.")
+            "For no expirationDate, either don't use the parameter or set it _explicitly_ to `null`.")
     @Protected(SecurityConstants.SCOPE_WRITE)
     fun createApikey(
             @UserId userId: Int, // TODO: writable => readOnly
@@ -101,7 +107,7 @@ class ApikeyController(
     @PostMapping("/apikeys/{apikeyId}")
     @Operation(description = "Edit an apikey. Missing or blank (null) fields won't be updated. " +
             "`expirationDate`can either be an ISO datetime string (UTC) or a duration (1d, 1d-3h, 3h, etc.). " +
-            "__IMPORTANT__: to unset `expirationDate`, pass the explicit string value `\"null\"`.")
+            "To __unset__ `expirationDate`, pass the explicit string value `\"null\"`.")
     @Protected(SecurityConstants.SCOPE_WRITE)
     fun editApikey(
             @UserId userId: Int,
@@ -120,6 +126,8 @@ class ApikeyController(
 
     @DeleteMapping("/apikeys/{apikeyId}")
     @SimpleModificationStatusResponse
+    @Operation(description = "Delete an apikey using the apikey ID.<br>" +
+            "_NOTE_: to delete the active apikey, using the endpoint `/logout` is preferred.")
     @Protected(SecurityConstants.SCOPE_WRITE)
     fun deleteApikey(@UserId userId: Int, @PathVariable("apikeyId") id: Int): ResponseEntity<String> {
         val apikey = apikeyRepository.findByIdAndUserId(id, userId)
@@ -129,8 +137,10 @@ class ApikeyController(
     }
 
     companion object {
-        val AUTOLOGIN_DESCRIPTION = "auto_login"
-        val AUTOLOGIN_EXPIRE = MutablePeriod(13, 0, 0, 0).toPeriod()
+        const val AUTOLOGIN_DESCRIPTION = "auto_login"
+        const val AUTOLOGIN_EXPIRE_HOURS = 13
+
+        val AUTOLOGIN_EXPIRE = MutablePeriod(AUTOLOGIN_EXPIRE_HOURS, 0, 0, 0).toPeriod()
 
         fun parseDateOrDuration(raw: String): DateTime? {
             if (raw.trim().toLowerCase() == "null") return null
