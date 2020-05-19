@@ -21,7 +21,9 @@ mysql -u root bbdata2 < test-data.sql
 
 # Dev setup docker
 
-Create the image:
+__Important__: if you change the structure or test data (`*.sql`), you need to rebuild the image !
+
+Build the image:
 ```bash
 docker build -t bbdata-mysql .
 ``` 
