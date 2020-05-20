@@ -19,6 +19,16 @@ mysql -u root < bbdata2-structure.sql
 mysql -u root bbdata2 < test-data.sql
 ```
 
+## Add scheduler 
+
+In the MySQL prompt:
+```mysql
+SET GLOBAL event_scheduler = ON;
+delimiter $$
+create event event_clean_apikeys on schedule every 1 day do begin call clean_apikeys(); end $$
+delimiter ;
+```
+
 # Dev setup docker
 
 __Important__: if you change the structure or test data (`*.sql`), you need to rebuild the image !
