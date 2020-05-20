@@ -65,6 +65,9 @@ class TestPermissions {
                 errors.add("GET: $url with user2 returned ${response.statusCode}, should have access")
         }
 
+        // undo what needs to be undone
+        restTemplate.deleteQueryString("/userGroups/1/users/2", *USER1)
+
         assertTrue(errors.isEmpty(), errors.joinToString("\n") + "\n")
     }
 
@@ -92,6 +95,13 @@ class TestPermissions {
             }
         }
         assertEquals(HttpStatus.NOT_FOUND, response.statusCode)
+    }
+
+    @Test
+    fun `4-1 only admin can add new units`(){
+        val response = restTemplate.postWithBody("/units",
+                """{"type": "float", "name": "lala", "symbol": "L"}""", *USER2)
+        assertEquals(HttpStatus.FORBIDDEN, response.statusCode, response.body)
     }
 
 

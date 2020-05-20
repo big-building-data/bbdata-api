@@ -14,15 +14,15 @@ This repository is the cornerstone of BBData. It contains:
 * IntelliJ IDE with Kotlin support
 * Docker
 
-### Setup
+### Setup
 
 Open the project in IntelliJ and let it work. Once finished, you should be able to simply run the app by 
 launching the main class `ch.derlin.bbdata.BBDataApplication` (open it and right-click > run).
 
 Of course, you will need MySQL, Cassandra and Kafka running for the whole API to run (to skip some of those deps, 
-the the Profiles section). 
+the the Profiles section).
 
-### Cassandra, MySQL and Kafka
+### Cassandra, MySQL and Kafka
 
 To setup the three dependant services, have a look at the `other` folder.
 It contains all the files needed for a production setup, as well as instruction on how to run a Docker container
