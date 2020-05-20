@@ -68,7 +68,7 @@ class AuthInterceptor : HandlerInterceptor {
         }
 
         // allow non-bbdata endpoints, such as doc
-        if (!handler.beanType.packageName.contains("bbdata")) {
+        if (!handler.beanType.name.contains("bbdata")) {
             return true
         }
 

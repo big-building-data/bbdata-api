@@ -77,7 +77,7 @@ To deploy in production, you need to build the jar and override some properties 
 Here is a sample file, values to change are in UPPERCASE:
 ```properties
 ## MySQL properties
-spring.datasource.url=jdbc:mysql://HOST:PORT/bbdata2?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&allowPublicKeyRetrieval=true
+spring.datasource.url = jdbc:mysql://HOST:PORT/bbdata2?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&allowMultiQueries=true&allowPublicKeyRetrieval=true&serverTimezone=UTC
 spring.datasource.username=bbdata-admin
 spring.datasource.password=PASSWORD
 
