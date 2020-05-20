@@ -89,3 +89,24 @@ spring.data.cassandra.consistency-level=quorum
 spring.kafka.producer.bootstrap-servers=HOST:PORT
 spring.kafka.template.default-topic=bbdata2-augmented
 ```
+
+### Executing the jar
+
+The jar is fully executable, meaning you can do:
+
+```bash
+# default
+./bbdata-api-*.jar
+
+# with profiles: no "-D", but "--" instead !
+./bbdata-api-*.jar --spring.profiles.active=unsecured,noc
+```
+
+Or, you can use the old school way:
+```bash
+# default
+java -jar bbdata-api-*.jar
+
+# with profiles: no -D !
+java -Dspring.profiles.active=unsecured,noc -jar bbdata-api-*.jar
+```

@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.springframework.boot.gradle.tasks.bundling.BootJar // for launchScript
 
 plugins {
     id("org.springframework.boot") version "2.2.1.RELEASE"
@@ -75,4 +76,9 @@ tasks.withType<KotlinCompile> {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "1.8"
     }
+}
+
+// see https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/html/#packaging-executable-configuring-launch-script
+tasks.getByName<BootJar>("bootJar") {
+    launchScript()
 }
