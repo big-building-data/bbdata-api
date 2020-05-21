@@ -4,6 +4,8 @@ import ch.derlin.bbdata.common.cassandra.*
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
+import ch.derlin.bbdata.output.api.types.BaseType
+import ch.derlin.bbdata.output.api.types.Unit
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
@@ -56,7 +58,6 @@ class InputController(
                     owner = m.owner
             )
         }
-
     }
 
     @PostMapping("objects/values")
@@ -77,6 +78,14 @@ class InputController(
         if (meta.disabled) {
             throw ForbiddenException("Object ${measure.objectId} is disabled.")
         }
+        // ensure the measure matches the type declared, and parse it
+        val parsedValue = BaseType.parseType(measure.value!!, meta.type)
+        if (parsedValue == null) {
+            throw WrongParamsException("The value '${measure.value}' does not match " +
+                    "the unit ${meta.unitSymbol} (${meta.type}) declared in the object definition.")
+        }
+        measure.value = parsedValue.toString()
+
         // create augmented measure (to post to kafka)
         val augmentedJson = mapper.writer().writeValueAsString(NewValueAugmented.create(measure, meta))
 

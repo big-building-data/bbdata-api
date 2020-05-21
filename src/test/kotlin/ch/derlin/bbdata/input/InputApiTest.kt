@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import kotlin.random.Random
@@ -37,18 +38,18 @@ class InputApiTest {
 
     companion object {
         val OBJ = 1
-        val TOKEN = "012345678901234567890123456789ab"
-        val RANDOM_VALUE = Random.nextInt(10000).toString()
+        val TOKEN_P = "012345678901234567890123456789a" // last digit is objectId
+        val RANDOM_VALUE = "${Random.nextInt(10000)}.0" // float
         val NOW = JodaUtils.getFormatter(JodaUtils.FMT_ISO_SECONDS).print(DateTime.now(DateTimeZone.UTC))
         val URL = "/objects/values"
 
         var writeCounter: Int = 0
 
         fun getMeasureBody(
-                objectId: Int = OBJ, token: String = TOKEN,
-                value: String = RANDOM_VALUE, ts: String = NOW): String = """{
+                objectId: Int = OBJ, token: String? = null,
+                value: Any = RANDOM_VALUE, ts: String = NOW): String = """{
             |"objectId": $objectId,
-            |"token": "$token",
+            |"token": "${token ?: TOKEN_P + objectId.toString()}",
             |"value": "$value",
             |"timestamp": "$ts"
             |}""".trimMargin()
@@ -67,7 +68,7 @@ class InputApiTest {
         resp = restTemplate.postWithBody(URL, getMeasureBody(value = ""))
         assertNotEquals(HttpStatus.OK, resp.statusCode, "empty value")
         // test wrong login
-        resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 2))
+        resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 2, token = "${TOKEN_P}1"))
         assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong objectId")
         resp = restTemplate.postWithBody(URL, getMeasureBody(token = "00000000000000000000000000000000"))
         assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong token")
@@ -94,7 +95,7 @@ class InputApiTest {
         val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/values/latest", "accept" to "application/json")
         assertEquals(HttpStatus.OK, status)
 
-        val latestValue = json.read<Map<String,Any>>("$.[0]")
+        val latestValue = json.read<Map<String, Any>>("$.[0]")
         assertEquals(OBJ, latestValue.get("objectId"))
         assertTrue((latestValue.get("timestamp") as String).startsWith(NOW.dropLast(1)))
         assertEquals(RANDOM_VALUE, latestValue.get("value"))
@@ -105,12 +106,55 @@ class InputApiTest {
     @Test
     fun `1-3 test write counter incremented`() {
         val wc = getWriteCounter()
-        assertEquals(writeCounter+1, wc)
+        assertEquals(writeCounter + 1, wc)
     }
 
     private fun getWriteCounter(): Int {
         val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/stats/counters")
         assertEquals(HttpStatus.OK, status)
         return json.read<Int>("$.nValues")
+    }
+
+    @Test
+    fun `2-1 test types`() {
+        var resp: ResponseEntity<String>
+
+        // test bad floats
+        for (v in listOf("true", "1.2.3")) {
+            resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 1, value = v))
+            assertNotEquals(HttpStatus.OK, resp.statusCode, "bad float: $v")
+        }
+        // test good float
+        resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 1, value = "1"))
+        assertEquals(HttpStatus.OK, resp.statusCode, "good float: 1")
+
+
+        // test bad ints
+        for (v in listOf("1.5", "1.", 1.4)) {
+            resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 3, value = v))
+            assertNotEquals(HttpStatus.OK, resp.statusCode, "bad int: $v")
+        }
+        // test good int
+        resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 3, value = "1"))
+        assertEquals(HttpStatus.OK, resp.statusCode, "good int: 1")
+
+
+        // test bad booleans
+        for (v in listOf("1.", "2", "oui", "xxx", 1.45)) {
+            resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 4, value = v))
+            assertNotEquals(HttpStatus.OK, resp.statusCode, "bad bool: $v")
+        }
+        // test good booleans: true
+        for (v in listOf("TRUE", "true", "1", "on", true)) {
+            resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 4, value = v))
+            assertEquals(HttpStatus.OK, resp.statusCode, "good bool true: $v")
+            assertEquals("true", JsonPath.parse(resp.body).read<String>("$.value"))
+        }
+        // test good booleans: false
+        for (v in listOf("False", "off", "OFF", "0", false)) {
+            resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 4, value = v))
+            assertEquals(HttpStatus.OK, resp.statusCode, "good bool false: $v")
+            assertEquals("false", JsonPath.parse(resp.body).read<String>("$.value"))
+        }
     }
 }

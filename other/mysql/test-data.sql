@@ -7,7 +7,7 @@ INSERT INTO `units` VALUES
     ('%','percentage','float'),
     ('°C','degree celsius C','float'),
     ('char','free text','string'),
-    ('h','hours','float'),
+    ('h','hours','int'),
     ('Here','presence','bool'),
     ('Hz','frequence','float'),
     ('kW','power','float'),
@@ -41,8 +41,8 @@ INSERT INTO `ogrps` (`id`, `name`, `ugrp_id`) VALUES
 INSERT INTO `objects` (`id`, `name`, `description`, `ugrp_id`, `unit_symbol`, `creationdate`) VALUES
     (1, 'volts box 1', '', 1, 'V', '2019-01-01'),
     (2, 'volts box 2', NULL, 1, 'V', '2019-01-01'),
-    (3, 'tmp box 1', NULL, 1, '°C', '2019-01-01'),
-    (4, 'tmp box 2', NULL, 1, '°C', DEFAULT),
+    (3, 'tmp box 1', NULL, 1, 'h', '2019-01-01'),
+    (4, 'tmp box 2', NULL, 1, 'Here', DEFAULT),
     (3008, 'blueFactory sensor', 'test values endpoint', 1, 'W', DEFAULT),
     (6602, 'aggr simple', 'test for aggr simple', 1, 'lx', '2019-01-01'),
     (13370, 'aggr extended', 'test for agg extended', 1, 'V', '2019-01-01');
@@ -70,6 +70,9 @@ INSERT INTO `comments` (`object_id`, `dfrom`, `dto`, `comment`) VALUES
     (1, '2019-12-31T20:00', '2020-01-01T02:00', 'happy new year !');
 
 INSERT INTO `tokens` (`id`, `token`, `object_id`, `description`) VALUES
-    (1, '012345678901234567890123456789ab', 1, 'test');
+    (1, '012345678901234567890123456789a1', 1, 'test'),
+    (2, '012345678901234567890123456789a2', 2, 'test'),
+    (3, '012345678901234567890123456789a3', 3, 'test'),
+    (4, '012345678901234567890123456789a4', 4, 'test');
 
 COMMIT;

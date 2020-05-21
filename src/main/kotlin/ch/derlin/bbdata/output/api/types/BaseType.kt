@@ -12,6 +12,7 @@ package ch.derlin.bbdata.output.api.types
  */
 
 
+import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIdentityReference
 import com.fasterxml.jackson.annotation.ObjectIdGenerators
@@ -35,7 +36,27 @@ data class BaseType(
         @OneToMany(cascade = [CascadeType.ALL], mappedBy = "type", fetch = FetchType.LAZY)
         private var units: Collection<Unit> = listOf()
 ) {
+
+
     companion object {
         const val TYPE_MAX = 45
+
+        fun parseType(value: String, type: String): Any? {
+            try {
+                when (type) {
+                    "float" -> return value.toFloat()
+                    "int" -> return value.toInt()
+                    "bool" -> {
+                        if (value.toLowerCase() in listOf("true", "on", "yes", "1"))
+                            return true
+                        if (value.toLowerCase() in listOf("false", "off", "no", "0"))
+                            return false
+                        return null
+                    }
+                }
+            } catch (e: Exception) {
+            }
+            return null
+        }
     }
 }

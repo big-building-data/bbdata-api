@@ -29,7 +29,7 @@ class NewValue {
 
     @NotNull
     @NotEmpty
-    val value: String? = null
+    var value: String? = null
 
     @Size(max = 1024, message = "too long. Maximum set to 1024.")
     val comment: String? = null
