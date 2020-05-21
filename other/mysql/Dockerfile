@@ -1,5 +1,8 @@
 FROM mysql:8.0.14
 
+# fix UTF-8 accents in init scripts
+ENV LANG C.UTF-8
+
 # mandatory
 ENV MYSQL_ROOT_PASSWORD root
 
