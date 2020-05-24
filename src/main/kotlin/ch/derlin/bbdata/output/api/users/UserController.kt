@@ -7,6 +7,7 @@ import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
@@ -57,6 +58,7 @@ class UserController(private val userRepository: UserRepository,
     @Operation(description = "Create a new user. You can use the parameters `userGroupId` and `admin` to " +
             "also add the created user to a user group you own (see PUT /userGroups/ugID/users/uID for more details).")
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Transactional(rollbackFor = arrayOf(ItemNotFoundException::class))
     @PutMapping("/users")
     fun createUser(
             @UserId userId: Int,

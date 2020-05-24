@@ -1,16 +1,17 @@
 package ch.derlin.bbdata.output.api.user_groups
 
-import ch.derlin.bbdata.output.api.CommonResponses
-import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
+import ch.derlin.bbdata.common.exceptions.WrongParamsException
+import ch.derlin.bbdata.output.api.CommonResponses
+import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
-import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.ResponseEntity
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
@@ -42,16 +43,16 @@ class UserGroupController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @Operation(description = "Create a new user group. You will automatically be made admin of it, along with user ROOT.")
+    @Transactional
     @PutMapping("/userGroups")
     fun createUserGroup(@UserId userId: Int,
                         @Valid @NotNull @RequestBody newUserGroupBody: NewUserGroup): UserGroup {
         // create
         val ugrp = userGroupRepository.saveAndFlush(UserGroup(name = newUserGroupBody.name!!))
         // add permissions
-        try {
-            userGroupMappingRepository.save(UsergroupMapping(userId = userId, groupId = ugrp.id!!, isAdmin = true))
-        } catch (e: DataIntegrityViolationException) {
+        if (userId != 1) {
             // Duplicate entry possible only if ROOT, because this is done in a trigger
+            userGroupMappingRepository.save(UsergroupMapping(userId = userId, groupId = ugrp.id!!, isAdmin = true))
         }
         return ugrp
     }
@@ -76,8 +77,11 @@ class UserGroupController(
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Transactional(rollbackFor = arrayOf(WrongParamsException::class)) // TODO why isn't it working ?
     @SimpleModificationStatusResponse
-    @Operation(description = "Delete a user group you are admin of.")
+    @Operation(description = "Delete a user group you are admin of.<br>" +
+            "__IMORTANT__: only user groups who DO NOT own resources (objects, object groups) can be deleted. " +
+            "That is, groups whose purpose is to give _permissions_ to some resources, for a limited amount of time.")
     @DeleteMapping("/userGroups/{userGroupId}")
     fun deleteUserGroup(@UserId userId: Int,
                         @PathVariable("userGroupId") id: Int): ResponseEntity<String> {
@@ -89,10 +93,15 @@ class UserGroupController(
         }
 
         // first remove all user mappings, then delete group
-        // TODO: find a better way ?
-        userGroupMappingRepository.deleteByGroupId(ugrp.id!!)
-        userGroupMappingRepository.flush()
-        userGroupRepository.delete(ugrp)
+        // TODO: find a better way ? delete cascade on users_ugrps !
+        try {
+            userGroupMappingRepository.deleteByGroupId(ugrp.id!!)
+            userGroupMappingRepository.flush()
+            userGroupRepository.delete(ugrp)
+        }catch (e: Throwable){
+            // TODO why isn't this working ?????
+            throw WrongParamsException("This usergroup owns resources. It cannot be deleted. Ask you admin for support.")
+        }
 
         return CommonResponses.ok()
     }
