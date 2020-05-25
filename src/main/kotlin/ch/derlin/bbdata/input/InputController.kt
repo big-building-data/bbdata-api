@@ -7,6 +7,7 @@ import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.api.types.BaseType
 import ch.derlin.bbdata.output.api.types.Unit
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
 import org.springframework.kafka.core.KafkaTemplate
@@ -60,6 +61,8 @@ class InputController(
     }
 
     @PostMapping("objects/values")
+    @Operation(description = "Submit a new measure. Only new measures are allowed, " +
+            "that is the query will fail if a measure with the same timestamp already exist.")
     fun postNewMeasure(@Valid @NotNull @RequestBody measure: NewValue,
                        @RequestParam("simulate", defaultValue = "false") sim: Boolean): String {
 
@@ -88,13 +91,21 @@ class InputController(
         // create augmented measure (to post to kafka)
         val augmentedJson = mapper.writer().writeValueAsString(NewValueAugmented.create(measure, meta))
 
+        // create rawValue for cassandra
+        val rawValue = measure.toRawValue()
+
+        // ensure it doesn't already exist TODO: find a better way ?
+        if (rawValueRepository.existsById(rawValue.key)) {
+            throw WrongParamsException("A value with the same timestamp already exists for this object.")
+        }
+
         if (sim) {
             // simulation mode: do not save anything !
             return augmentedJson
         }
 
         // save TODO transaction !!!!!!!!
-        rawValueRepository.save(measure.toRawValue())
+        rawValueRepository.save(rawValue)
 
         // update stats
         statsLogic.updateStats(measure)

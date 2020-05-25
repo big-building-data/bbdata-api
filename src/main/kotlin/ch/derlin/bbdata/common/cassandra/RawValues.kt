@@ -29,7 +29,7 @@ data class RawValuePK(
 data class RawValue(
         @PrimaryKey
         @field:JsonUnwrapped
-        private val key: RawValuePK,
+        val key: RawValuePK,
 
         @Column
         val value: String = "",
