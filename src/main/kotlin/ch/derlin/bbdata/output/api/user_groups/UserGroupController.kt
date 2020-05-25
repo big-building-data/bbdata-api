@@ -77,7 +77,8 @@ class UserGroupController(
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
-    @Transactional(rollbackFor = arrayOf(WrongParamsException::class)) // TODO why isn't it working ?
+    // checked exception won't trigger rollback by default...
+    @Transactional(rollbackFor = arrayOf(WrongParamsException::class))
     @SimpleModificationStatusResponse
     @Operation(description = "Delete a user group you are admin of.<br>" +
             "__IMORTANT__: only user groups who DO NOT own resources (objects, object groups) can be deleted. " +
@@ -93,14 +94,16 @@ class UserGroupController(
         }
 
         // first remove all user mappings, then delete group
-        // TODO: find a better way ? delete cascade on users_ugrps !
         try {
+            // do "flush" inside the try/catch so the exception (if any)
+            // is thrown now and not at the end of the method invocation
             userGroupMappingRepository.deleteByGroupId(ugrp.id!!)
             userGroupMappingRepository.flush()
             userGroupRepository.delete(ugrp)
+            userGroupRepository.flush()
         }catch (e: Throwable){
-            // TODO why isn't this working ?????
-            throw WrongParamsException("This usergroup owns resources. It cannot be deleted. Ask you admin for support.")
+            throw WrongParamsException(
+                    "This usergroup owns resources. It cannot be deleted. Ask you admin for support.")
         }
 
         return CommonResponses.ok()
