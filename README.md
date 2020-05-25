@@ -44,6 +44,7 @@ Currently available profiles (see the class `ch.derlin.bbdata.api.Profiles`):
 * `input`: will only register the "input" endpoint (`POST /objects/values`);
 * `output`: will only register the "output" endpoints (everything BUT the one above);
 * `noc`: short for "_No Cassandra_". It won't register endpoints needing a Cassandra connection (input and values);
+* `sqlstats`: use MySQL to store objects statistics, instead of Cassandra
 
 Profiles can be combined (when it makes sense).
 

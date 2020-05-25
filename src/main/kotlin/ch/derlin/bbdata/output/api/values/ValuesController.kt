@@ -3,6 +3,7 @@ package ch.derlin.bbdata.output.api.values
 import ch.derlin.bbdata.common.cassandra.*
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
+import ch.derlin.bbdata.input.StatsLogic
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.security.Protected
@@ -33,7 +34,7 @@ class ValuesController(
         private val objectsRepository: ObjectRepository,
         private val rawValueRepository: RawValueRepository,
         private val aggregationsRepository: AggregationsRepository,
-        private val objectStatsCounterRepository: ObjectStatsCounterRepository,
+        private val statsLogic: StatsLogic,
         private val cassandraObjectStreamer: CassandraObjectStreamer) {
 
 
@@ -58,7 +59,7 @@ class ValuesController(
         cassandraObjectStreamer.stream(contentType, response, RawValue.csvHeaders,
                 rawValueRepository.findByTimestampBetween(objectId.toInt(), months, from, to))
         // update stats
-        objectStatsCounterRepository.updateReadCounter(objectId.toInt())
+        statsLogic.incrementReadCounter(objectId)
 
     }
 
@@ -88,7 +89,7 @@ class ValuesController(
                 contentType, response, RawValue.csvHeaders,
                 if (valuesIter == null) listOf() else listOf(valuesIter))
         // update stats
-        objectStatsCounterRepository.updateReadCounter(objectId.toInt())
+        statsLogic.incrementReadCounter(objectId)
     }
 
     @Protected
@@ -116,7 +117,7 @@ class ValuesController(
                 contentType, response, Aggregation.csvHeaders,
                 aggregationsRepository.findByTimestampBetween(minutes, objectId.toInt(), months, from, to))
         // update stats
-        objectStatsCounterRepository.updateReadCounter(objectId.toInt())
+        statsLogic.incrementReadCounter(objectId)
     }
 
     private fun checkObject(userId: Int, objectId: Long): Objects =

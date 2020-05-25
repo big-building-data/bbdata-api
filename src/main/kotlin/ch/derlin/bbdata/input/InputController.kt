@@ -27,8 +27,7 @@ import javax.validation.constraints.NotNull
 class InputController(
         private val inputRepository: InputRepository,
         private val rawValueRepository: RawValueRepository,
-        private val objectStatsRepository: ObjectStatsRepository,
-        private val objectStatsCounterRepository: ObjectStatsCounterRepository,
+        private val statsLogic: StatsLogic,
         private val mapper: ObjectMapper,
         private val kafkaTemplate: KafkaTemplate<String, String> // note: ignore jetbrains [false] warning
 ) {
@@ -97,19 +96,8 @@ class InputController(
         // save TODO transaction !!!!!!!!
         rawValueRepository.save(measure.toRawValue())
 
-        // get old stats
-        val objectId = measure.objectId.toInt()
-        val objectStats = objectStatsRepository.findById(objectId).orElse(ObjectStats())
-        val objectStatsCounter = objectStatsCounterRepository.findById(objectId).orElse(ObjectStatsCounter())
-
-        // compute new stats
-        val deltaMs = Math.abs(measure.timestamp.millis - (objectStats.lastTimestamp ?: measure.timestamp).millis)
-        val nRecords = objectStatsCounter.nValues
-        val newSamplePeriod = (objectStats.avgSamplePeriod * (nRecords - 1) + deltaMs) / nRecords
-
-        // save new stats
-        objectStatsRepository.update(measure.objectId.toInt(), newSamplePeriod, measure.timestamp)
-        objectStatsCounterRepository.updateWriteCounter(measure.objectId.toInt())
+        // update stats
+        statsLogic.updateStats(measure)
 
         // publish to Kafka
         val ack = kafkaTemplate.sendDefault(augmentedJson).get()

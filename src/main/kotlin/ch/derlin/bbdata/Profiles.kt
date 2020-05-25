@@ -17,8 +17,13 @@ object Profiles {
     // Turn off the cassandra entrypoints (this means neither /values nor input endpoints)
     const val NO_CASSANDRA = "noc" // constant used in tests
     const val CASSANDRA = "!$NO_CASSANDRA"
+
     // Do not register components under bbdata.api.input
     const val OUTPUT_ONLY = "output"
     // Do not register components under bbdata.api.output
     const val INPUT_ONLY = "input"
+
+    // where do you store statistics about objects
+    const val SQL_STATS = "sqlstats"
+    const val CASSANDRA_STATS = "!$SQL_STATS"
 }

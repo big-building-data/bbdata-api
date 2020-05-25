@@ -1,6 +1,8 @@
 package ch.derlin.bbdata.common.cassandra
 
+import ch.derlin.bbdata.Profiles
 import org.joda.time.DateTime
+import org.springframework.context.annotation.Profile
 import org.springframework.data.cassandra.repository.CassandraRepository
 import org.springframework.data.cassandra.repository.Query
 import org.springframework.stereotype.Repository
@@ -30,6 +32,7 @@ interface AggregationsRepository : CassandraRepository<Aggregation, AggregationP
             minutes: Int, objectId: Int, months: List<String>, dfrom: DateTime, dto: DateTime): Iterable<Aggregation>
 }
 
+@Profile(Profiles.CASSANDRA_STATS)
 @Repository
 interface ObjectStatsRepository : CassandraRepository<ObjectStats, Int> {
 
@@ -37,6 +40,7 @@ interface ObjectStatsRepository : CassandraRepository<ObjectStats, Int> {
     fun update(objectId: Int, avgSamplePeriod: Float, lastTimestamp: DateTime)
 }
 
+@Profile(Profiles.CASSANDRA_STATS)
 @Repository
 interface ObjectStatsCounterRepository : CassandraRepository<ObjectStatsCounter, Int> {
 

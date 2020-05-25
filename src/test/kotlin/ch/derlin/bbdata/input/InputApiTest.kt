@@ -30,7 +30,7 @@ import kotlin.random.Random
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles(Profiles.UNSECURED)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
-class InputApiTest {
+open class InputApiTest {
 
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
