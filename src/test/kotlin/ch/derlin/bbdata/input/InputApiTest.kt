@@ -59,6 +59,8 @@ open class InputApiTest {
 
     @Test
     fun `1-0 test submit measure fail`() {
+        writeCounter = getWriteCounter()
+
         // test bad timestamps
         var resp = restTemplate.postWithBody(URL, getMeasureBody(ts = "10-01-12T01:00"))
         assertNotEquals(HttpStatus.OK, resp.statusCode, "year 10BC")
@@ -74,6 +76,9 @@ open class InputApiTest {
         assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong objectId")
         resp = restTemplate.postWithBody(URL, getMeasureBody(token = "00000000000000000000000000000000"))
         assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong token")
+
+        val wc = getWriteCounter()
+        assertEquals(writeCounter, wc, "Counter incremented on failed measures.")
     }
 
 
@@ -120,8 +125,14 @@ open class InputApiTest {
 
     private fun getWriteCounter(): Int {
         val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/stats/counters")
-        assertEquals(HttpStatus.OK, status)
-        return json.read<Int>("$.nValues")
+        return when (status) {
+            HttpStatus.OK -> json.read<Int>("$.nValues")
+            HttpStatus.NOT_FOUND -> 0
+            else -> {
+                assertEquals(HttpStatus.OK, status, "Counter: returned a strange status code $status: $json")
+                0
+            }
+        }
     }
 
     @Test

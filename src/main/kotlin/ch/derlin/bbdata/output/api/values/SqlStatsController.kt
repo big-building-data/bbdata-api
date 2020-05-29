@@ -6,6 +6,7 @@ import ch.derlin.bbdata.common.stats.SqlStatsRepository
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
 import org.springframework.context.annotation.Profile
@@ -23,6 +24,8 @@ import org.springframework.web.bind.annotation.RestController
 class SqlStatsController(
         private val sqlStatsRepository: SqlStatsRepository) {
 
+    // TODO: remove cassandra stats altogether, merge all stats into 1 endpoint, return default vs 404
+
     data class SqlStatsS(
             val objectId: Int,
             val avgSamplePeriod: Float, val
@@ -35,6 +38,8 @@ class SqlStatsController(
 
 
     @Protected
+    @Operation(description = "Get the average sample period and timestamp of the last submitted value for an object. " +
+            "*Note*: if no measure has ever been submitted, it will return a 404 Not Found.")
     @GetMapping("/objects/{objectId}/stats")
     fun getObjectStats(@UserId userId: Int,
                        @PathVariable("objectId") id: Long): SqlStatsS {
@@ -45,6 +50,8 @@ class SqlStatsController(
     }
 
     @Protected
+    @Operation(description = "Get the number of read/write queries on this object's measures. " +
+            "*Note*: if no measure has ever been queried/submitted, it will return a 404 Not Found.")
     @GetMapping("/objects/{objectId}/stats/counters")
     fun getObjectCounters(@UserId userId: Int,
                           @PathVariable("objectId") id: Long): SqlStatsC {
