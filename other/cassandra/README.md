@@ -1,5 +1,7 @@
 # Cassandra docker container
 
+**TLDR;** use `init_and_start_docker_container.sh` the first time, then `start_docker_container.sh`
+
 ### Quick start
 
 First, pull the cassandra image (same version as in production): 
@@ -18,6 +20,7 @@ docker run -d --rm \
 ```
 
 ### Populating the database
+
 
 Launch a cassandra container, this time also attaching the directory `bootstrap_data`:
 ```bash
@@ -41,6 +44,5 @@ docker exec -it cassandra cqlsh -f /bootstrap_data/schema.cql
 # import the data
 docker exec -it cassandra cqlsh -k bbdata2 -f /bootstrap_data/import_data.cql
 ```
-
 
 
