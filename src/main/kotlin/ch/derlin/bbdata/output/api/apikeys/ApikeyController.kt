@@ -131,9 +131,12 @@ class ApikeyController(
     @Protected(SecurityConstants.SCOPE_WRITE)
     fun deleteApikey(@UserId userId: Int, @PathVariable("apikeyId") id: Int): ResponseEntity<String> {
         val apikey = apikeyRepository.findByIdAndUserId(id, userId)
-        if (apikey.isEmpty) return CommonResponses.notModifed()
-        apikeyRepository.delete(apikey.get())
-        return CommonResponses.ok()
+        if (apikey.isPresent) {
+            apikeyRepository.delete(apikey.get())
+            return CommonResponses.ok()
+        } else {
+            return CommonResponses.notModifed()
+        }
     }
 
     companion object {

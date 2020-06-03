@@ -1,12 +1,9 @@
-package ch.derlin.bbdata.input
+package ch.derlin.bbdata.common.cassandra
 
 import ch.derlin.bbdata.Profiles
-import ch.derlin.bbdata.common.cassandra.ObjectStats
-import ch.derlin.bbdata.common.cassandra.ObjectStatsCounter
-import ch.derlin.bbdata.common.cassandra.ObjectStatsCounterRepository
-import ch.derlin.bbdata.common.cassandra.ObjectStatsRepository
 import ch.derlin.bbdata.common.stats.SqlStats
 import ch.derlin.bbdata.common.stats.SqlStatsRepository
+import ch.derlin.bbdata.input.NewValue
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
@@ -22,8 +19,8 @@ interface StatsLogic {
 
 @Component
 @Profile(Profiles.CASSANDRA_STATS)
-class CassandraStats(private val objectStatsRepository: ObjectStatsRepository,
-                     private val objectStatsCounterRepository: ObjectStatsCounterRepository) : StatsLogic {
+class CassandraStatsLogic(private val objectStatsRepository: ObjectStatsRepository,
+                          private val objectStatsCounterRepository: ObjectStatsCounterRepository) : StatsLogic {
 
     override fun updateStats(v: NewValue) {
         // get old stats
@@ -47,7 +44,7 @@ class CassandraStats(private val objectStatsRepository: ObjectStatsRepository,
 
 @Component
 @Profile(Profiles.SQL_STATS)
-class SqlStats(private val statsRepository: SqlStatsRepository) : StatsLogic {
+class SqlStatsLogic(private val statsRepository: SqlStatsRepository) : StatsLogic {
     override fun updateStats(v: NewValue) {
         val stats = statsRepository.findById(v.objectId!!).orElse(SqlStats(objectId = v.objectId))
         stats.updateWithNewValue(v)

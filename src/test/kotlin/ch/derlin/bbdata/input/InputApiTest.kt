@@ -40,7 +40,7 @@ open class InputApiTest {
         val OBJ = 1
         val TOKEN_P = "012345678901234567890123456789a" // last digit is objectId
         val RANDOM_VALUE = "${Random.nextInt(10000)}.0" // float
-        val NOW = nowTs() // don't use it twice on the same objectId, it will override Cassandra record (but not Kafka)
+        lateinit var NOW: String // don't use it twice on the same objectId, it will override Cassandra record (but not Kafka)
         val URL = "/objects/values"
 
         var writeCounter: Int = 0
@@ -84,9 +84,10 @@ open class InputApiTest {
 
     @Test
     fun `1-1 test submit measure ok`() {
+        NOW = nowTs()
         writeCounter = getWriteCounter()
         val resp = restTemplate.postWithBody(URL, getMeasureBody(ts = NOW))
-        assertEquals(HttpStatus.OK, resp.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode, resp.body)
 
         val json = JsonPath.parse(resp.body)
         assertFalse(resp.body!!.contains("token"))

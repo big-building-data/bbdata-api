@@ -1,15 +1,16 @@
 package ch.derlin.bbdata.input
 
-import ch.derlin.bbdata.common.cassandra.*
+import ch.derlin.bbdata.common.cassandra.RawValueRepository
+import ch.derlin.bbdata.common.cassandra.StatsLogic
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.api.types.BaseType
-import ch.derlin.bbdata.output.api.types.Unit
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -32,6 +33,11 @@ class InputController(
         private val mapper: ObjectMapper,
         private val kafkaTemplate: KafkaTemplate<String, String> // note: ignore jetbrains [false] warning
 ) {
+
+    // Just for tests, if you don't want to have kafka running, do:
+    // export BB_NO_KAFKA=true
+    @Value("\${BB_NO_KAFKA}")
+    private val NO_KAFKA: Boolean = false
 
     private val MAX_LAG: Long = 2000 // in millis
 
@@ -111,7 +117,11 @@ class InputController(
         statsLogic.updateStats(measure)
 
         // publish to Kafka
-        val ack = kafkaTemplate.sendDefault(augmentedJson).get()
-        return ack.producerRecord.value()
+        if(NO_KAFKA) {
+            return augmentedJson
+        }else{
+            val ack = kafkaTemplate.sendDefault(augmentedJson).get()
+            return ack.producerRecord.value()
+        }
     }
 }
