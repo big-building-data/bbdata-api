@@ -1,0 +1,68 @@
+# This is a basic workflow to help you get started with Actions
+name: Build
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+
+    - name: Cache Gradle packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+        restore-keys: ${{ runner.os }}-gradle
+      
+    - name: Create MySQL image
+      run: |
+        cd other/mysql
+        docker build -t bbsql .
+        cd ../..
+
+    - name: Start MySQL container
+      run: |
+        docker run -p 3306:3306 --rm --name bbsql -d bbsql
+
+    - name: Start Cassandra container
+      run: |
+        cd other/cassandra
+        ./init_and_start_docker_container.sh 
+        cd ../..
+        
+    - name: Docker ps
+      run: docker ps
+      
+    - name: Run tests
+      run: |
+        export BB_NO_KAFKA=true
+        ./gradlew test
+
+    - name: Upload failed results
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: test_reports
+        path: build/reports/tests
+
+    - name: Create executable jar
+      run: ./gradlew bootJar
+      
+    - name: Upload executable jar
+      uses: kittaakos/upload-artifact-as-is@v0
+      with:
+        path: build/libs/*.*
