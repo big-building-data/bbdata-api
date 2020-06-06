@@ -66,3 +66,11 @@ jobs:
       uses: kittaakos/upload-artifact-as-is@v0
       with:
         path: build/libs/*.*
+
+    - name: Update nightly release
+      uses: derlin/tip@master
+      with:
+        tag: nightly
+        rm: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        files: build/libs/*.*
