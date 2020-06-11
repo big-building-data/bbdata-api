@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
 import io.swagger.v3.oas.annotations.info.Contact
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.security.SecurityScheme
+import io.swagger.v3.oas.annotations.servers.Server
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
@@ -26,14 +27,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 @EnableTransactionManagement
 @OpenAPIDefinition( // see https://github.com/swagger-api/swagger-core/wiki/Swagger-2.X---Annotations
         info = Info(
-                title = "BBData",
-                version = "1.0.1",
+                title = "BBData API",
+                version = "\${info.build.version}",
                 description = """
-This document describes the different endpoints available through the bbdata API, 
+This document describes the different endpoints available through the bbdata API,
 a json REST api to let you manage, view, and consult objects and values. Find more information, including
 common errors codes and more, by visiting <a href="/#more-info">our landing page</a>.""",
                 contact = Contact(url = "http://icosys.ch", name = "Lucy Linder", email = "lucy.derlin@gmail.com")
-        )
+        ),
+        // see https://github.com/springdoc/springdoc-openapi/issues/118#issuecomment-585777113
+        servers = arrayOf(Server(url = "/"))
 )
 @SecurityScheme(name = "auth", type = SecuritySchemeType.HTTP, scheme = "basic")
 @EnableConfigurationProperties

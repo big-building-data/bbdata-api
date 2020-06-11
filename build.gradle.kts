@@ -54,7 +54,7 @@ dependencies {
     implementation("org.springframework.data:spring-data-cassandra")
 
     // swagger doc
-    implementation("org.springdoc:springdoc-openapi-ui:1.2.21")
+    implementation("org.springdoc:springdoc-openapi-ui:1.4.1")
 
     // metrics
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -81,4 +81,10 @@ tasks.withType<KotlinCompile> {
 // see https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/html/#packaging-executable-configuring-launch-script
 tasks.getByName<BootJar>("bootJar") {
     launchScript()
+}
+// expand variables in application.properties, for example the ${version}
+tasks.withType<ProcessResources> {
+    filesMatching("application.properties") {
+        expand(project.properties)
+    }
 }
