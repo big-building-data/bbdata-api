@@ -36,7 +36,7 @@ class InputController(
 
     // Just for tests, if you don't want to have kafka running, do:
     // export BB_NO_KAFKA=true
-    @Value("\${BB_NO_KAFKA}")
+    @Value("\${BB_NO_KAFKA:false}")
     private val NO_KAFKA: Boolean = false
 
     private val MAX_LAG: Long = 2000 // in millis
