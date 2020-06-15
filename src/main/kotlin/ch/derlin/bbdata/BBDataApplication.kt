@@ -65,8 +65,9 @@ class CassandraConfig
 @Configuration
 class CORSConfigurer : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
-        registry.addMapping("/*")
+        registry.addMapping("/**")
                 .allowedOrigins("*")
+                .allowedMethods("*")
     }
 }
 
