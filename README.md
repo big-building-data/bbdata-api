@@ -1,5 +1,7 @@
 # BBData API
 
+![Build & Tests](https://github.com/big-building-data/bbdata-api/workflows/Build/badge.svg)
+
 This repository is the cornerstone of BBData. It contains: 
 
 1. a SpringBoot Application exposing a REST API for submitting measures, administering objects, users, etc.
