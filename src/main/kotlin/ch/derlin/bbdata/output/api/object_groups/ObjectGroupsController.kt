@@ -44,7 +44,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
         val owner: Int? = null
     }
 
-    class EditableFields {
+    class EditableOgroupFields {
         @Size(min = ObjectGroup.NAME_MIN, max = ObjectGroup.NAME_MAX)
         val name: String? = null
 
@@ -102,7 +102,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     @PostMapping("/{objectGroupId}")
     fun editObjectGroup(@UserId userId: Int,
                         @PathVariable("objectGroupId") id: Long,
-                        @Valid @NotNull @RequestBody editableFields: EditableFields): ObjectGroup {
+                        @Valid @NotNull @RequestBody editableFields: EditableOgroupFields): ObjectGroup {
 
         val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
             ItemNotFoundException("objectGroup (${id})")

@@ -44,7 +44,7 @@ class ApikeyController(
         val password: String? = null
     }
 
-    class EditableFields {
+    class EditableApikeyFields {
         val readOnly: Boolean? = null
 
         val expirationDate: String? = null
@@ -112,7 +112,7 @@ class ApikeyController(
     fun editApikey(
             @UserId userId: Int,
             @PathVariable("apikeyId") id: Int,
-            @Valid @NotNull @RequestBody bean: EditableFields): Apikey {
+            @Valid @NotNull @RequestBody bean: EditableApikeyFields): Apikey {
 
         val apikey = apikeyRepository.findByIdAndUserId(id, userId).orElseThrow { ItemNotFoundException("apikey (id=$id)") }
 

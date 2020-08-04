@@ -171,7 +171,7 @@ class NewObjectController(private val objectRepository: ObjectRepository,
         val unitSymbol: String = ""
     }
 
-    class EditableFields {
+    class EditableObjectFields {
         @Size(min = Objects.NAME_MIN, max = Objects.NAME_MAX)
         val name: String? = null
 
@@ -210,7 +210,7 @@ class NewObjectController(private val objectRepository: ObjectRepository,
     fun editObject(
             @UserId userId: Int,
             @PathVariable(value = "objectId") id: Long,
-            @Valid @NotNull @RequestBody editableFields: EditableFields
+            @Valid @NotNull @RequestBody editableFields: EditableObjectFields
     ): Objects? {
         val obj = objectRepository.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
         editableFields.name?.let { obj.name = it }

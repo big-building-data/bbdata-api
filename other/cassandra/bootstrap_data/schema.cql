@@ -16,7 +16,7 @@ CREATE TABLE bbdata2.raw_values (
 CREATE TABLE bbdata2.aggregations (
     minutes int,
     object_id int,
-    date text,   -- form: MM-dd
+    date text,   -- form: YYYY-MM
     timestamp timestamp,
 
     last float,

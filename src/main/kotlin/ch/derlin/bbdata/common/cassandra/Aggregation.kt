@@ -3,7 +3,6 @@ package ch.derlin.bbdata.common.cassandra
 import ch.derlin.bbdata.common.dates.JodaUtils
 import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import org.joda.time.DateTime
 import org.springframework.data.cassandra.core.cql.Ordering

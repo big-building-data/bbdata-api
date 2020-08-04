@@ -89,6 +89,10 @@ val ogrpList = objectGroupRepository.findAll()
 return asJacksonMapping(ogrpList)
 ```
 
+**documentation**
+
+* do not use the same name for different inner classes representing parameters (e.g. `EditableFields`), as openapi swagger will get confused
+
 ## Resources
 
 * repository custom implementations with EntityManager: 
