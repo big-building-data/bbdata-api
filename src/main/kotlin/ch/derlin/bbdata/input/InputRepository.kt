@@ -1,8 +1,10 @@
 package ch.derlin.bbdata.input
 
-import com.fasterxml.jackson.annotation.JsonIgnore
+import ch.derlin.bbdata.common.CacheConstants
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.stereotype.Component
+import java.io.Serializable
 import java.util.*
 import javax.persistence.EntityManager
 
@@ -15,7 +17,7 @@ import javax.persistence.EntityManager
 @Component
 class InputRepository {
 
-    class MeasureMeta(fields: Array<Any>) {
+    class MeasureMeta(fields: Array<Any>): Serializable {
         val unitName: String = fields[0] as String
         val unitSymbol: String = fields[1] as String
         val type: String = fields[2] as String
@@ -35,7 +37,7 @@ class InputRepository {
     @Autowired
     private lateinit var em: EntityManager
 
-
+    @Cacheable(CacheConstants.CACHE_NAME, key = "#objectId.toString().concat(':').concat(#token)", unless = "#result == null")
     fun getMeasureMeta(objectId: Long, token: String): Optional<MeasureMeta> {
         val query = em.createNativeQuery(MeasureMeta.NATIVE_QUERY)
 

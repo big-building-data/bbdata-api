@@ -6,6 +6,7 @@ package ch.derlin.bbdata.output.api.objects
  */
 
 import ch.derlin.bbdata.common.Beans
+import ch.derlin.bbdata.common.CacheConstants
 import ch.derlin.bbdata.common.HiddenParam
 import ch.derlin.bbdata.common.PageableAsQueryParam
 import ch.derlin.bbdata.output.api.CommonResponses
@@ -15,12 +16,12 @@ import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
-import ch.derlin.bbdata.output.api.object_groups.ObjectGroupsController
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.cache.annotation.CacheEvict
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -120,6 +121,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     @Operation(description = "Enable an object you own. If the object is already enabled, it simply returns NOT MODIFIED.")
     @SimpleModificationStatusResponse
     @PostMapping("{objectId}/enable")
+    @CacheEvict(CacheConstants.CACHE_NAME, allEntries = true) // TODO: find a better way
     fun enableObject(
             @UserId userId: Int,
             @PathVariable(value = "objectId") id: Long): ResponseEntity<String> =
@@ -130,11 +132,11 @@ class ObjectController(private val objectRepository: ObjectRepository) {
             "When an object gets disabled, all its tokens are deleted and it cannot receive new values (no new measures).")
     @SimpleModificationStatusResponse
     @PostMapping("{objectId}/disable")
+    @CacheEvict(CacheConstants.CACHE_NAME, allEntries = true) // TODO: find a better way
     fun disableObject(
             @UserId userId: Int,
             @PathVariable(value = "objectId") id: Long): ResponseEntity<String> =
             enableDisable(userId, id, disabled = true)
-
 
     private fun enableDisable(userId: Int, id: Long, disabled: Boolean): ResponseEntity<String> {
         // note: the deletion of tokens when the object is disabled is done in a MySQL trigger, objects_AUPD

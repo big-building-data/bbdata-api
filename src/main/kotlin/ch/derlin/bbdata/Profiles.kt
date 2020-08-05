@@ -26,4 +26,7 @@ object Profiles {
     // where do you store statistics about objects
     const val SQL_STATS = "sqlstats"
     const val CASSANDRA_STATS = "!$SQL_STATS"
+
+    // optionally enable caching
+    const val CACHING = "caching"
 }

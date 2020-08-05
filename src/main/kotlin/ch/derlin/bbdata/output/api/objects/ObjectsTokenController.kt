@@ -1,8 +1,7 @@
 package ch.derlin.bbdata.output.api.objects
 
 import ch.derlin.bbdata.common.Beans
-import ch.derlin.bbdata.common.exceptions.AppException
-import ch.derlin.bbdata.common.exceptions.ForbiddenException
+import ch.derlin.bbdata.common.CacheConstants
 import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
@@ -13,6 +12,7 @@ import ch.derlin.bbdata.output.security.UserId
 import com.sun.istack.NotNull
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.cache.CacheManager
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
@@ -26,7 +26,8 @@ import javax.validation.Valid
 @RequestMapping("/objects")
 @Tag(name = "Objects Tokens", description = "Manage object tokens")
 class ObjectsTokenController(private val objectRepository: ObjectRepository,
-                             private val tokenRepository: TokenRepository) {
+                             private val tokenRepository: TokenRepository,
+                             private val cacheManager: CacheManager?) {
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @Operation(description = "Get the list of tokens for an object.")
@@ -106,6 +107,7 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
         val token = obj.getToken(id)
         if (token != null) {
             tokenRepository.delete(token)
+            cacheManager?.getCache(CacheConstants.CACHE_NAME)?.evict("${objectId}${CacheConstants.KEY_SEP}${token.token}")
             return CommonResponses.ok()
         }
         return CommonResponses.notModifed()
