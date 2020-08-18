@@ -89,7 +89,7 @@ class AuthInterceptor : HandlerInterceptor {
         // missing one of the two headers...
         if (bbuser == "" || bbtoken == "") {
             throw UnauthorizedException("This resource is protected. "
-                    + "Missing authorization headers: %s=<user_id:int>, %s=<token:string>");
+                    + "Missing authorization headers: ${HEADER_USER}=<user_id:int>, ${HEADER_TOKEN}=<token:string>");
         }
 
         bbuser.toIntOrNull()?.let { userId ->

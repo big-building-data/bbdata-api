@@ -42,7 +42,7 @@ class UserGroupController(
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
-    @Operation(description = "Create a new user group. You will automatically be made admin of it, along with user ROOT.")
+    @Operation(description = "Create a new user group. You will automatically be made admin of it, along with SUPERUSER.")
     @Transactional
     @PutMapping("/userGroups")
     fun createUserGroup(@UserId userId: Int,
@@ -82,10 +82,14 @@ class UserGroupController(
     @SimpleModificationStatusResponse
     @Operation(description = "Delete a user group you are admin of.<br>" +
             "__IMORTANT__: only user groups who DO NOT own resources (objects, object groups) can be deleted. " +
-            "That is, groups whose purpose is to give _permissions_ to some resources, for a limited amount of time.")
+            "That is, groups whose purpose is to give _permissions_ to some resources, for a limited amount of time. " +
+            "Note also that userGroup with id 1 (SUPERADMIN) cannot be deleted.")
     @DeleteMapping("/userGroups/{userGroupId}")
     fun deleteUserGroup(@UserId userId: Int,
                         @PathVariable("userGroupId") id: Int): ResponseEntity<String> {
+        if (id == 1) {
+            throw ForbiddenException("Deleting SUPERADMIN group is forbidden.")
+        }
         if (!userGroupRepository.findById(id).isPresent) {
             return CommonResponses.notModifed()
         }
@@ -101,7 +105,7 @@ class UserGroupController(
             userGroupMappingRepository.flush()
             userGroupRepository.delete(ugrp)
             userGroupRepository.flush()
-        }catch (e: Throwable){
+        } catch (e: Throwable) {
             throw WrongParamsException(
                     "This usergroup owns resources. It cannot be deleted. Ask you admin for support.")
         }
