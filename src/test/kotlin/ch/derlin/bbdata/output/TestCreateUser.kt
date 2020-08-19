@@ -1,9 +1,6 @@
 package ch.derlin.bbdata.output
 
-import ch.derlin.bbdata.Profiles
-import ch.derlin.bbdata.deleteQueryString
-import ch.derlin.bbdata.getQueryJson
-import ch.derlin.bbdata.putWithBody
+import ch.derlin.bbdata.*
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.extension.ExtendWith
@@ -20,7 +17,7 @@ import kotlin.random.Random
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = arrayOf(UNSECURED_REGULAR))
 @ActiveProfiles(Profiles.UNSECURED, Profiles.NO_CASSANDRA)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class TestCreateUser {
@@ -33,8 +30,8 @@ class TestCreateUser {
         val password = "x1234567y"
         val email = "lala@lulu.xxx"
 
+        // id of the last created user
         var id: Int? = -1
-        val userGroupId = 2
     }
 
     @Test
@@ -81,7 +78,7 @@ class TestCreateUser {
     }
 
     @Test
-    fun `1-2 test create user bis`() {
+    fun `1-2 test create user duplicated`() {
         // == no duplicate names allowed
         val putResponse2 = restTemplate.putWithBody("/users",
                 """{"name": "$name", "password": "$password", "email": "$email"}""")
@@ -107,13 +104,13 @@ class TestCreateUser {
     @Test
     fun `2-1 test create user with userGroup`() {
         // == create
-        val putResponse = restTemplate.putWithBody("/users?userGroupId=$userGroupId",
+        val putResponse = restTemplate.putWithBody("/users?userGroupId=$REGULAR_USER_ID",
                 """{"name": "$name-withGroup", "password": "$password", "email": "$email"}""")
         Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
         id =  JsonPath.parse(putResponse.body).read<Int>("$.id")
 
         // == get using user
-        val getResponse = restTemplate.getQueryJson("/userGroups/$userGroupId/users/$id")
+        val getResponse = restTemplate.getQueryJson("/userGroups/$REGULAR_USER_ID/users/$id")
         Assertions.assertEquals(HttpStatus.OK, getResponse.first)
         Assertions.assertEquals(id!!, getResponse.second.read<Int>("$.id"))
     }

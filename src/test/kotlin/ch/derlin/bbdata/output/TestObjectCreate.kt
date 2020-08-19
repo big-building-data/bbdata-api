@@ -22,7 +22,7 @@ import kotlin.random.Random
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = arrayOf(UNSECURED_REGULAR))
 @ActiveProfiles(Profiles.UNSECURED, Profiles.NO_CASSANDRA)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class TestObjectCreate {
@@ -32,19 +32,20 @@ class TestObjectCreate {
     private lateinit var restTemplate: TestRestTemplate
 
     companion object {
+        // id of the last created object
         private var id: Int = -1
-        private val name = "SpringBootTest-safeToRemove"
+        private val name = "SpringBootTest-safeToRemove-${Random.nextInt()}"
     }
 
     @Test
     fun `1-1 create object fail`() {
         // empty name
         var resp = restTemplate.putWithBody("/objects",
-                """{"name": "", "owner": 1, "unitSymbol": "V"}""")
+                """{"name": "", "owner": $REGULAR_USER_ID, "unitSymbol": "V"}""")
         assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode)
         // wrong unit
         resp = restTemplate.putWithBody("/objects",
-                """{"name": "", "owner": 1, "unitSymbol": "@badUnit"}""")
+                """{"name": "", "owner": $REGULAR_USER_ID, "unitSymbol": "@badUnit"}""")
         assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode)
         // missing owner
         resp = restTemplate.putWithBody("/objects",
@@ -60,7 +61,7 @@ class TestObjectCreate {
     fun `1-2 create object`() {
         // == create
         val putResponse = restTemplate.putWithBody("/objects",
-                """{"name": "$name", "owner": 1, "unitSymbol": "V"}""")
+                """{"name": "$name", "owner": $REGULAR_USER_ID, "unitSymbol": "V"}""")
         assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         // == get

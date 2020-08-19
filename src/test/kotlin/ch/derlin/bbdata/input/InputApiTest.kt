@@ -1,10 +1,7 @@
 package ch.derlin.bbdata.input
 
-import ch.derlin.bbdata.Profiles
+import ch.derlin.bbdata.*
 import ch.derlin.bbdata.common.dates.JodaUtils
-import ch.derlin.bbdata.getQueryJson
-import ch.derlin.bbdata.postQueryString
-import ch.derlin.bbdata.postWithBody
 import com.jayway.jsonpath.JsonPath
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone
@@ -27,10 +24,10 @@ import kotlin.random.Random
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = arrayOf(UNSECURED_REGULAR, NO_KAFKA))
 @ActiveProfiles(Profiles.UNSECURED)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
-open class InputApiTest {
+class InputApiTest {
 
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
@@ -38,7 +35,6 @@ open class InputApiTest {
 
     companion object {
         val OBJ = 1
-        val TOKEN_P = "012345678901234567890123456789a" // last digit is objectId
         val RANDOM_VALUE = "${Random.nextInt(10000)}.0" // float
         lateinit var NOW: String // don't use it twice on the same objectId, it will override Cassandra record (but not Kafka)
         val URL = "/objects/values"
@@ -51,7 +47,7 @@ open class InputApiTest {
                 objectId: Int = OBJ, token: String? = null,
                 value: Any = RANDOM_VALUE, ts: String? = null): String = """{
             |"objectId": $objectId,
-            |"token": "${token ?: TOKEN_P + objectId.toString()}",
+            |"token": "${token ?: TOKEN(objectId)}",
             |"value": "$value",
             |"timestamp": "${ts ?: nowTs()}"
             |}""".trimMargin()
@@ -72,7 +68,7 @@ open class InputApiTest {
         resp = restTemplate.postWithBody(URL, getMeasureBody(value = ""))
         assertNotEquals(HttpStatus.OK, resp.statusCode, "empty value")
         // test wrong login
-        resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 2, token = "${TOKEN_P}1"))
+        resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 2, token = TOKEN(1)))
         assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong objectId")
         resp = restTemplate.postWithBody(URL, getMeasureBody(token = "00000000000000000000000000000000"))
         assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong token")
@@ -95,7 +91,7 @@ open class InputApiTest {
         assertTrue(json.read<String>("$.timestamp").startsWith(NOW.dropLast(1)))
         assertEquals("V", json.read<String>("$.unitSymbol"))
         assertEquals("volt", json.read<String>("$.unitName"))
-        assertEquals(1, json.read<Int>("$.owner"))
+        assertEquals(REGULAR_USER_ID, json.read<Int>("$.owner"))
     }
 
     @Test

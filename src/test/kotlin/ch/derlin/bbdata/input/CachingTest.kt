@@ -25,10 +25,10 @@ import kotlin.random.Random
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = arrayOf(UNSECURED_REGULAR, NO_KAFKA))
 @ActiveProfiles(Profiles.UNSECURED, Profiles.CACHING)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
-open class CachingTest {
+class CachingTest {
 
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
@@ -36,9 +36,6 @@ open class CachingTest {
     @Autowired
     private lateinit var cacheManager: CacheManager
 
-    init {
-        System.setProperty("BB_NO_KAFKA", "true")
-    }
 
     companion object {
         val CACHE_NAME = CacheConstants.CACHE_NAME
@@ -53,7 +50,7 @@ open class CachingTest {
     fun `0-1 setup object`() {
         // create object
         val resp = restTemplate.putWithBody("/objects",
-                """{"name": "new ${Random.nextInt()}", "owner": 1, "unitSymbol": "lx"}""")
+                """{"name": "new ${Random.nextInt()}", "owner": $REGULAR_USER_ID, "unitSymbol": "lx"}""")
         assertEquals(HttpStatus.OK, resp.statusCode)
         OBJ_ID = JsonPath.parse(resp.body).read<Int>("$.id")
         // create tokens
@@ -87,15 +84,15 @@ open class CachingTest {
         // add two values in the cache, for different objects
         submitAndCheckCache(tokenStrings[1])
         // use another object
-        val tk = InputApiTest.TOKEN_P + InputApiTest.OBJ
-        submitAndCheckCache(tk, InputApiTest.OBJ)
+        val existing_obj = InputApiTest.OBJ
+        submitAndCheckCache(TOKEN(existing_obj), existing_obj)
 
         // disable one object (should evict all entries in the cache)
         val resp = restTemplate.postQueryString("/objects/$OBJ_ID/disable")
         assertEquals(HttpStatus.OK, resp.statusCode)
 
         // check cache
-        assertNull(cacheEntry(tk, InputApiTest.OBJ))
+        assertNull(cacheEntry(TOKEN(existing_obj), InputApiTest.OBJ))
         assertNull(cacheEntry(tokenStrings[1]))
 
         // check input api (the token was wiped on disable)

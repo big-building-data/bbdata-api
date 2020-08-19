@@ -30,7 +30,7 @@ class TestLoginLogout {
     private lateinit var restTemplate: TestRestTemplate
 
     companion object {
-        val userId: Int = 1
+        val user = ROOT_USER
         var ids: MutableList<Int> = mutableListOf()
         val secrets: MutableList<String> = mutableListOf()
         var tpl: TestRestTemplate? = null
@@ -58,7 +58,8 @@ class TestLoginLogout {
     @Test
     fun `1-1 test login`() {
         // == login
-        val putResponse = restTemplate.postWithBody("/login", """{"username": "admin", "password": "testtest"}""")
+        val putResponse = restTemplate.postWithBody("/login",
+                """{"username": "${user.get("name")}", "password": "${user.get("password")}"}""")
         assertEquals(HttpStatus.OK, putResponse.statusCode)
         val json = JsonPath.parse(putResponse.body)
 
@@ -75,7 +76,7 @@ class TestLoginLogout {
         assertNotNull(json.read<String>("$.expirationDate"))
         assertEquals(32, secret.length)
 
-        val resp = restTemplate.getQueryString("/objects", "bbuser" to userId, "bbtoken" to secret)
+        val resp = restTemplate.getQueryString("/objects", HU to user.get("id"), HA to secret)
         assertEquals(HttpStatus.OK, resp.statusCode)
     }
 
@@ -83,10 +84,10 @@ class TestLoginLogout {
     fun `1-1 test logout`() {
         // == logout
         val secret = secrets.first()
-        val putResponse = restTemplate.postQueryString("/logout", "bbuser" to userId, "bbtoken" to secret)
+        val putResponse = restTemplate.postQueryString("/logout", HU to user.get("id"), HA to secret)
         assertEquals(HttpStatus.OK, putResponse.statusCode)
 
-        val resp = restTemplate.getQueryString("/objects", "bbuser" to userId, "bbtoken" to secret)
+        val resp = restTemplate.getQueryString("/objects", HU to user.get("id"), HA to secret)
         assertEquals(HttpStatus.FORBIDDEN, resp.statusCode)
     }
 }

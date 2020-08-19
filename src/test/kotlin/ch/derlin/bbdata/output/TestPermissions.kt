@@ -30,65 +30,71 @@ class TestPermissions {
     private lateinit var restTemplate: TestRestTemplate
 
     companion object {
-        val USER1 = arrayOf("bbuser" to 1, "bbtoken" to "wr1")
-        val USER2 = arrayOf("bbuser" to 2, "bbtoken" to "wr2")
+        val OWNER = arrayOf(HU to REGULAR_USER_ID, HA to APIKEY(REGULAR_USER_ID))
+        val ILLEGAL = arrayOf(HU to NO_RIGHTS_USER_ID, HA to APIKEY(NO_RIGHTS_USER_ID))
     }
 
     @Test
     fun `1-1 resources should be editable by owners only`() {
 
-        val body1 = JsonEntity.create("{}", *USER1)
-        val body2 = JsonEntity.create("{}", *USER2)
+        val owner_body = JsonEntity.create("{}", *OWNER)
+        val illegal_body = JsonEntity.create("{}", *ILLEGAL)
 
         val errors = arrayListOf<String>()
 
-        listOf(
-                "/objects/1" to HttpMethod.POST,
-                "/objectGroups/1" to HttpMethod.POST,
-                "/apikeys/1" to HttpMethod.POST,
-                "/userGroups/1/users/2" to HttpMethod.PUT
-        ).forEach { (url, method) ->
+        val urls = listOf(
+                "/userGroups/2/users/3" to HttpMethod.PUT, // this will add "illegal" to group "regular", hence giving access
+                "/objects/1" to HttpMethod.POST, // owned by regular
+                "/objectGroups/1" to HttpMethod.POST, // owned by regular, having objects 1 & 2
+                "/apikeys/3" to HttpMethod.POST // "wr2"
+        )
 
-            // EDIT: user 1 should be "bad request"/"ok"/"not modified", but not "not found"
-            var response = restTemplate.exchange(url, method, body1, String::class.java)
+        // --- "illegal" has been added to group regular with the first request, should have read access but no write access
+
+        urls.forEach { (url, method) ->
+
+            // EDIT: owner should be "bad request"/"ok"/"not modified", but not "not found"
+            var response = restTemplate.exchange(url, method, owner_body, String::class.java)
             if (response.statusCode == HttpStatus.NOT_FOUND)
-                errors.add("EDIT $url with user1 returned ${response.statusCode} !")
+                errors.add("$method $url with owner returned ${response.statusCode} !")
 
-            // EDIT: user 2 should be not found or forbidden
-            response = restTemplate.exchange(url, method, body2, String::class.java)
+            // EDIT: illegal should be not found or forbidden
+            response = restTemplate.exchange(url, method, illegal_body, String::class.java)
             if (response.statusCode !in listOf(HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN))
-                errors.add("EDIT $url with user2 returned ${response.statusCode}, should not have access")
+                errors.add("$method $url with illegal returned ${response.statusCode}, should not have access")
 
-            // ACCESS: user 2 should have access too
-            response = restTemplate.exchange(url, HttpMethod.GET, body2, String::class.java)
-            if (response.statusCode == HttpStatus.NOT_FOUND)
-                errors.add("GET: $url with user2 returned ${response.statusCode}, should have access")
+            // ACCESS: illegal should have access too (except for apikeys)
+            if ("apikey" !in url) {
+                response = restTemplate.exchange(url, HttpMethod.GET, illegal_body, String::class.java)
+                if (response.statusCode != HttpStatus.OK)
+                    errors.add("GET: $url with illegal returned ${response.statusCode}, should have access")
+            }
         }
 
-        // undo what needs to be undone
-        restTemplate.deleteQueryString("/userGroups/1/users/2", *USER1)
+        // UNDO adding illegal to group regular
+        restTemplate.deleteQueryString("/userGroups/2/users/3", *OWNER)
+        assertTrue(errors.isEmpty(), errors.joinToString("\n") + "\n")
 
+        // --- illegal has been removed from group "regular", should have no access left
+
+        errors.clear()
+        // now that ILLEGAL is removed from group, ensure all GET fail
+        urls.forEach { (url, _) ->
+            val response = restTemplate.exchange(url, HttpMethod.GET, illegal_body, String::class.java)
+            if (response.statusCode == HttpStatus.OK)
+                errors.add("GET after permissions removed: illegal has still access to {url}")
+        }
         assertTrue(errors.isEmpty(), errors.joinToString("\n") + "\n")
     }
 
     @Test
-    fun `2-1 user 1 should not be touched`() {
-        listOf(HttpMethod.PUT, HttpMethod.DELETE).forEach { method ->
-            val response = restTemplate.exchange(
-                    "/userGroups/2/users/1", method, JsonEntity.empty(*USER1), String::class.java)
-            assertEquals(HttpStatus.FORBIDDEN, response.statusCode)
-            assertTrue(response.body!!.contains("Cannot .* SUPERUSER".toRegex()), "$method: ${response.body}")
-        }
-    }
-
-    @Test
-    fun `3-1 object groups must be created by owners`() {
-        // try to create an object group with user 2 but specifying group 1 (he's not an admin of)
+    fun `2-1 object groups must be created by owners`() {
+        // try to create an object group with user "illegal" but specifying usergroup he's not an admin of
         val name = "xxx${Random.nextInt(1000)}"
         val response = restTemplate.putWithBody("/objectGroups",
-                """{"name": "$name", "owner": 1}""", *USER2)
+                """{"name": "$name", "owner": $REGULAR_USER_ID}""", *ILLEGAL)
 
-        if(response.statusCode == HttpStatus.OK) {
+        if (response.statusCode == HttpStatus.OK) {
             // FAILED: delete the group before making any assert
             JsonPath.parse(response.body).read<Int?>("$.id").let { id ->
                 restTemplate.delete("/objectGroups/$id")
@@ -98,9 +104,9 @@ class TestPermissions {
     }
 
     @Test
-    fun `4-1 only admin can add new units`(){
+    fun `3-1 only admin can add new units`() {
         val response = restTemplate.postWithBody("/units",
-                """{"type": "float", "name": "lala", "symbol": "L"}""", *USER2)
+                """{"type": "float", "name": "lala", "symbol": "L"}""", *ILLEGAL)
         assertEquals(HttpStatus.FORBIDDEN, response.statusCode, response.body)
     }
 

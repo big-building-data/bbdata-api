@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Assertions.*
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = arrayOf(UNSECURED_REGULAR))
 @ActiveProfiles(Profiles.UNSECURED, Profiles.NO_CASSANDRA)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class TestObjectComments {
@@ -34,6 +34,7 @@ class TestObjectComments {
         val from = "2020-02-01T23:30"
         val to = "2020-02-03T08:30"
 
+        // id of the last created comment
         var id: Int? = null
         var tpl: TestRestTemplate? = null
 

@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Assertions.*
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = arrayOf(UNSECURED_REGULAR))
 @ActiveProfiles(Profiles.UNSECURED, Profiles.NO_CASSANDRA)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class TestObjectTokens {
@@ -61,10 +61,11 @@ class TestObjectTokens {
         val getResponse = restTemplate.getQueryString("/objects/$objectId/tokens/$id")
         JSONAssert.assertEquals(putResponse.body, getResponse.body, false)
 
-        // check some json variables TODO check token length !
+        // check some json variables
         val json = JsonPath.parse(getResponse.body)
         assertEquals(objectId, json.read<Int>("$.objectId"))
         assertNull(json.read<String>("$.description"))
+        assertEquals(32, json.read<String>("$.token").length)
     }
 
     @Test

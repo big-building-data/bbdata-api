@@ -1,6 +1,7 @@
 package ch.derlin.bbdata.output
 
 import ch.derlin.bbdata.Profiles
+import ch.derlin.bbdata.UNSECURED_ROOT
 import ch.derlin.bbdata.postWithBody
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
@@ -20,7 +21,7 @@ import kotlin.random.Random
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = arrayOf(UNSECURED_ROOT))
 @ActiveProfiles(Profiles.UNSECURED, Profiles.NO_CASSANDRA)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class TestCreateUnit {

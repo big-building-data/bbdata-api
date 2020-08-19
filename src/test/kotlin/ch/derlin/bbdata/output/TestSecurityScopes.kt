@@ -1,7 +1,6 @@
 package ch.derlin.bbdata.output
 
-import ch.derlin.bbdata.JsonEntity
-import ch.derlin.bbdata.Profiles
+import ch.derlin.bbdata.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
@@ -34,8 +33,8 @@ class TestSecurityScopes {
     private lateinit var requestMappingHandlerMapping: RequestMappingHandlerMapping
 
     companion object {
-        val RO_BODY = JsonEntity.empty("bbuser" to 1, "bbtoken" to "ro1") // read-only
-        val BAD_APIKEY_BODY = JsonEntity.empty("bbuser" to 1, "bbtoken" to "notanapikey") // wrong
+        val RO_BODY = JsonEntity.empty(HU to REGULAR_USER_ID, HA to APIKEY(REGULAR_USER_ID, ro = true)) // read-only
+        val BAD_APIKEY_BODY = JsonEntity.empty(HU to REGULAR_USER_ID, HA to "notanapikey") // wrong
         val PUBLIC_ENDPOINTS = setOf("/units", "/types", "/login")
 
         // extract the HttpMethod and URL of all registered endpoints, excluding doc

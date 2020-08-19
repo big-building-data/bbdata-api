@@ -9,7 +9,9 @@ import ch.derlin.bbdata.common.exceptions.UnauthorizedException
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_TOKEN
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_USER
 import ch.derlin.bbdata.output.security.SecurityConstants.SCOPE_WRITE
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
@@ -20,6 +22,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import java.nio.charset.Charset
 import java.util.*
+import javax.annotation.PostConstruct
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -28,9 +31,20 @@ import javax.servlet.http.HttpServletResponse
 @Component
 @Profile(Profiles.UNSECURED)
 class DummyAuthInterceptor : HandlerInterceptor {
+
+    private final val log = LoggerFactory.getLogger(DummyAuthInterceptor::class.java)
+
+    @Value("\${UNSECURED_BBUSER:1}")
+    private val UNSECURED_BBUSER: Int = 1
+
+    @PostConstruct
+    fun postConstruct() {
+        log.warn("${Profiles.UNSECURED} is ON !!! Automatically login as User #$UNSECURED_BBUSER")
+    }
+
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
         // for tests: allow the header "bbuser"
-        request.setAttribute(HEADER_USER, request.getHeader(HEADER_USER) ?: "1")
+        request.setAttribute(HEADER_USER, request.getHeader(HEADER_USER) ?: UNSECURED_BBUSER.toString())
         return true
     }
 }

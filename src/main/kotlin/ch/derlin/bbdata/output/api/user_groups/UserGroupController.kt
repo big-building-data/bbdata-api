@@ -41,7 +41,7 @@ class UserGroupController(
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
-    @Operation(description = "Create a new user group. You will automatically be made admin of it, along with SUPERUSER.")
+    @Operation(description = "Create a new user group. You will automatically be made admin of it.")
     @Transactional
     @PutMapping("/userGroups")
     fun createUserGroup(@UserId userId: Int,
@@ -49,10 +49,7 @@ class UserGroupController(
         // create
         val ugrp = userGroupAccessManager.userGroupRepository.saveAndFlush(UserGroup(name = newUserGroupBody.name!!))
         // add permissions
-        if (userId != 1) {
-            // Duplicate entry possible only if ROOT, because this is done in a trigger
-            userGroupAccessManager.userGroupMappingRepository.save(UsergroupMapping(userId = userId, groupId = ugrp.id!!, isAdmin = true))
-        }
+        userGroupAccessManager.userGroupMappingRepository.save(UsergroupMapping(userId = userId, groupId = ugrp.id!!, isAdmin = true))
         return ugrp
     }
 

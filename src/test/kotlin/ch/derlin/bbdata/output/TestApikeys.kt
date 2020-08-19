@@ -15,7 +15,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import kotlin.random.Random
 
 /**
  * date: 28.12.19
@@ -32,10 +31,12 @@ class TestApikeys {
     private lateinit var restTemplate: TestRestTemplate
 
     companion object {
-        val userId: Int = 1
         var ids: MutableList<Int> = mutableListOf()
         val secrets: MutableList<String> = mutableListOf()
         var tpl: TestRestTemplate? = null
+
+        val user = REGULAR_USER_ID
+        val headers = arrayOf("bbuser" to REGULAR_USER_ID, "bbtoken" to APIKEY(REGULAR_USER_ID))
 
         @AfterAll
         @JvmStatic
@@ -43,7 +44,7 @@ class TestApikeys {
             tpl?.let { tpl ->
                 ids.map {
                     try {
-                        tpl.deleteQueryString("/apikeys/$it", "bbuser" to 1, "bbtoken" to "wr1")
+                        tpl.deleteQueryString("/apikeys/$it", *headers)
                     } catch (e: Exception) {
                         println("!! delete failed for $it")
                     }
@@ -68,20 +69,20 @@ class TestApikeys {
     @Test
     fun `2-1 test apikeys`() {
         secrets.map {
-            val resp = restTemplate.getQueryString("/objectGroups", "bbuser" to userId, "bbtoken" to it)
+            val resp = restTemplate.getQueryString("/objectGroups", HU to user, HA to it)
             assertEquals(HttpStatus.OK, resp.statusCode)
         }
         secrets.take(secrets.size - 1).map {
-            val resp = restTemplate.putQueryString("/objectGroups", "bbuser" to userId, "bbtoken" to it)
+            val resp = restTemplate.putQueryString("/objectGroups", HU to user, HA to it)
             assertEquals(HttpStatus.FORBIDDEN, resp.statusCode)
         }
     }
 
     @Test
     fun `2-1 test get apikeys`() {
-        val pair = restTemplate.getQueryJson("/apikeys", "bbuser" to 1, "bbtoken" to "wr1")
-        assertEquals(HttpStatus.OK, pair.first)
-        assertEquals(1, pair.second.read<List<String>>("$[?(@.secret=='${secrets.random()}')]").size)
+        val (status, json) = restTemplate.getQueryJson("/apikeys", *headers)
+        assertEquals(HttpStatus.OK, status)
+        assertEquals(1, json.read<List<String>>("$[?(@.secret=='${secrets.random()}')]").size)
     }
 
     @Test
@@ -118,14 +119,14 @@ class TestApikeys {
     @Test
     fun `4-1 test delete apikeys`() {
         ids.zip(secrets).map {
-            val resp = restTemplate.deleteQueryString("/apikeys/${it.first}", "bbuser" to userId, "bbtoken" to "wr1")
+            val resp = restTemplate.deleteQueryString("/apikeys/${it.first}", *headers)
             assertEquals(HttpStatus.OK, resp.statusCode)
         }
     }
 
     @Test
     fun `4-2 test get apikeys after delete`() {
-        val pair = restTemplate.getQueryJson("/apikeys", "bbuser" to 1, "bbtoken" to "wr1")
+        val pair = restTemplate.getQueryJson("/apikeys", *headers)
         assertEquals(HttpStatus.OK, pair.first)
         assertEquals(0, pair.second.read<List<String>>("$[?(@.secret=='${secrets.random()}')]").size)
     }
@@ -143,10 +144,9 @@ class TestApikeys {
         println(url)
         val response =
                 if (description != null)
-                    restTemplate.putWithBody(url, """{"description": "$description"}""",
-                            "bbuser" to 1, "bbtoken" to "wr1")
+                    restTemplate.putWithBody(url, """{"description": "$description"}""", *headers)
                 else
-                    restTemplate.putQueryString(url, "bbuser" to 1, "bbtoken" to "wr1")
+                    restTemplate.putQueryString(url, *headers)
 
         assertEquals(HttpStatus.OK, response.statusCode)
         val json = JsonPath.parse(response.body)
@@ -165,7 +165,7 @@ class TestApikeys {
     }
 
     fun editApikey(id: Int, body: String): DocumentContext {
-        val response = restTemplate.postWithBody("/apikeys/$id", body, "bbuser" to 1, "bbtoken" to "wr1")
+        val response = restTemplate.postWithBody("/apikeys/$id", body, *headers)
         assertEquals(HttpStatus.OK, response.statusCode)
         return JsonPath.parse(response.body)
     }

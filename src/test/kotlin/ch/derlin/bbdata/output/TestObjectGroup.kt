@@ -22,7 +22,7 @@ import kotlin.random.Random
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = arrayOf(UNSECURED_REGULAR))
 @ActiveProfiles(Profiles.UNSECURED, Profiles.NO_CASSANDRA)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class TestObjectGroup {
@@ -53,12 +53,12 @@ class TestObjectGroup {
     fun `1-0 test create object group fail`() {
         // == create no name
         var putResponse = restTemplate.putWithBody("/objectGroups",
-                """{"owner": 1, "description": "test"}""")
+                """{"owner": $REGULAR_USER_ID, "description": "test"}""")
         assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create short name
         putResponse = restTemplate.putWithBody("/objectGroups",
-                """{"name": "a", "owner": 1, "description": "test"}""")
+                """{"name": "a", "owner": $REGULAR_USER_ID, "description": "test"}""")
         assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create no owner
@@ -76,7 +76,7 @@ class TestObjectGroup {
     fun `1-1 test create object group`() {
         // == create
         val putResponse = restTemplate.putWithBody("/objectGroups",
-                """{"name": "$name", "owner": 1}""")
+                """{"name": "$name", "owner": $REGULAR_USER_ID}""")
         assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         // == store variables
@@ -89,7 +89,7 @@ class TestObjectGroup {
 
         // check some json variables
         val json = JsonPath.parse(getResponse.body)
-        assertEquals("admin", json.read<String>("$.owner.name"))
+        assertEquals(REGULAR_USER.get("group"), json.read<String>("$.owner.name"))
     }
     
     @Test
@@ -104,8 +104,7 @@ class TestObjectGroup {
         assertEquals("test", json.read<String>("$.description"))
 
         // == change name only
-        postResponse = restTemplate.postWithBody("/objectGroups/$id",
-                """{"name": "$name"}""")
+        postResponse = restTemplate.postWithBody("/objectGroups/$id", """{"name": "$name"}""")
         assertEquals(HttpStatus.OK, postResponse.statusCode)
 
         json = JsonPath.parse(postResponse.body)
