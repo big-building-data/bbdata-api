@@ -1,6 +1,7 @@
 package ch.derlin.bbdata.output.api.users
 
 import ch.derlin.bbdata.output.api.user_groups.UserGroupMappingRepository
+import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.output.api.user_groups.UsergroupMapping
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
@@ -17,12 +18,16 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @Tag(name = "Me", description = "Get information about you (current user)")
 class MeController(private val userRepository: UserRepository,
+                   private val userGroupRepository: UserGroupRepository,
                    private val userGroupMappingRepository: UserGroupMappingRepository) {
 
-    class UsergroupInfo(mapping: UsergroupMapping) {
-        val id = mapping.groupId
-        val name = mapping.group!!.name
-        val admin = mapping.isAdmin
+    data class UsergroupInfo(val id: Int, val name: String, val admin: Boolean) {
+        companion object {
+            fun fromUserGroupMapping(mapping: UsergroupMapping) = UsergroupInfo(
+                    id = mapping.groupId,
+                    name = mapping.group!!.name,
+                    admin = mapping.isAdmin)
+        }
     }
 
     @Protected
@@ -36,7 +41,11 @@ class MeController(private val userRepository: UserRepository,
     fun getMyGroups(@UserId userId: Int,
                     @RequestParam("admin", required = false) isAdmin: Boolean = false
     ): List<UsergroupInfo> {
-        val ugrps = userGroupMappingRepository.getByUserId(userId).map { UsergroupInfo(it) }
+        // if is SUPERADMIN, return all
+        if (userGroupMappingRepository.isSuperAdmin(userId)) {
+            return userGroupRepository.findAll().map { UsergroupInfo(id = it.id!!, name = it.name, admin = true) }
+        }
+        val ugrps = userGroupMappingRepository.getByUserId(userId).map { UsergroupInfo.fromUserGroupMapping(it) }
         return if (isAdmin) ugrps.filter { it.admin == true }
         else ugrps
     }

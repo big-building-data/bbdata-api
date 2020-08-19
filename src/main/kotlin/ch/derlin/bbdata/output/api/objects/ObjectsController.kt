@@ -16,6 +16,7 @@ import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
+import ch.derlin.bbdata.output.api.user_groups.UserGroupAccessManager
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
@@ -33,7 +34,7 @@ import javax.validation.constraints.Size
 @RestController
 @RequestMapping("/objects")
 @Tag(name = "Objects", description = "Manage objects")
-class ObjectController(private val objectRepository: ObjectRepository) {
+class ObjectController(private val objectsAccessManager: ObjectsAccessManager) {
 
     @Protected
     @Operation(description = "Get the list of objects.<br>" +
@@ -52,9 +53,9 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     ): List<Objects> {
         val tags = unparsedTags.split(",").map { s -> s.trim() }.filter { s -> s.length > 0 }
         return if (tags.size > 0)
-            objectRepository.findAllByTag(tags, userId, writable, search, pageable)
+            objectsAccessManager.findAllByTag(tags, userId, writable, search, pageable)
         else
-            objectRepository.findAll(userId, writable, search, pageable)
+            objectsAccessManager.findAll(userId, writable, search, pageable)
     }
 
     @Protected
@@ -63,7 +64,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     fun getObject(
             @UserId userId: Int,
             @PathVariable(value = "objectId") id: Long
-    ): Objects? = objectRepository.findById(id, userId, writable = false).orElseThrow { ItemNotFoundException("object") }
+    ): Objects? = objectsAccessManager.findById(id, userId, writable = false).orElseThrow { ItemNotFoundException("object") }
 
     @Protected
     @Operation(description = "Get all object groups an object belongs to.")
@@ -71,7 +72,7 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     fun getGroupsOfObject(
             @UserId userId: Int,
             @PathVariable(value = "objectId") id: Long
-    ): List<ObjectGroup>? = objectRepository.findById(id, userId, writable = false).orElseThrow { ItemNotFoundException("object") }.getObjectGroups()
+    ): List<ObjectGroup>? = objectsAccessManager.findById(id, userId, writable = false).orElseThrow { ItemNotFoundException("object") }.getObjectGroups()
 
     // ======== TAGS
 
@@ -101,14 +102,14 @@ class ObjectController(private val objectRepository: ObjectRepository) {
     private fun addOrDeleteTags(userId: Int, id: Long, tags: List<String>,
                                 add: Boolean = false, delete: Boolean = false): ResponseEntity<String> {
         assert(add || delete)
-        val obj = objectRepository.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
+        val obj = objectsAccessManager.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
 
         val statuses =
                 if (delete) tags.map { obj.removeTag(it) }
                 else tags.map { obj.addTag(it) }
 
         if (statuses.any { x -> x }) {
-            objectRepository.save(obj)
+            objectsAccessManager.objectRepository.save(obj)
             return CommonResponses.ok()
         }
 
@@ -140,10 +141,10 @@ class ObjectController(private val objectRepository: ObjectRepository) {
 
     private fun enableDisable(userId: Int, id: Long, disabled: Boolean): ResponseEntity<String> {
         // note: the deletion of tokens when the object is disabled is done in a MySQL trigger, objects_AUPD
-        val obj = objectRepository.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
+        val obj = objectsAccessManager.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
         if (obj.disabled != disabled) {
             obj.disabled = disabled
-            objectRepository.save(obj)
+            objectsAccessManager.objectRepository.save(obj)
             return CommonResponses.ok()
         }
         return CommonResponses.notModifed()
@@ -154,8 +155,8 @@ class ObjectController(private val objectRepository: ObjectRepository) {
 @RestController
 @RequestMapping("/objects")
 @Tag(name = "Objects", description = "Manage objects")
-class NewObjectController(private val objectRepository: ObjectRepository,
-                          private val userGroupRepository: UserGroupRepository,
+class NewObjectController(private val objectsAccessManager: ObjectsAccessManager,
+                          private val userGroupAccessManager: UserGroupAccessManager,
                           private val unitRepository: UnitRepository) {
 
     class NewObject {
@@ -190,7 +191,7 @@ class NewObjectController(private val objectRepository: ObjectRepository,
                   @RequestBody @Valid newObject: NewObject
     ): Objects {
 
-        val userGroup = userGroupRepository.findMine(userId, newObject.owner!!, admin = true).orElseThrow {
+        val userGroup = userGroupAccessManager.getAccessibleGroup(userId, newObject.owner!!, admin = true).orElseThrow {
             ItemNotFoundException("UserGroup ('${newObject.owner}', admin=true)")
         }
 
@@ -198,7 +199,7 @@ class NewObjectController(private val objectRepository: ObjectRepository,
             WrongParamsException("Unit '${newObject.unitSymbol}' does not exist.")
         }
 
-        return objectRepository.saveAndFlush(Objects(
+        return objectsAccessManager.objectRepository.saveAndFlush(Objects(
                 name = newObject.name,
                 description = newObject.description,
                 unit = unit,
@@ -214,10 +215,10 @@ class NewObjectController(private val objectRepository: ObjectRepository,
             @PathVariable(value = "objectId") id: Long,
             @Valid @NotNull @RequestBody editableFields: EditableObjectFields
     ): Objects? {
-        val obj = objectRepository.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
+        val obj = objectsAccessManager.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
         editableFields.name?.let { obj.name = it }
         editableFields.description?.let { obj.description = it }
-        return objectRepository.saveAndFlush(obj)
+        return objectsAccessManager.objectRepository.saveAndFlush(obj)
     }
 
 }

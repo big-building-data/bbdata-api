@@ -25,7 +25,7 @@ import javax.validation.Valid
 @RestController
 @RequestMapping("/objects")
 @Tag(name = "Objects Tokens", description = "Manage object tokens")
-class ObjectsTokenController(private val objectRepository: ObjectRepository,
+class ObjectsTokenController(private val objectsAccessManager: ObjectsAccessManager,
                              private val tokenRepository: TokenRepository,
                              private val cacheManager: CacheManager?) {
 
@@ -35,7 +35,7 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
     fun getObjectTokens(
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long): List<Token> {
-        val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
+        val obj = objectsAccessManager.findById(objectId, userId, writable = true).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
         return obj.tokens
@@ -48,7 +48,7 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long,
             @PathVariable(value = "tokenId") id: Int): Token {
-        val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
+        val obj = objectsAccessManager.findById(objectId, userId, writable = true).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
         return obj.getToken(id) ?: throw ItemNotFoundException("token (oid=$objectId, id=$id)")
@@ -64,7 +64,7 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
             @Valid @RequestBody descriptionBody: Beans.Description?): Token {
 
         // ensure rights
-        val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
+        val obj = objectsAccessManager.findById(objectId, userId, writable = true).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
         if (obj.disabled)
@@ -82,7 +82,7 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
             @PathVariable(value = "tokenId") id: Int,
             @Valid @NotNull @RequestBody descriptionBody: Beans.Description?): Token {
         // TODO: return ok/not modified ?
-        val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
+        val obj = objectsAccessManager.findById(objectId, userId, writable = true).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
         val token = obj.getToken(id) ?: throw ItemNotFoundException("token (oid=$objectId, id=$id)")
@@ -101,7 +101,7 @@ class ObjectsTokenController(private val objectRepository: ObjectRepository,
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long,
             @PathVariable(value = "tokenId") id: Int): ResponseEntity<String> {
-        val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
+        val obj = objectsAccessManager.findById(objectId, userId, writable = true).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
         val token = obj.getToken(id)

@@ -6,6 +6,7 @@ import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import ch.derlin.bbdata.common.cassandra.StatsLogic
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import ch.derlin.bbdata.output.api.objects.Objects
+import ch.derlin.bbdata.output.api.objects.ObjectsAccessManager
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -31,7 +32,7 @@ import javax.servlet.http.HttpServletResponse
 @RestController
 @Tag(name = "Objects Values", description = "Submit and query objects values")
 class ValuesController(
-        private val objectsRepository: ObjectRepository,
+        private val objectsAccessManager: ObjectsAccessManager,
         private val rawValueRepository: RawValueRepository,
         private val aggregationsRepository: AggregationsRepository,
         private val statsLogic: StatsLogic,
@@ -121,7 +122,7 @@ class ValuesController(
     }
 
     private fun checkObject(userId: Int, objectId: Long): Objects =
-            objectsRepository.findById(objectId, userId, writable = false).orElseThrow {
+            objectsAccessManager.findById(objectId, userId, writable = false).orElseThrow {
                 ItemNotFoundException("object ($objectId)")
             }
 

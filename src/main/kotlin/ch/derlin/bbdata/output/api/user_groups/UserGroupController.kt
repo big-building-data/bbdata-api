@@ -25,8 +25,7 @@ import javax.validation.constraints.Size
 @RestController
 @Tag(name = "UserGroups", description = "Manage user groups")
 class UserGroupController(
-        private val userGroupRepository: UserGroupRepository,
-        private val userGroupMappingRepository: UserGroupMappingRepository) {
+        private val userGroupAccessManager: UserGroupAccessManager) {
 
     class NewUserGroup {
         @NotNull
@@ -38,7 +37,7 @@ class UserGroupController(
     @Operation(description = "Get the list of existing user groups.")
     @GetMapping("/userGroups")
     fun getUserGroups(@UserId userId: Int): List<UserGroup> =
-            userGroupRepository.findAll()
+            userGroupAccessManager.userGroupRepository.findAll()
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
@@ -48,11 +47,11 @@ class UserGroupController(
     fun createUserGroup(@UserId userId: Int,
                         @Valid @NotNull @RequestBody newUserGroupBody: NewUserGroup): UserGroup {
         // create
-        val ugrp = userGroupRepository.saveAndFlush(UserGroup(name = newUserGroupBody.name!!))
+        val ugrp = userGroupAccessManager.userGroupRepository.saveAndFlush(UserGroup(name = newUserGroupBody.name!!))
         // add permissions
         if (userId != 1) {
             // Duplicate entry possible only if ROOT, because this is done in a trigger
-            userGroupMappingRepository.save(UsergroupMapping(userId = userId, groupId = ugrp.id!!, isAdmin = true))
+            userGroupAccessManager.userGroupMappingRepository.save(UsergroupMapping(userId = userId, groupId = ugrp.id!!, isAdmin = true))
         }
         return ugrp
     }
@@ -64,14 +63,14 @@ class UserGroupController(
     fun getUserGroup(@UserId userId: Int,
                      @PathVariable(value = "userGroupId") id: Int): UserGroup =
             // TODO: admins only ? return list of users ?
-            userGroupRepository.findById(id).orElseThrow { ItemNotFoundException("usergroup (${id})") }
+            userGroupAccessManager.userGroupRepository.findById(id).orElseThrow { ItemNotFoundException("usergroup (${id})") }
 
     @Protected
     @Operation(description = "Get the users belonging to a user group, along with their role (admin or not).")
     @GetMapping("/userGroups/{userGroupId}/users")
     fun getUsersInGroup(@UserId userId: Int,
                         @PathVariable(value = "userGroupId") id: Int): List<UsergroupMapping> =
-            userGroupRepository.findMine(userId, id, admin = false).orElseThrow {
+            userGroupAccessManager.getAccessibleGroup(userId, id, admin = false).orElseThrow {
                 ItemNotFoundException("userGroup ($id)")
             }.userMappings // TODO: return users instead ? only for admins ?
 
@@ -90,10 +89,10 @@ class UserGroupController(
         if (id == 1) {
             throw ForbiddenException("Deleting SUPERADMIN group is forbidden.")
         }
-        if (!userGroupRepository.findById(id).isPresent) {
+        if (!userGroupAccessManager.userGroupRepository.findById(id).isPresent) {
             return CommonResponses.notModifed()
         }
-        val ugrp = userGroupRepository.findMine(userId, id, admin = true).orElseThrow {
+        val ugrp = userGroupAccessManager.getAccessibleGroup(userId, id, admin = true).orElseThrow {
             ForbiddenException("Only admins can delete usergroups")
         }
 
@@ -101,10 +100,10 @@ class UserGroupController(
         try {
             // do "flush" inside the try/catch so the exception (if any)
             // is thrown now and not at the end of the method invocation
-            userGroupMappingRepository.deleteByGroupId(ugrp.id!!)
-            userGroupMappingRepository.flush()
-            userGroupRepository.delete(ugrp)
-            userGroupRepository.flush()
+            userGroupAccessManager.userGroupMappingRepository.deleteByGroupId(ugrp.id!!)
+            userGroupAccessManager.userGroupMappingRepository.flush()
+            userGroupAccessManager.userGroupRepository.delete(ugrp)
+            userGroupAccessManager.userGroupRepository.flush()
         } catch (e: Throwable) {
             throw WrongParamsException(
                     "This usergroup owns resources. It cannot be deleted. Ask you admin for support.")

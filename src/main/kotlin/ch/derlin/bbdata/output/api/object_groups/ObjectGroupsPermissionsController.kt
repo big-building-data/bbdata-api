@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/objectGroups")
 @Tag(name = "ObjectGroups Permissions", description = "Manage which user group has access to which object group")
 class ObjectGroupsPermissionsController(
-        private val objectGroupsRepository: ObjectGroupsRepository,
+        private val objectGroupAccessManager: ObjectGroupAccessManager,
         private val userGroupRepository: UserGroupRepository) {
 
 
@@ -31,7 +31,7 @@ class ObjectGroupsPermissionsController(
     @GetMapping("/{objectGroupId}/userGroups")
     fun getPermissions(@UserId userId: Int, @PathVariable(value = "objectGroupId") id: Long): List<UserGroup> {
 
-        val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
+        val ogrp = objectGroupAccessManager.findOne(userId, id, writable = true).orElseThrow {
             ItemNotFoundException("objectGroup (${id})")
         }
         return ogrp.allowedUserGroups
@@ -63,7 +63,7 @@ class ObjectGroupsPermissionsController(
 
     private fun addRemovePerms(userId: Int, id: Long, userGroupId: Int, add: Boolean = false, delete: Boolean = false): ResponseEntity<String> {
         // get resources
-        val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
+        val ogrp = objectGroupAccessManager.findOne(userId, id, writable = true).orElseThrow {
             ItemNotFoundException("objectGroup (${id})")
         }
         val ugrp = userGroupRepository.findById(userGroupId).orElseThrow {
@@ -81,7 +81,7 @@ class ObjectGroupsPermissionsController(
         }
 
         // save changes
-        objectGroupsRepository.save(ogrp)
+        objectGroupAccessManager.objectGroupsRepository.save(ogrp)
         return CommonResponses.ok()
     }
 }

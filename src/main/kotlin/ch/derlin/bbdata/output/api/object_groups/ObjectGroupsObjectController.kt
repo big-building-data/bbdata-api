@@ -10,6 +10,7 @@ import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
+import ch.derlin.bbdata.output.api.objects.ObjectsAccessManager
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
@@ -23,15 +24,15 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/objectGroups")
 @Tag(name = "ObjectGroups", description = "Manage object groups")
 class ObjectGroupsObjectController(
-        private val objectGroupsRepository: ObjectGroupsRepository,
-        private val objectRepository: ObjectRepository) {
+        private val objectGroupAccessManager: ObjectGroupAccessManager,
+        private val objectsAccessManager: ObjectsAccessManager) {
 
     @Protected
     @Operation(description = "Get all objects belonging to an object group.")
     @GetMapping("/{objectGroupId}/objects")
     fun getObjectsOfGroup(@UserId userId: Int, @PathVariable(value = "objectGroupId") id: Long): MutableList<Objects> {
 
-        val ogrp = objectGroupsRepository.findOne(userId, id).orElseThrow {
+        val ogrp = objectGroupAccessManager.findOne(userId, id).orElseThrow {
             ItemNotFoundException("object group ($id)")
         }
         return ogrp.objects
@@ -46,7 +47,7 @@ class ObjectGroupsObjectController(
                          @PathVariable(value = "objectGroupId") id: Long,
                          @PathVariable("objectId") objectId: Long): ResponseEntity<String> {
 
-        val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
+        val ogrp = objectGroupAccessManager.findOne(userId, id, writable = true).orElseThrow {
             ItemNotFoundException("object group ($id)")
         }
 
@@ -54,12 +55,12 @@ class ObjectGroupsObjectController(
             return CommonResponses.notModifed()
         }
 
-        val obj = objectRepository.findById(objectId, userId, writable = true).orElseThrow {
+        val obj = objectsAccessManager.findById(objectId, userId, writable = true).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
 
         ogrp.objects.add(obj)
-        objectGroupsRepository.save(ogrp)
+        objectGroupAccessManager.objectGroupsRepository.save(ogrp)
         return CommonResponses.ok()
     }
 
@@ -72,14 +73,14 @@ class ObjectGroupsObjectController(
                               @PathVariable(value = "objectGroupId") id: Long,
                               @PathVariable("objectId") objectId: Long): ResponseEntity<String> {
 
-        val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
+        val ogrp = objectGroupAccessManager.findOne(userId, id, writable = true).orElseThrow {
             ItemNotFoundException("object group ($id)")
         }
         val found = ogrp.objects.find { it.id == objectId }
 
         if (found != null) {
             ogrp.objects.remove(found)
-            objectGroupsRepository.save(ogrp)
+            objectGroupAccessManager.objectGroupsRepository.save(ogrp)
             return CommonResponses.ok()
 
         }

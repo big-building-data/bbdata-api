@@ -11,6 +11,7 @@ import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
+import ch.derlin.bbdata.output.api.user_groups.UserGroupAccessManager
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
@@ -29,8 +30,8 @@ import javax.validation.constraints.Size
 @RestController
 @RequestMapping("/objectGroups")
 @Tag(name = "ObjectGroups", description = "Manage object groups")
-class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRepository,
-                             private val userGroupRepository: UserGroupRepository) {
+class ObjectGroupsController(private val objectGroupAccessManager: ObjectGroupAccessManager,
+                             private val userGroupAccessManager: UserGroupAccessManager) {
 
     class NewObjectGroup {
         @NotNull
@@ -66,10 +67,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
                         @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
                         @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean)
             : List<ObjectGroup> {
-
-        val ogrpList =
-                if (writable) objectGroupsRepository.findAllWritable(userId)
-                else objectGroupsRepository.findAll(userId)
+        val ogrpList = objectGroupAccessManager.findAll(userId, writable)
 
         if (!withObjects) return ogrpList
         return ogrpList.map { it.withObjects() }
@@ -84,11 +82,11 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
             @UserId userId: Int,
             @Valid @NotNull @RequestBody newOgrp: NewObjectGroup): ObjectGroup {
 
-        val owner = userGroupRepository.findMine(userId, newOgrp.owner!!, admin = true).orElseThrow {
+        val owner = userGroupAccessManager.getAccessibleGroup(userId, newOgrp.owner!!, admin = true).orElseThrow {
             ItemNotFoundException("userGroup (${newOgrp.owner})")
         }
 
-        return objectGroupsRepository.saveAndFlush(
+        return objectGroupAccessManager.objectGroupsRepository.saveAndFlush(
                 ObjectGroup(
                         name = newOgrp.name,
                         description = newOgrp.description,
@@ -104,12 +102,12 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
                         @PathVariable("objectGroupId") id: Long,
                         @Valid @NotNull @RequestBody editableFields: EditableOgroupFields): ObjectGroup {
 
-        val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
+        val ogrp = objectGroupAccessManager.findOne(userId, id, writable = true).orElseThrow {
             ItemNotFoundException("objectGroup (${id})")
         }
         editableFields.name?.let { ogrp.name = it }
         editableFields.description?.let { ogrp.description = it }
-        return objectGroupsRepository.saveAndFlush(ogrp)
+        return objectGroupAccessManager.objectGroupsRepository.saveAndFlush(ogrp)
     }
 
     @Protected
@@ -123,7 +121,7 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     fun getObjectGroup(@UserId userId: Int,
                        @PathVariable(value = "objectGroupId") id: Long,
                        @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): ObjectGroup {
-        val ogrp = objectGroupsRepository.findOne(userId, id).orElseThrow {
+        val ogrp = objectGroupAccessManager.findOne(userId, id).orElseThrow {
             ItemNotFoundException("object group ($id)")
         }
         return if (withObjects) ogrp.withObjects() else ogrp
@@ -134,13 +132,13 @@ class ObjectGroupsController(private val objectGroupsRepository: ObjectGroupsRep
     @DeleteMapping("/{objectGroupId}")
     @SimpleModificationStatusResponse
     fun deleteObjectGroup(@UserId userId: Int, @PathVariable(value = "objectGroupId") id: Long): ResponseEntity<String> {
-        if (!objectGroupsRepository.findOne(userId, id).isPresent) {
+        if (!objectGroupAccessManager.findOne(userId, id).isPresent) {
             return CommonResponses.notModifed()
         }
-        val ogrp = objectGroupsRepository.findOneWritable(userId, id).orElseThrow {
+        val ogrp = objectGroupAccessManager.findOne(userId, id, writable = true).orElseThrow {
             ForbiddenException("You must have admin rights on this object group to delete it.")
         }
-        objectGroupsRepository.delete(ogrp)
+        objectGroupAccessManager.objectGroupsRepository.delete(ogrp)
         return CommonResponses.ok()
     }
 }

@@ -15,12 +15,23 @@ import java.util.*
 
 @Repository
 interface ObjectRepository : JpaRepository<Objects, Long> {
+
+
+    @Query("SELECT o FROM Objects o WHERE LOCATE(:search, o.name) > 0")
+    fun findAll(search: String = "", pageable: Pageable = Pageable.unpaged()): List<Objects>
+
     @Query("SELECT o FROM Objects o INNER JOIN o.userPerms p " +
             "WHERE p.userId = :userId " +
             "AND (p.writable = true OR p.writable = :writable) " +
             "AND LOCATE(:search, o.name) > 0")
     fun findAll(userId: Int, writable: Boolean, search: String = "",
                 pageable: Pageable = Pageable.unpaged()): List<Objects>
+
+
+    @Query("SELECT DISTINCT o FROM Objects o INNER JOIN o.tags t " +
+            "WHERE t.name IN :tags " +
+            "AND LOCATE(:search, o.name) > 0")
+    fun findAllByTag(tags: List<String>, search: String = "", pageable: Pageable = Pageable.unpaged()): List<Objects>
 
     @Query("SELECT DISTINCT o FROM Objects o INNER JOIN o.userPerms p INNER JOIN o.tags t " +
             "WHERE t.name IN :tags " +
@@ -29,6 +40,7 @@ interface ObjectRepository : JpaRepository<Objects, Long> {
             "AND LOCATE(:search, o.name) > 0")
     fun findAllByTag(tags: List<String>, userId: Int, writable: Boolean, search: String = "",
                      pageable: Pageable = Pageable.unpaged()): List<Objects>
+
 
     @Query("SELECT o FROM Objects o INNER JOIN o.userPerms p " +
             "WHERE p.userId = :userId AND o.id = :id AND (p.writable = true OR p.writable = :writable)")

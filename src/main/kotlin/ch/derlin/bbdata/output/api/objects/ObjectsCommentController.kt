@@ -23,7 +23,7 @@ import javax.validation.constraints.NotNull
 @RestController
 @RequestMapping("/objects")
 @Tag(name = "Objects Comments", description = "Manage object comments")
-class ObjectsCommentController(private val objectRepository: ObjectRepository,
+class ObjectsCommentController(private val objectsAccessManager: ObjectsAccessManager,
                                private val commentRepository: CommentRepository) {
 
     // TODO: who can create comment ? Currently: anyone having access
@@ -51,7 +51,7 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
             @PathVariable("objectId") objectId: Long,
             @RequestParam("forDate", required = false) forDate: DateTime?): List<Comment> {
 
-        val obj = objectRepository.findById(objectId, userId, writable = false).orElseThrow {
+        val obj = objectsAccessManager.findById(objectId, userId, writable = false).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
         if(forDate != null) return commentRepository.findForDate(obj.id!!, forDate)
@@ -68,7 +68,7 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
             @PathVariable("objectId") objectId: Long,
             @Valid @NotNull @RequestBody newComment: NewComment): Comment {
 
-        val obj = objectRepository.findById(objectId, userId, writable = false).orElseThrow {
+        val obj = objectsAccessManager.findById(objectId, userId, writable = false).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
 
@@ -92,7 +92,7 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
             @PathVariable("objectId") objectId: Long,
             @PathVariable("commentId") id: Int): Comment {
 
-        val obj = objectRepository.findById(objectId, userId, writable = false).orElseThrow {
+        val obj = objectsAccessManager.findById(objectId, userId, writable = false).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
         return commentRepository.findByIdAndObjectId(id, obj.id!!).orElseThrow {
@@ -109,7 +109,7 @@ class ObjectsCommentController(private val objectRepository: ObjectRepository,
             @PathVariable("objectId") objectId: Long,
             @PathVariable("commentId") id: Int): ResponseEntity<String> {
 
-        val obj = objectRepository.findById(objectId, userId, writable = false).orElseThrow {
+        val obj = objectsAccessManager.findById(objectId, userId, writable = false).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
         val comment = commentRepository.findByIdAndObjectId(id, obj.id!!)

@@ -108,13 +108,13 @@ class UserGroupMappingController(
     }
     */
 
-    fun ensureUserCanAccessGroup(userId: Int, groupId: Int, requireAdminRight: Boolean = false): UsergroupMapping {
+    fun ensureUserCanAccessGroup(userId: Int, groupId: Int, requireAdminRight: Boolean = false) {
         // ensure the user has the right to add a member to the group
+        if (userGroupMappingRepository.isSuperAdmin(userId)) return
         val mapping = userGroupMappingRepository.findById(UserUgrpMappingId(userId, groupId)).orElseThrow {
             ItemNotFoundException("usergroup (${groupId})")
         }
         if (requireAdminRight && !mapping.isAdmin)
             throw ForbiddenException("You must be admin to execute this action.")
-        return mapping
     }
 }
