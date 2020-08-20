@@ -4,7 +4,7 @@ import ch.derlin.bbdata.*
 import ch.derlin.bbdata.common.cassandra.AggregationGranularity
 import ch.derlin.bbdata.common.dates.JodaUtils
 import com.jayway.jsonpath.DocumentContext
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
@@ -44,7 +44,7 @@ class TestValues {
         // get between
         val (status, json) = restTemplate.getQueryJson(URL_RAW,
                 "accept" to "application/json")
-        Assertions.assertEquals(HttpStatus.OK, status)
+        assertEquals(HttpStatus.OK, status)
         json.readList().checkRaw()
     }
 
@@ -52,7 +52,7 @@ class TestValues {
     fun `1-2 get raw values CSV`() {
         // get between
         val resp = restTemplate.getQueryString(URL_RAW)
-        Assertions.assertEquals(HttpStatus.OK, resp.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode)
         resp.body!!.csv2map().checkRaw()
     }
 
@@ -60,12 +60,12 @@ class TestValues {
     fun `2-1 get aggregated values JSON`() {
         // test the default: should be hours
         val (statusH, jsonH) = restTemplate.getQueryJson(URL_AGGR, "accept" to "application/json")
-        Assertions.assertEquals(HttpStatus.OK, statusH)
+        assertEquals(HttpStatus.OK, statusH)
         jsonH.readList().checkAggr(granularity = AggregationGranularity.hours)
 
         // test the quarters
         val (statusQ, jsonQ) = restTemplate.getQueryJson("$URL_AGGR&granularity=quarters", "accept" to "application/json")
-        Assertions.assertEquals(HttpStatus.OK, statusQ)
+        assertEquals(HttpStatus.OK, statusQ)
         jsonQ.readList().checkAggr(granularity = AggregationGranularity.quarters)
     }
 
@@ -73,11 +73,11 @@ class TestValues {
     fun `2-2 get aggregated values CSV`() {
         // test the hours
         var resp = restTemplate.getQueryString("$URL_AGGR&granularity=hours")
-        Assertions.assertEquals(HttpStatus.OK, resp.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode)
         resp.body!!.csv2map().checkAggr(granularity = AggregationGranularity.hours)
         // test the quarters
         resp = restTemplate.getQueryString("$URL_AGGR&granularity=hours")
-        Assertions.assertEquals(HttpStatus.OK, resp.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode)
         resp.body!!.csv2map().checkAggr(granularity = AggregationGranularity.hours)
     }
 
@@ -86,11 +86,11 @@ class TestValues {
         var firstResp: String? = null
         for (g in listOf("hours", "HOURS", "hOuRs")) {
             val resp = restTemplate.getQueryString("$URL_AGGR&granularity=$g")
-            Assertions.assertEquals(HttpStatus.OK, resp.statusCode)
+            assertEquals(HttpStatus.OK, resp.statusCode)
             if (firstResp == null) {
                 firstResp = resp.body
             } else {
-                Assertions.assertTrue(firstResp == resp.body, "case change in granularity generates different bodies")
+                assertTrue(firstResp == resp.body, "case change in granularity generates different bodies")
             }
         }
     }
@@ -98,11 +98,11 @@ class TestValues {
     @Test
     fun `3-1 test values latest (json only)`() {
         val (status, json) = restTemplate.getQueryJson(URL_LATEST, "accept" to "application/json")
-        Assertions.assertEquals(HttpStatus.OK, status)
+        assertEquals(HttpStatus.OK, status)
         val values = json.readList()
-        Assertions.assertEquals(1, values.count())
-        Assertions.assertEquals(OID, values[0].get("objectId") as Int)
-        Assertions.assertTrue((values[0].get("timestamp") as String).startsWith(TO.dropLast(1)))
+        assertEquals(1, values.count())
+        assertEquals(OID, values[0].get("objectId") as Int)
+        assertTrue((values[0].get("timestamp") as String).startsWith(TO.dropLast(1)))
     }
 
     // -------------------
@@ -111,25 +111,25 @@ class TestValues {
 
 
     private fun List<Map<String, Any>>.checkRaw() {
-        Assertions.assertEquals(5, this.count())
-        Assertions.assertEquals(OID.toString(), this.random().get("objectId").toString())
-        Assertions.assertEquals("null", this.random().get("comment").toString())
-        Assertions.assertEquals(JodaUtils.parse(FROM), JodaUtils.parse(this.first().get("timestamp") as String))
-        Assertions.assertEquals(JodaUtils.parse(TO), JodaUtils.parse(this.last().get("timestamp") as String))
+        assertEquals(5, this.count())
+        assertEquals(OID.toString(), this.random().get("objectId").toString())
+        assertEquals("null", this.random().get("comment").toString())
+        assertEquals(JodaUtils.parse(FROM), JodaUtils.parse(this.first().get("timestamp") as String))
+        assertEquals(JodaUtils.parse(TO), JodaUtils.parse(this.last().get("timestamp") as String))
     }
 
     private fun List<Map<String, Any>>.checkAggr(granularity: AggregationGranularity) {
         val nRecords = (60 / granularity.minutes) + 1 // 60 is the difference in minutes between FROM and TO
         val nValuesPerRecord = granularity.minutes / 15 // object 1 has one value each 15 minutes
 
-        Assertions.assertEquals(nRecords, this.count())
-        Assertions.assertEquals(OID.toString(), this.random().get("objectId").toString())
-        Assertions.assertEquals(nValuesPerRecord.toString(), this.random().get("count").toString())
+        assertEquals(nRecords, this.count())
+        assertEquals(OID.toString(), this.random().get("objectId").toString())
+        assertEquals(nValuesPerRecord.toString(), this.random().get("count").toString())
         for (key in listOf("min", "max", "std", "sum", "mean")) {
-            Assertions.assertTrue(this.random().containsKey(key), "$key missing in at least one record")
+            assertTrue(this.random().containsKey(key), "$key missing in at least one record")
         }
         for (key in listOf("timestamp", "lastTimestamp")) {
-            Assertions.assertTrue((this.random().get(key) as String).isBBDataDatetime(), "invalid date format")
+            assertTrue((this.random().get(key) as String).isBBDataDatetime(), "invalid date format")
         }
     }
 

@@ -2,8 +2,11 @@ package ch.derlin.bbdata.output
 
 import ch.derlin.bbdata.*
 import com.jayway.jsonpath.JsonPath
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.extension.ExtendWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.beans.factory.annotation.Autowired

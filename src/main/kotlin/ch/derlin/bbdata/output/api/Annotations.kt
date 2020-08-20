@@ -1,15 +1,12 @@
 package ch.derlin.bbdata.output.api
 
 import ch.derlin.bbdata.output.security.Protected
-import ch.derlin.bbdata.output.security.SecurityConstants
-import io.swagger.v3.oas.annotations.responses.ApiResponse
 import org.springframework.core.annotation.AliasFor
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.ResponseStatus
-import java.lang.annotation.Documented
 
 
 /**

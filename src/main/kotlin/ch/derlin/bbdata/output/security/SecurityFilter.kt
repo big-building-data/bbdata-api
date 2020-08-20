@@ -2,10 +2,10 @@ package ch.derlin.bbdata.output.security
 
 
 import ch.derlin.bbdata.Profiles
-import ch.derlin.bbdata.output.api.apikeys.ApikeyRepository
 import ch.derlin.bbdata.common.exceptions.BadApikeyException
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.UnauthorizedException
+import ch.derlin.bbdata.output.api.apikeys.ApikeyRepository
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_TOKEN
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_USER
 import ch.derlin.bbdata.output.security.SecurityConstants.SCOPE_WRITE

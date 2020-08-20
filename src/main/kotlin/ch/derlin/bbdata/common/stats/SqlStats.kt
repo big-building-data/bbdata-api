@@ -4,7 +4,10 @@ import ch.derlin.bbdata.Profiles
 import ch.derlin.bbdata.input.NewValue
 import org.joda.time.DateTime
 import org.springframework.context.annotation.Profile
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.Id
+import javax.persistence.Table
 
 /**
  * date: 25.05.20

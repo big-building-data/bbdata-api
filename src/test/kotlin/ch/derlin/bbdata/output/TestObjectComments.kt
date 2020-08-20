@@ -3,7 +3,11 @@ package ch.derlin.bbdata.output
 import ch.derlin.bbdata.*
 import ch.derlin.bbdata.common.dates.JodaUtils
 import com.jayway.jsonpath.JsonPath
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.AfterAll
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.extension.ExtendWith
 import org.skyscreamer.jsonassert.JSONAssert
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,7 +16,6 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.junit.jupiter.api.Assertions.*
 
 
 /**

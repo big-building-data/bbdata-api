@@ -9,13 +9,12 @@ import ch.derlin.bbdata.common.Beans
 import ch.derlin.bbdata.common.CacheConstants
 import ch.derlin.bbdata.common.HiddenParam
 import ch.derlin.bbdata.common.PageableAsQueryParam
-import ch.derlin.bbdata.output.api.CommonResponses
-import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
-import ch.derlin.bbdata.output.api.types.UnitRepository
-import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
+import ch.derlin.bbdata.output.api.CommonResponses
+import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
+import ch.derlin.bbdata.output.api.types.UnitRepository
 import ch.derlin.bbdata.output.api.user_groups.UserGroupAccessManager
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants

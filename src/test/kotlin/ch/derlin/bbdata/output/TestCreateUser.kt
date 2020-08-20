@@ -2,7 +2,10 @@ package ch.derlin.bbdata.output
 
 import ch.derlin.bbdata.*
 import com.jayway.jsonpath.JsonPath
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -39,23 +42,23 @@ class TestCreateUser {
         val url = "/users"
         // == create empty name
         var putResponse = restTemplate.putWithBody(url, """{"name": ""}""")
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create no email / password
         putResponse = restTemplate.putWithBody(url, """{"name": "$name"}""")
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create short password
         putResponse = restTemplate.putWithBody(url, """{"name": "$name", "password": "x", "email": "$email"}""")
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create no email
         putResponse = restTemplate.putWithBody(url, """{"name": "$name", "password": "$password"}""")
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
 
         // == create wrong email
         putResponse = restTemplate.putWithBody(url, """{"name": "$name", "password": "$password", "email": "nope"}""")
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
     }
 
     @Test
@@ -63,7 +66,7 @@ class TestCreateUser {
         // == create
         val putResponse = restTemplate.putWithBody("/users",
                 """{"name": "$name", "password": "$password", "email": "$email"}""")
-        Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
+        assertEquals(HttpStatus.OK, putResponse.statusCode)
         val json = JsonPath.parse(putResponse.body)
 
         // == store variables
@@ -71,10 +74,10 @@ class TestCreateUser {
 
         // == check response
         // same name
-        Assertions.assertEquals(name, json.read<String>("$.name"))
+        assertEquals(name, json.read<String>("$.name"))
         // neither password not email sent back
-        Assertions.assertFalse(putResponse.body!!.contains("password"))
-        Assertions.assertFalse(putResponse.body!!.contains("email"))
+        assertFalse(putResponse.body!!.contains("password"))
+        assertFalse(putResponse.body!!.contains("email"))
     }
 
     @Test
@@ -82,23 +85,23 @@ class TestCreateUser {
         // == no duplicate names allowed
         val putResponse2 = restTemplate.putWithBody("/users",
                 """{"name": "$name", "password": "$password", "email": "$email"}""")
-        Assertions.assertEquals(HttpStatus.BAD_REQUEST, putResponse2.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, putResponse2.statusCode)
     }
 
     @Test
     fun `1-3 get users`() {
         // == no duplicate names allowed
         val (status, json) = restTemplate.getQueryJson("/users")
-        Assertions.assertEquals(HttpStatus.OK, status)
-        Assertions.assertEquals(1, json.read<List<Any>>("$[?(@.name == '$name')]").size)
+        assertEquals(HttpStatus.OK, status)
+        assertEquals(1, json.read<List<Any>>("$[?(@.name == '$name')]").size)
     }
 
     @Test
     fun `1-4 get user`() {
         // == no duplicate names allowed
         val (status, json) = restTemplate.getQueryJson("/users/$id")
-        Assertions.assertEquals(HttpStatus.OK, status)
-        Assertions.assertEquals(name, json.read<String>("$.name"))
+        assertEquals(HttpStatus.OK, status)
+        assertEquals(name, json.read<String>("$.name"))
     }
 
     @Test
@@ -106,12 +109,12 @@ class TestCreateUser {
         // == create
         val putResponse = restTemplate.putWithBody("/users?userGroupId=$REGULAR_USER_ID",
                 """{"name": "$name-withGroup", "password": "$password", "email": "$email"}""")
-        Assertions.assertEquals(HttpStatus.OK, putResponse.statusCode)
+        assertEquals(HttpStatus.OK, putResponse.statusCode)
         id =  JsonPath.parse(putResponse.body).read<Int>("$.id")
 
         // == get using user
         val getResponse = restTemplate.getQueryJson("/userGroups/$REGULAR_USER_ID/users/$id")
-        Assertions.assertEquals(HttpStatus.OK, getResponse.first)
-        Assertions.assertEquals(id!!, getResponse.second.read<Int>("$.id"))
+        assertEquals(HttpStatus.OK, getResponse.first)
+        assertEquals(id!!, getResponse.second.read<Int>("$.id"))
     }
 }

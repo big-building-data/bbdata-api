@@ -2,7 +2,6 @@ package ch.derlin.bbdata.input
 
 import ch.derlin.bbdata.*
 import ch.derlin.bbdata.common.CacheConstants
-import ch.derlin.bbdata.output.TestSuperAdmin
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer

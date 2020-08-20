@@ -1,10 +1,10 @@
 package ch.derlin.bbdata.output.api.users
 
+import ch.derlin.bbdata.common.exceptions.AppException
 import ch.derlin.bbdata.output.api.apikeys.Apikey
 import ch.derlin.bbdata.output.api.apikeys.PasswordDigest
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.api.user_groups.UsergroupMapping
-import ch.derlin.bbdata.common.exceptions.AppException
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.hibernate.annotations.Generated
 import org.hibernate.annotations.GenerationTime

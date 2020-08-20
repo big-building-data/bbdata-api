@@ -12,7 +12,6 @@ package ch.derlin.bbdata.output.api.types
  */
 
 
-import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIdentityReference
 import com.fasterxml.jackson.annotation.ObjectIdGenerators

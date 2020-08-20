@@ -5,11 +5,11 @@ package ch.derlin.bbdata.output.api.object_groups
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
+import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.user_groups.UserGroup
 import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
-import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId

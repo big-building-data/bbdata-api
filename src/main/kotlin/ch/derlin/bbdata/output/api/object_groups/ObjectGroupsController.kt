@@ -6,11 +6,10 @@ package ch.derlin.bbdata.output.api.object_groups
  */
 
 import ch.derlin.bbdata.common.Beans.DESCRIPTION_MAX
-import ch.derlin.bbdata.output.api.CommonResponses
-import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
-import ch.derlin.bbdata.output.api.user_groups.UserGroupRepository
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
+import ch.derlin.bbdata.output.api.CommonResponses
+import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.user_groups.UserGroupAccessManager
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants

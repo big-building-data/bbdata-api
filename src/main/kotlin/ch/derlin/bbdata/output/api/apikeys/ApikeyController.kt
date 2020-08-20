@@ -1,21 +1,17 @@
 package ch.derlin.bbdata.output.api.apikeys
 
 import ch.derlin.bbdata.common.Beans
-import ch.derlin.bbdata.output.api.CommonResponses
-import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
-import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.common.dates.DurationParser
 import ch.derlin.bbdata.common.dates.JodaUtils
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
-import ch.derlin.bbdata.output.api.object_groups.ObjectGroup
+import ch.derlin.bbdata.output.api.CommonResponses
+import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
+import ch.derlin.bbdata.output.api.users.UserRepository
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Content
-import io.swagger.v3.oas.annotations.media.Schema
-import io.swagger.v3.oas.annotations.responses.ApiResponse
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
 import org.joda.time.MutablePeriod

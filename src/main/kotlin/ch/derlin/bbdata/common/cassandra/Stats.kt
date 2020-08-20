@@ -1,7 +1,6 @@
 package ch.derlin.bbdata.common.cassandra
 
 import com.datastax.driver.core.DataType
-import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.joda.time.DateTime
 import org.springframework.data.cassandra.core.mapping.CassandraType

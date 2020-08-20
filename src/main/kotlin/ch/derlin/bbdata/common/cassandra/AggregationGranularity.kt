@@ -1,12 +1,7 @@
 package ch.derlin.bbdata.common.cassandra
 
-import ch.derlin.bbdata.common.dates.JodaUtils
-import org.joda.time.DateTime
-import org.springframework.context.annotation.Configuration
 import org.springframework.core.convert.converter.Converter
-import org.springframework.format.support.FormattingConversionService
 import org.springframework.stereotype.Component
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport
 
 
 /**

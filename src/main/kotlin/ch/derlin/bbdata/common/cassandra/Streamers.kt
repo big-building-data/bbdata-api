@@ -1,11 +1,8 @@
 package ch.derlin.bbdata.common.cassandra
 
-import ch.derlin.bbdata.output.api.objects.ObjectRepository
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.stereotype.Component
 import java.io.OutputStream
-import java.io.OutputStreamWriter
-import java.io.Writer
 import javax.servlet.http.HttpServletResponse
 
 /**
