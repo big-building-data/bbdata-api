@@ -17,7 +17,7 @@ INSERT INTO `units` VALUES
 
 
 INSERT INTO `ugrps` (`id`, `name`) VALUES 
-    (1, 'admin'),
+    (1, 'SUPERADMIN'),
     (2, 'regular'),
     (3, 'other');
 

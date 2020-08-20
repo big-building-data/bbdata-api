@@ -21,7 +21,7 @@ const val ROOT_ID = 1
 const val REGULAR_USER_ID = 2
 const val NO_RIGHTS_USER_ID = 3
 
-val ROOT_USER = mapOf("id" to ROOT_ID, "name" to "admin", "password" to "testtest", "group" to "admin")
+val ROOT_USER = mapOf("id" to ROOT_ID, "name" to "admin", "password" to "testtest", "group" to "SUPERADMIN")
 val REGULAR_USER = mapOf("id" to REGULAR_USER_ID, "name" to "regular_user", "password" to "testtest", "group" to "regular")
 
 fun APIKEY(userId: Int, ro: Boolean = false) = if (ro) "ro$userId" else "wr$userId"

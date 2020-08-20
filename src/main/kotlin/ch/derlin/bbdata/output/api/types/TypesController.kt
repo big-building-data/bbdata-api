@@ -1,12 +1,12 @@
 package ch.derlin.bbdata.output.api.types
 
-import ch.derlin.bbdata.output.api.user_groups.UserGroupMappingRepository
-import ch.derlin.bbdata.output.api.user_groups.UserUgrpMappingId
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
+import ch.derlin.bbdata.output.api.user_groups.UserGroupMappingRepository
+import ch.derlin.bbdata.output.api.user_groups.UserUgrpMappingId
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
-import ch.derlin.bbdata.output.security.SecurityConstants.ADMIN_GROUP
+import ch.derlin.bbdata.output.security.SecurityConstants.SUPERADMIN_GROUP
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
@@ -58,7 +58,7 @@ class TypesController(private val unitRepository: UnitRepository,
             "__IMPORTANT__: this endpoint is only accessible to the user group ADMIN (id=1).")
     @PostMapping("/units")
     fun addUnit(@UserId userId: Int, @Valid @NotNull @RequestBody newUnit: NewUnit): Unit {
-        if (!userGroupMappingRepository.existsById(UserUgrpMappingId(userId = userId, groupId = ADMIN_GROUP)))
+        if (!userGroupMappingRepository.existsById(UserUgrpMappingId(userId = userId, groupId = SUPERADMIN_GROUP)))
             throw ForbiddenException("Only users part of the 'admin' group can add new units.")
 
         val type = baseTypeRepository.findById(newUnit.type).orElseThrow {

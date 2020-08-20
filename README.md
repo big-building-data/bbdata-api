@@ -8,6 +8,20 @@ This repository is the cornerstone of BBData. It contains:
 2. dockerfiles and docker-compose for local testing, including: MySQL, Cassandra, Kafka
 3. the definition of the two databases at the center of BBData: MySQL & Cassandra
 
+
+
+- [Development setup](#development-setup)
+  * [Prerequisites](#prerequisites)
+  * [Setup](#setup)
+  * [Cassandra, MySQL and Kafka](#cassandra--mysql-and-kafka)
+  * [Profiles](#profiles)
+  * [Hidden system variables](#hidden-system-variables)
+- [Production](#production)
+  * [Minimal properties to provide](#minimal-properties-to-provide)
+  * [Executing the jar](#executing-the-jar)
+  * [Caching](#caching)
+- [Permission system](#permission-system)
+    
 ## Development setup
 
 ### Prerequisites
@@ -66,6 +80,18 @@ Output only, no security checks and no cassandra
 (note that the output profile is not needed, as no Cassandra means no input):
 ```bash
 java -jar bbdata.jar -Dspring.profiles.active=noc,unsecured
+```
+
+### Hidden system variables
+
+There are two system variables that can be set (`export XX=YY`), mostly for use in tests:
+
+* `BB_NO_KAFKA=<bool>`: this turns off the publication of augmented values to kafka in the input endpoint. Useful when we don't want to spawn a Kafka container.
+* `UNSECURED_BBUSER=<int>`: this determines which `userId` is used as default when the `UNSECURED` profile is turned off. Default to 1.
+
+In test files, those variables can be set using the `@SpringBootTest` annotation, e.g.:
+```
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = arrayOf("UNSECURED_BBUSER=2"))
 ```
 
 ## Production
@@ -154,3 +180,24 @@ Current caching strategy:
 * the entire cache is flushed when an object changes state (enabled/disabled), this is because we use compound keys,
   and have no way of using wildcard (e.g. `objectId:*`) in `@CacheEvict`. However, this operation is usually rare. 
 
+
+## Permission system
+
+📛 **tldr; IMPORTANT** 📛 Ensure that the `userGroup` with ID 1 has a meaningful name in the database (e.g. "admin") and that
+you only add the platform managers to it !
+
+The permission system in BBData uses mappings between userGroups and objectGroups.
+
+A user can be part of one or more userGroups, either as regular user or as admin. 
+Objects can be part of one or more objectGroups. 
+ObjectGroups have a list of allowed userGroups (defining read permissions to objects that belong to it), 
+and a single owner, which is the userGroup that created it. 
+Only admin users from the owning userGroup can manage objects and permissions of an objectGroup.
+Regular users can access them in read mode.
+This is the same for objects: admins of the owning group has write access (e.g. editing metadata), 
+regular users only read access (e.g. getting values).
+
+There is one special case: the userGroup with `userGroupId=1` is the *🔱SUPERADMIN🔱 group*.
+This is the equivalent of `SUDO`: any admin of this group has read/write access to ANY resource, in read and write mode. 
+
+(see the documentation for more info)
