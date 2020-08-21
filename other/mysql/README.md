@@ -2,7 +2,7 @@
 
 This folder contains the structure of the mysql database required for BBData, as well as dockerfiles and data for testing purposes. 
 
-__‼️ IMPORTANT__: in BBData, the user group with ID 1 is a kind of sudo group, called *🔱SUPERADMIN🔱 group*.
+__‼️ IMPORTANT__: in BBData, the user group with ID 1 is a kind of sudo group, called ⚜️ *SUPERADMIN* ⚜️ group.
 Users part of (and admin of) this group have special privileges: they can basically access and edit ANY resources.
 Hence, in production, ensure that the usergroup with ID 1 has a meaningful name and only powerusers are added to the group. 
 

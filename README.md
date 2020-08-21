@@ -13,7 +13,7 @@ This repository is the cornerstone of BBData. It contains:
 - [Development setup](#development-setup)
   * [Prerequisites](#prerequisites)
   * [Setup](#setup)
-  * [Cassandra, MySQL and Kafka](#cassandra--mysql-and-kafka)
+  * [Cassandra, MySQL and Kafka](#cassandra-mysql-and-kafka)
   * [Profiles](#profiles)
   * [Hidden system variables](#hidden-system-variables)
 - [Production](#production)
@@ -21,6 +21,7 @@ This repository is the cornerstone of BBData. It contains:
   * [Executing the jar](#executing-the-jar)
   * [Caching](#caching)
 - [Permission system](#permission-system)
+- [Customizing the `/info` endpoint](#customizing-the-info-endpoint)
     
 ## Development setup
 
@@ -166,6 +167,12 @@ spring.redis.host=localhost
 spring.redis.port=6379
 ```
 
+By default, the cache logger is set to `TRACE`. This can be problematic in production, so feel free to turn it off using:
+```properties
+# default to TRACE
+logging.level.org.springframework.cache=WARN
+```
+
 **IMPORTANT**: in case you deploy the input api and the output api separately (using profiles), 
 YOU NEED TO USE AN EXTERNAL CACHE (e.g. redis). This is because the output API is responsible for evicting old entries
 from the cache. If the input and the output do not run in the same JVM, the cache strategy `simple` is *dangerous*:
@@ -183,7 +190,7 @@ Current caching strategy:
 
 ## Permission system
 
-📛 **tldr; IMPORTANT** 📛 Ensure that the `userGroup` with ID 1 has a meaningful name in the database (e.g. "admin") and that
+‼️ **tldr; IMPORTANT** Ensure that the `userGroup` with ID 1 has a meaningful name in the database (e.g. "admin") and that
 you only add the platform managers to it !
 
 The permission system in BBData uses mappings between userGroups and objectGroups.
@@ -197,7 +204,32 @@ Regular users can access them in read mode.
 This is the same for objects: admins of the owning group has write access (e.g. editing metadata), 
 regular users only read access (e.g. getting values).
 
-There is one special case: the userGroup with `userGroupId=1` is the *🔱SUPERADMIN🔱 group*.
+There is one special case: the userGroup with `userGroupId=1` is the ⚜️ *SUPERADMIN* ⚜️.
 This is the equivalent of `SUDO`: any admin of this group has read/write access to ANY resource, in read and write mode. 
 
 (see the documentation for more info)
+
+## Customizing the `/info` endpoint
+
+The info endpoint can be customized using properties. 
+
+By default, SpringBoot actuator will add the to the JSON response any property with the prefix `info`.
+For example, to configure the `instance-name`, define the following in your `application.properties`:
+```properties
+info.instance-name=My Super Instance
+```
+
+Another really cool feature is the possibility to reference *other properties files*. For example, let's say
+you want to show the current cache type in use, which is defined somewhere (in this or another properties file)
+using `spring.cache.type=XX`. To show this value in `/info`, simply add a property with the prefix `dynamic.info` 
+(nested properties, with dots, are not allowed):
+```properties
+dynamic.info.cache-type=spring.cache-type
+```
+The JSON key `cache-type` will then appear in the `/info` endpoint. 
+The pattern is thus:
+```properties
+dynamic.info.<JSON-KEY-NAME-WITHOUT-DOTS>=<ANOTHER PROPERTY>
+```
+
+To hide a dynamic property that is displayed, simply redefine it with an empty value, e.g. `dynamic.info.cache-type=`.
