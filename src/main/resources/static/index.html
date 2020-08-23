@@ -9,6 +9,7 @@
     <!-- FONT -->
     <link href="https://fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
     <!-- CSS -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/styles/default.min.css">
     <link rel="stylesheet" href="vendor/skeleton.min.css">
     <link rel="stylesheet" href="index.css">
 </head>
@@ -22,8 +23,9 @@
     –––––––––––––––––––––––––––––––––––––––––––––––––– -->
     <section class="header">
         <h1 class="title">B<sub>ig</sub> B<sub>uilding</sub> Data</h1>
-        <h2 id="instance-info"></h2>
+        <h2 id="instance-name"></h2>
         <a class="button button-primary" href="/docs/api">Documentation</a>
+        <span id="repo-url"></span>
         <div class="value-props row">
             <div class="four columns value-prop">
                 <img class="value-img" src="images/connectivity.svg">
@@ -48,6 +50,7 @@
             the <a href="/docs/api/bbdata.yaml" target="_blank">OpenAPI 3.0 YAML file</a>.
             The latter can be imported in many tools such as
             <a href="https://www.getpostman.com/" target="_blank">PostMan</a>.</p>
+        <p id="pre-info"></p>
     </div>
 
     <!-- More info
@@ -75,12 +78,12 @@
                 <em>Headers</em> include the two headers <code>bbuser: your-user-id</code> and
                 <code>bbtoken: your-apikey-secret</code>. Example:
             </p>
-            <pre><code>curl -H "bbuser: 1" -H "bbtoken: 007237385b79dbb11917b472986d9a60" &lt;url&gt;</code></pre>
+            <pre><code class="bash">curl -H "bbuser: 1" -H "bbtoken: 007237385b79dbb11917b472986d9a60" &lt;url&gt;</code></pre>
             <p>
                 <em>Basic authentication</em> this uses the common <code>Authorization</code> header, where
                 <code>userid:secret</code> is transmitted as a base64 string. Example:
             </p>
-            <pre><code>curl --user "1:007237385b79dbb11917b472986d9a60" &lt;url&gt;</code></pre>
+            <pre><code class="bash">curl --user "1:007237385b79dbb11917b472986d9a60" &lt;url&gt;</code></pre>
             <p>As a rule of thumb, any non-GET endpoint will require a read-and-write apikey.</p>
         </div>
 
@@ -207,7 +210,7 @@
 
             For <b>400 - Bad Request</b>, a JSON object that lists all wrong parameters.
             The structure is thus <code>"property": "detailed message"</code>. Example:
-            <pre><code>{
+            <pre><code class="json">{
   "exception" : "WrongParamsException",
   "details" : {
     "owner" : "must not be null",
@@ -216,11 +219,11 @@
 }</code></pre>
             For <b>status codes ≠ 400</b>, the details is a string with either a clear message or an abstract of the
             exception's associated message. Examples:
-            <pre><code>{
+            <pre><code class="json">{
   "exception" : "HttpMediaTypeNotSupportedException",
   "details" : "Content type 'application/x-www-form-urlencoded;charset=UTF-8' not supported"
 }</code></pre>
-            <pre><code>{
+            <pre><code class="json">{
   "exception" : "ItemNotFoundException",
   "details" : "The object group (101) was not found or can't be accessed with this apikey."
 }</code></pre>
@@ -230,7 +233,9 @@
 
 </div>
 
-<!-- End Document
+<!-- JS scripts
   –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.2/highlight.min.js"></script>
+<script type="text/javascript" src="index.js"></script>
 </body>
 </html>

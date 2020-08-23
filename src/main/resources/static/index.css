@@ -4,8 +4,15 @@
     font-family: monospace;
 }
 
-code { /* ensure it wraps on mobile */
+code {
+    /* ensure it wraps on mobile */
     white-space: pre-wrap !important;
+    /* skeleton is 90% */
+    font-size: 100%;
+}
+pre > code {
+    /* reset initial padding of skeleton (overrode by hljs) */
+    padding: 1rem 1.5rem !important;
 }
 
 /* == TITLES == */
