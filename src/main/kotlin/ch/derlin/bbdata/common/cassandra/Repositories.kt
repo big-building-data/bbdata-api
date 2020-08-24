@@ -2,6 +2,7 @@ package ch.derlin.bbdata.common.cassandra
 
 import ch.derlin.bbdata.Profiles
 import org.joda.time.DateTime
+import org.joda.time.YearMonth
 import org.springframework.context.annotation.Profile
 import org.springframework.data.cassandra.repository.CassandraRepository
 import org.springframework.data.cassandra.repository.Query
@@ -49,5 +50,14 @@ interface ObjectStatsCounterRepository : CassandraRepository<ObjectStatsCounter,
 
     @Query("UPDATE objects_stats_counter SET n_reads = n_reads + 1 WHERE object_id = :objectId")
     fun updateReadCounter(objectId: Int)
+}
 
+
+fun RawValueRepository.findLatestValue(objectId: Long, from: DateTime, to: DateTime): RawValue? {
+    // do the search, one month at a time, stop when one is found
+    val searchMonths = CassandraUtils.monthsBetween(YearMonth(from), YearMonth(to))
+    return searchMonths.asSequence()
+            .map { this.getLatest(objectId.toInt(), it, to) }
+            .dropWhile { it == null }
+            .firstOrNull()
 }

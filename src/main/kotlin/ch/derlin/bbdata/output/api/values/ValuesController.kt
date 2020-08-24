@@ -75,19 +75,14 @@ class ValuesController(
             @RequestParam(name = "before", required = false) optionalBefore: DateTime?,
             response: HttpServletResponse) {
         // check/prepare params
-        val before = optionalBefore ?: DateTime.now()
-        val monthBefore = YearMonth(before)
         val obj = checkObject(userId, objectId)
-        // do the search, one month at a time, stop when one is found
-        val searchMonths = CassandraUtils.monthsBetween(YearMonth(obj.creationdate), monthBefore)
-        val valuesIter = searchMonths.asSequence()
-                .map { rawValueRepository.getLatest(objectId.toInt(), it, before) }
-                .dropWhile { it == null }
-                .firstOrNull()
+        // do the search
+        val latest = rawValueRepository.findLatestValue(objectId, obj.creationdate!!, optionalBefore ?: DateTime.now())
+
         // stream the results
         cassandraObjectStreamer.stream(
                 contentType, response, RawValue.csvHeaders,
-                if (valuesIter == null) listOf() else listOf(valuesIter))
+                if (latest == null) listOf() else listOf(latest))
         // update stats
         statsLogic.incrementReadCounter(objectId)
     }
@@ -119,6 +114,7 @@ class ValuesController(
         // update stats
         statsLogic.incrementReadCounter(objectId)
     }
+
 
     private fun checkObject(userId: Int, objectId: Long): Objects =
             objectsAccessManager.findById(objectId, userId, writable = false).orElseThrow {
