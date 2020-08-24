@@ -33,7 +33,71 @@ import javax.validation.constraints.Size
 @RestController
 @RequestMapping("/objects")
 @Tag(name = "Objects", description = "Manage objects")
-class ObjectController(private val objectsAccessManager: ObjectsAccessManager) {
+class ObjectsController(private val objectsAccessManager: ObjectsAccessManager,
+                        private val userGroupAccessManager: UserGroupAccessManager,
+                        private val unitRepository: UnitRepository) {
+
+    class NewObject {
+        @NotNull
+        @Size(min = Objects.NAME_MIN, max = Objects.NAME_MAX)
+        val name: String? = null
+
+        @Size(max = Beans.DESCRIPTION_MAX)
+        val description: String? = null
+
+        @NotNull
+        val owner: Int? = null
+
+        @NotEmpty
+        val unitSymbol: String = ""
+    }
+
+    class EditableObjectFields {
+        @Size(min = Objects.NAME_MIN, max = Objects.NAME_MAX)
+        val name: String? = null
+
+        @Size(max = Beans.DESCRIPTION_MAX)
+        val description: String? = null
+    }
+
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Create a new object.<br>" +
+            "_NOTE_: since users can be _admins_ of multiple user groups, " +
+            "you need to explicitly pass the ID of the user group that will own the object via `owner`.")
+    @PutMapping("")
+    fun newObject(@UserId userId: Int,
+                  @RequestBody @Valid newObject: NewObject
+    ): Objects {
+
+        val userGroup = userGroupAccessManager.getAccessibleGroup(userId, newObject.owner!!, admin = true).orElseThrow {
+            ItemNotFoundException("UserGroup ('${newObject.owner}', admin=true)")
+        }
+
+        val unit = unitRepository.findById(newObject.unitSymbol).orElseThrow {
+            WrongParamsException("Unit '${newObject.unitSymbol}' does not exist.")
+        }
+
+        return objectsAccessManager.objectRepository.saveAndFlush(Objects(
+                name = newObject.name,
+                description = newObject.description,
+                unit = unit,
+                owner = userGroup
+        ))
+    }
+
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Edit an object you own, such as its name and description.")
+    @PostMapping("/{objectId}")
+    fun editObject(
+            @UserId userId: Int,
+            @PathVariable(value = "objectId") id: Long,
+            @Valid @NotNull @RequestBody editableFields: EditableObjectFields
+    ): Objects? {
+        val obj = objectsAccessManager.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
+        editableFields.name?.let { obj.name = it }
+        editableFields.description?.let { obj.description = it }
+        return objectsAccessManager.objectRepository.saveAndFlush(obj)
+    }
 
     @Protected
     @Operation(description = "Get the list of objects.<br>" +
@@ -147,77 +211,6 @@ class ObjectController(private val objectsAccessManager: ObjectsAccessManager) {
             return CommonResponses.ok()
         }
         return CommonResponses.notModifed()
-    }
-
-}
-
-@RestController
-@RequestMapping("/objects")
-@Tag(name = "Objects", description = "Manage objects")
-class NewObjectController(private val objectsAccessManager: ObjectsAccessManager,
-                          private val userGroupAccessManager: UserGroupAccessManager,
-                          private val unitRepository: UnitRepository) {
-
-    class NewObject {
-        @NotNull
-        @Size(min = Objects.NAME_MIN, max = Objects.NAME_MAX)
-        val name: String? = null
-
-        @Size(max = Beans.DESCRIPTION_MAX)
-        val description: String? = null
-
-        @NotNull
-        val owner: Int? = null
-
-        @NotEmpty
-        val unitSymbol: String = ""
-    }
-
-    class EditableObjectFields {
-        @Size(min = Objects.NAME_MIN, max = Objects.NAME_MAX)
-        val name: String? = null
-
-        @Size(max = Beans.DESCRIPTION_MAX)
-        val description: String? = null
-    }
-
-    @Protected(SecurityConstants.SCOPE_WRITE)
-    @Operation(description = "Create a new object.<br>" +
-            "_NOTE_: since users can be _admins_ of multiple user groups, " +
-            "you need to explicitly pass the ID of the user group that will own the object via `owner`.")
-    @PutMapping("")
-    fun newObject(@UserId userId: Int,
-                  @RequestBody @Valid newObject: NewObject
-    ): Objects {
-
-        val userGroup = userGroupAccessManager.getAccessibleGroup(userId, newObject.owner!!, admin = true).orElseThrow {
-            ItemNotFoundException("UserGroup ('${newObject.owner}', admin=true)")
-        }
-
-        val unit = unitRepository.findById(newObject.unitSymbol).orElseThrow {
-            WrongParamsException("Unit '${newObject.unitSymbol}' does not exist.")
-        }
-
-        return objectsAccessManager.objectRepository.saveAndFlush(Objects(
-                name = newObject.name,
-                description = newObject.description,
-                unit = unit,
-                owner = userGroup
-        ))
-    }
-
-    @Protected(SecurityConstants.SCOPE_WRITE)
-    @Operation(description = "Edit an object you own, such as its name and description.")
-    @PostMapping("/{objectId}")
-    fun editObject(
-            @UserId userId: Int,
-            @PathVariable(value = "objectId") id: Long,
-            @Valid @NotNull @RequestBody editableFields: EditableObjectFields
-    ): Objects? {
-        val obj = objectsAccessManager.findById(id, userId, writable = true).orElseThrow { ItemNotFoundException("object") }
-        editableFields.name?.let { obj.name = it }
-        editableFields.description?.let { obj.description = it }
-        return objectsAccessManager.objectRepository.saveAndFlush(obj)
     }
 
 }

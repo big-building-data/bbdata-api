@@ -10,7 +10,6 @@ import org.joda.time.YearMonth
 
 object CassandraUtils {
     val YM_FORMAT = org.joda.time.format.DateTimeFormat.forPattern("yyyy-MM")
-    const val MAX_SEARCH_DEPTH = 6
 
     fun xMonthsFrom(d1: YearMonth, x: Int): List<String> {
         val ym = YearMonth(d1)

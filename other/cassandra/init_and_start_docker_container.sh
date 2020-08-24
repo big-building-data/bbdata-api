@@ -11,7 +11,7 @@ docker run -d --rm \
     cassandra:3.11
 
 # wait a bit
-sleep 20
+sleep 40
 
 # use cqlsh to generate keyspace
 docker exec -i $CONTAINER cqlsh -f /bootstrap_data/schema.cql 
