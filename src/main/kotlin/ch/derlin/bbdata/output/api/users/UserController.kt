@@ -1,12 +1,17 @@
 package ch.derlin.bbdata.output.api.users
 
+import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
+import ch.derlin.bbdata.output.api.CommonResponses
+import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.user_groups.UserGroupMappingController
+import ch.derlin.bbdata.output.api.user_groups.UserGroupMappingRepository
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.ResponseEntity
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
@@ -22,6 +27,7 @@ import javax.validation.constraints.Size
 @RestController
 @Tag(name = "Users", description = "Get or create users")
 class UserController(private val userRepository: UserRepository,
+                     private val userGroupMappingRepository: UserGroupMappingRepository,
                      private val userGroupMappingController: UserGroupMappingController) {
 
     // TODO: where to put NewX classes ? controller or model ?
@@ -73,5 +79,23 @@ class UserController(private val userRepository: UserRepository,
             userGroupMappingController.addUserToGroup(userId, it, newUserId = user.id!!, admin = admin)
         }
         return user
+    }
+
+    @SimpleModificationStatusResponse
+    @Operation(description = "Delete a user. This functionality is only available to SUPERADMIN users.")
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @DeleteMapping("/users/{userId}")
+    fun deleteUser(
+            @UserId userId: Int,
+            @PathVariable("userId") userToDelete: Int): ResponseEntity<String> {
+        if (!userGroupMappingRepository.isSuperAdmin(userId))
+            throw ForbiddenException("Deleting users is only available to SUPERADMIN users")
+        val optionalUser = userRepository.findById(userToDelete)
+        return if (optionalUser.isPresent) {
+            userRepository.delete(optionalUser.get())
+            CommonResponses.ok()
+        } else {
+            CommonResponses.notModifed()
+        }
     }
 }

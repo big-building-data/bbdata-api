@@ -23,7 +23,7 @@ import kotlin.random.Random
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = [UNSECURED_REGULAR])
 @ActiveProfiles(Profiles.UNSECURED, Profiles.NO_CASSANDRA)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
-class TestCreateUser {
+class TestUsers {
 
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
@@ -104,17 +104,43 @@ class TestCreateUser {
         assertEquals(name, json.read<String>("$.name"))
     }
 
+
     @Test
     fun `2-1 test create user with userGroup`() {
         // == create
         val putResponse = restTemplate.putWithBody("/users?userGroupId=$REGULAR_USER_ID",
                 """{"name": "$name-withGroup", "password": "$password", "email": "$email"}""")
         assertEquals(HttpStatus.OK, putResponse.statusCode)
-        id =  JsonPath.parse(putResponse.body).read<Int>("$.id")
+        id = JsonPath.parse(putResponse.body).read<Int>("$.id")
 
         // == get using user
         val getResponse = restTemplate.getQueryJson("/userGroups/$REGULAR_USER_ID/users/$id")
         assertEquals(HttpStatus.OK, getResponse.first)
         assertEquals(id!!, getResponse.second.read<Int>("$.id"))
+    }
+
+    @Test
+    fun `3-1 test delete user fail (regular user)`() {
+        val response = restTemplate.deleteQueryString("/users/$id")
+        assertEquals(HttpStatus.FORBIDDEN, response.statusCode)
+    }
+
+    @Test
+    fun `3-1 test delete user (root user)`() {
+        var response = restTemplate.deleteQueryString("/users/$id", HU to ROOT_ID)
+        assertEquals(HttpStatus.OK, response.statusCode)
+
+        response = restTemplate.deleteQueryString("/users/$id", HU to ROOT_ID)
+        assertEquals(HttpStatus.NOT_MODIFIED, response.statusCode)
+    }
+
+    @Test
+    fun `3-2 test get deleted user`() {
+        val response = restTemplate.getQueryString("/users/$id")
+        assertEquals(HttpStatus.NOT_FOUND, response.statusCode)
+
+        val (status, json) = restTemplate.getQueryJson("/userGroups/$REGULAR_USER_ID/users")
+        assertEquals(HttpStatus.OK, status)
+        assertEquals(0, json.read<List<Any>>("$[?(@.id == '$id')]").size)
     }
 }
