@@ -50,16 +50,16 @@ data class Objects(
         @ManyToOne(optional = false, fetch = FetchType.LAZY)
         val owner: UserGroup,
 
-        @OneToMany(cascade = arrayOf(CascadeType.ALL), fetch = FetchType.EAGER, orphanRemoval = true)
+        @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.EAGER, orphanRemoval = true)
         @JoinColumn(name = "object_id", updatable = false)
         var tags: MutableSet<Tag> = mutableSetOf(),
 
-        @OneToMany(cascade = arrayOf())
+        @OneToMany(cascade = [])
         @field:JsonIgnore
         @JoinColumn(name = "object_id", insertable = false, updatable = false)
         val tokens: List<Token> = listOf(),
 
-        @OneToMany(cascade = arrayOf(), fetch = FetchType.LAZY, orphanRemoval = true)
+        @OneToMany(cascade = [], fetch = FetchType.LAZY, orphanRemoval = true)
         @JoinColumn(name = "object_id", updatable = false)
         @field:JsonIgnore
         val comments: List<Comment> = listOf(),
@@ -67,7 +67,7 @@ data class Objects(
         @ManyToMany(mappedBy = "objects", fetch = FetchType.LAZY)
         private val objectGroups: List<ObjectGroup>? = null,
 
-        @OneToMany(fetch = FetchType.LAZY, cascade = arrayOf())
+        @OneToMany(fetch = FetchType.LAZY, cascade = [])
         @JoinColumn(name = "object_id", insertable = false, updatable = false)
         protected val userPerms: List<ObjectsPerms>? = listOf()
 

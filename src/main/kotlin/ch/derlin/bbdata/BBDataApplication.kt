@@ -25,9 +25,9 @@ import javax.annotation.PostConstruct
 
 
 @SpringBootApplication
-@ComponentScan(excludeFilters = arrayOf(
-        ComponentScan.Filter(type = FilterType.CUSTOM, classes = arrayOf(ExcludePackageFilter::class))
-))
+@ComponentScan(excludeFilters = [
+        ComponentScan.Filter(type = FilterType.CUSTOM, classes = [ExcludePackageFilter::class])
+])
 @EnableTransactionManagement
 @OpenAPIDefinition( // see https://github.com/swagger-api/swagger-core/wiki/Swagger-2.X---Annotations
         info = Info(
@@ -40,7 +40,7 @@ common errors codes and more, by visiting <a href="/#more-info">our landing page
                 contact = Contact(url = "http://icosys.ch", name = "Lucy Linder", email = "lucy.derlin@gmail.com")
         ),
         // see https://github.com/springdoc/springdoc-openapi/issues/118#issuecomment-585777113
-        servers = arrayOf(Server(url = "/"))
+        servers = [Server(url = "/")]
 )
 @SecurityScheme(name = "auth", type = SecuritySchemeType.HTTP, scheme = "basic")
 @EnableConfigurationProperties
@@ -76,7 +76,7 @@ class CORSConfigurer : WebMvcConfigurer {
 // if there is a problem, simply delete the class+annotation and remove the property in application.properties
 @Configuration
 @Profile(Profiles.CASSANDRA)
-@EnableCassandraRepositories(basePackages = arrayOf("ch.derlin.bbdata.common.cassandra"))
+@EnableCassandraRepositories(basePackages = ["ch.derlin.bbdata.common.cassandra"])
 class CassandraConfig
 
 

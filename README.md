@@ -92,7 +92,7 @@ There are two system variables that can be set (`export XX=YY`), mostly for use 
 
 In test files, those variables can be set using the `@SpringBootTest` annotation, e.g.:
 ```
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = arrayOf("UNSECURED_BBUSER=2"))
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = ["UNSECURED_BBUSER=2"])
 ```
 
 ## Production

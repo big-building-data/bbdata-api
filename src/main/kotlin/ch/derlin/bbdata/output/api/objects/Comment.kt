@@ -48,7 +48,7 @@ data class Comment(
         @Type(type = "text")
         val comment: String,
 
-        @OneToMany(fetch = FetchType.LAZY, cascade = arrayOf())
+        @OneToMany(fetch = FetchType.LAZY, cascade = [])
         @JoinColumn(name = "object_id", insertable = false, updatable = false)
         protected val userPerms: List<ObjectsPerms>? = listOf()
 )

@@ -13,9 +13,9 @@ import java.io.IOException
  * - in application.properties: componentscan.exclude.package=name.of.subpackage
  * - register this filter. Under your @SpringBootApplication annotation, add:
  *   ```
- *      @ComponentScan(excludeFilters = arrayOf(
- *           ComponentScan.Filter(type = FilterType.CUSTOM, classes = arrayOf(ExcludePackageFilter::class))
- *      ))
+ *      @ComponentScan(excludeFilters = [
+ *           ComponentScan.Filter(type = FilterType.CUSTOM, classes = [ExcludePackageFilter::class])
+ *      ])
  *   ```
  *
  * Derived from [this StackOverflow answer](https://stackoverflow.com/a/54381921)

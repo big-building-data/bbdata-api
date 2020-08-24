@@ -31,8 +31,8 @@ data class ObjectGroup(
 
         @JoinTable(
                 name = "objects_ogrps",
-                joinColumns = arrayOf(JoinColumn(name = "ogrp_id", referencedColumnName = "id")),
-                inverseJoinColumns = arrayOf(JoinColumn(name = "object_id", referencedColumnName = "id"))
+                joinColumns = [JoinColumn(name = "ogrp_id", referencedColumnName = "id")],
+                inverseJoinColumns = [JoinColumn(name = "object_id", referencedColumnName = "id")]
         )
         @ManyToMany(fetch = FetchType.LAZY)
         @JsonIgnore
@@ -44,8 +44,8 @@ data class ObjectGroup(
 
         @JoinTable(
                 name = "rights",
-                joinColumns = arrayOf(JoinColumn(name = "ogrp_id", referencedColumnName = "id")),
-                inverseJoinColumns = arrayOf(JoinColumn(name = "ugrp_id", referencedColumnName = "id"))
+                joinColumns = [JoinColumn(name = "ogrp_id", referencedColumnName = "id")],
+                inverseJoinColumns = [JoinColumn(name = "ugrp_id", referencedColumnName = "id")]
         )
         @ManyToMany(fetch = FetchType.LAZY)
         @JsonIgnore

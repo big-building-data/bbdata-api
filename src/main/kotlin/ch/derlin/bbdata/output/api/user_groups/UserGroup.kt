@@ -27,21 +27,21 @@ data class UserGroup(
         @ManyToMany(mappedBy = "allowedUserGroups", fetch = FetchType.LAZY)
         private val accessibleObjectGroups: List<ObjectGroup> = listOf(),
 
-        @OneToMany(cascade = arrayOf(), mappedBy = "owner", fetch = FetchType.LAZY)
+        @OneToMany(cascade = [], mappedBy = "owner", fetch = FetchType.LAZY)
         private val ownedObjectGroups: List<ObjectGroup> = listOf(),
 
-        @OneToMany(cascade = arrayOf(), mappedBy = "owner", fetch = FetchType.LAZY)
+        @OneToMany(cascade = [], mappedBy = "owner", fetch = FetchType.LAZY)
         private val ownedObjects: List<Objects> = listOf(),
 
         @JsonIgnore
-        @OneToMany(cascade = arrayOf(CascadeType.PERSIST, CascadeType.ALL), orphanRemoval = true)
+        @OneToMany(cascade = [CascadeType.PERSIST, CascadeType.ALL], orphanRemoval = true)
         @JoinColumn(name = "ugrp_id")
         val userMappings: MutableList<UsergroupMapping> = mutableListOf(),
 
         @JoinTable(
                 name = "users_ugrps",
-                joinColumns = arrayOf(JoinColumn(name = "ugrp_id", referencedColumnName = "id")),
-                inverseJoinColumns = arrayOf(JoinColumn(name = "user_id", referencedColumnName = "id"))
+                joinColumns = [JoinColumn(name = "ugrp_id", referencedColumnName = "id")],
+                inverseJoinColumns = [JoinColumn(name = "user_id", referencedColumnName = "id")]
         )
         @ManyToMany(fetch = FetchType.LAZY)
         private val users: List<User> = listOf()

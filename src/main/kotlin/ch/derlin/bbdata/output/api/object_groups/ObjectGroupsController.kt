@@ -59,9 +59,8 @@ class ObjectGroupsController(private val objectGroupAccessManager: ObjectGroupAc
     @ApiResponse(
             responseCode = "200",
             description = "default response. Note: if *withObject* is false, the `objects` array will be missing.",
-            content = arrayOf(Content(
-                    array = ArraySchema(schema = Schema(implementation = ObjectGroup::class))
-            )))
+            content = [Content(array = ArraySchema(schema = Schema(implementation = ObjectGroup::class)))]
+    )
     fun getObjectGroups(@UserId userId: Int,
                         @RequestParam("writable", required = false, defaultValue = "false") writable: Boolean,
                         @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean)
@@ -116,7 +115,7 @@ class ObjectGroupsController(private val objectGroupAccessManager: ObjectGroupAc
     @ApiResponse(
             responseCode = "200",
             description = "default response. Note: if *withObject* is false, the `objects` array will be missing.",
-            content = arrayOf(Content(schema = Schema(implementation = ObjectGroup::class))))
+            content = [Content(schema = Schema(implementation = ObjectGroup::class))])
     fun getObjectGroup(@UserId userId: Int,
                        @PathVariable(value = "objectGroupId") id: Long,
                        @RequestParam("withObjects", required = false, defaultValue = "false") withObjects: Boolean): ObjectGroup {

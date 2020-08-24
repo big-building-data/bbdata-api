@@ -15,7 +15,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = arrayOf(UNSECURED_REGULAR, NO_KAFKA))
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = [UNSECURED_REGULAR, NO_KAFKA])
 @ActiveProfiles(Profiles.UNSECURED, Profiles.SQL_STATS)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class SqlInputApiTest: InputApiTest()

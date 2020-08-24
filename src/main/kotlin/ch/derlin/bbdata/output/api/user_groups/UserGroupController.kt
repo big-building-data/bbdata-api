@@ -74,7 +74,7 @@ class UserGroupController(
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     // checked exception won't trigger rollback by default...
-    @Transactional(rollbackFor = arrayOf(WrongParamsException::class))
+    @Transactional(rollbackFor = [WrongParamsException::class])
     @SimpleModificationStatusResponse
     @Operation(description = "Delete a user group you are admin of.<br>" +
             "__IMORTANT__: only user groups who DO NOT own resources (objects, object groups) can be deleted. " +

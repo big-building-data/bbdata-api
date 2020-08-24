@@ -21,7 +21,7 @@ import kotlin.random.Random
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = arrayOf(UNSECURED_ROOT))
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = [UNSECURED_ROOT])
 @ActiveProfiles(Profiles.UNSECURED, Profiles.NO_CASSANDRA)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class TestCreateUnit {

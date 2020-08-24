@@ -45,7 +45,7 @@ data class User(
         @Generated(GenerationTime.INSERT)
         val creationdate: DateTime? = null,
 
-        @OneToMany(cascade = arrayOf(CascadeType.ALL), fetch = FetchType.LAZY)
+        @OneToMany(cascade = [CascadeType.ALL], fetch = FetchType.LAZY)
         @JoinColumn(name = "user_id", referencedColumnName = "id")
         @JsonIgnore
         var apikeys: List<Apikey>? = null,
@@ -55,7 +55,7 @@ data class User(
         @JsonIgnore
         val groups: List<UserGroup>? = null,
 
-        @OneToMany(cascade = arrayOf(CascadeType.ALL), mappedBy = "user", fetch = FetchType.LAZY)
+        @OneToMany(cascade = [CascadeType.ALL], mappedBy = "user", fetch = FetchType.LAZY)
         private val userToGroupMappings: List<UsergroupMapping>? = null
 
 
