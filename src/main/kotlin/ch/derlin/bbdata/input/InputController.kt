@@ -1,7 +1,7 @@
 package ch.derlin.bbdata.input
 
 import ch.derlin.bbdata.common.cassandra.RawValueRepository
-import ch.derlin.bbdata.common.cassandra.StatsLogic
+import ch.derlin.bbdata.common.stats.StatsLogic
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException

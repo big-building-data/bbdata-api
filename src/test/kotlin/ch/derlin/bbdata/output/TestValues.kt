@@ -36,7 +36,6 @@ class TestValues {
 
         val URL_RAW = "/objects/$OID/values?from=$FROM&to=$TO"
         val URL_AGGR = "/objects/$OID/values/aggregated?from=$FROM&to=$TO"
-        val URL_LATEST = "/objects/$OID/values/latest?before=$TO"
     }
 
     @Test
@@ -97,12 +96,25 @@ class TestValues {
 
     @Test
     fun `3-1 test values latest (json only)`() {
-        val (status, json) = restTemplate.getQueryJson(URL_LATEST, "accept" to "application/json")
-        assertEquals(HttpStatus.OK, status)
-        val values = json.readList()
+        val values = getLatest(OID, TO)
         assertEquals(1, values.count())
         assertEquals(OID, values[0].get("objectId") as Int)
         assertTrue((values[0].get("timestamp") as String).startsWith(TO.dropLast(1)))
+    }
+
+    @Test
+    fun `3-2 test values latest (json only, way in the past)`() {
+        val oid = 2
+        val values = getLatest(oid, "2020")
+        assertEquals(1, values.count())
+        assertEquals(oid, values[0].get("objectId") as Int)
+        assertTrue((values[0].get("timestamp") as String).startsWith("2019-01-01"))
+    }
+
+    @Test
+    fun `3-3 test values latest (json only, no value)`() {
+        val values = getLatest(3008)
+        assertEquals(0, values.count())
     }
 
     // -------------------
@@ -131,6 +143,14 @@ class TestValues {
         for (key in listOf("timestamp", "lastTimestamp")) {
             assertTrue((this.random().get(key) as String).isBBDataDatetime(), "invalid date format")
         }
+    }
+
+    private fun getLatest(oid: Int, before: String? = null): List<Map<String, Any>> {
+        val (status, json) = restTemplate.getQueryJson(
+                "/objects/$oid/values/latest" + (if (before != null) "?before=$before" else ""),
+                "accept" to "application/json")
+        assertEquals(HttpStatus.OK, status)
+        return json.readList()
     }
 
 }

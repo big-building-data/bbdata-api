@@ -3,6 +3,7 @@ package ch.derlin.bbdata.output.api.values
 import ch.derlin.bbdata.common.cassandra.*
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
+import ch.derlin.bbdata.common.stats.StatsLogic
 import ch.derlin.bbdata.output.api.objects.Objects
 import ch.derlin.bbdata.output.api.objects.ObjectsAccessManager
 import ch.derlin.bbdata.output.security.Protected

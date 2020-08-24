@@ -199,16 +199,9 @@ class InputApiTest {
         }
     }
 
-
     private fun getWriteCounter(): Int {
-        val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/stats/counters")
-        return when (status) {
-            HttpStatus.OK -> json.read<Int>("$.nValues")
-            HttpStatus.NOT_FOUND -> 0
-            else -> {
-                assertEquals(HttpStatus.OK, status, "Counter: returned a strange status code $status: $json")
-                0
-            }
-        }
+        val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/stats")
+        assertEquals(HttpStatus.OK, status, "Counter: returned a strange status code $status: $json")
+        return json.read<Int>("$.nWrites")
     }
 }

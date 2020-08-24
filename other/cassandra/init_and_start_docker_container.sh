@@ -13,7 +13,7 @@ docker run -d --rm \
 # wait a bit
 sleep 20
 
-# use cqlsh to generatre keyspace
+# use cqlsh to generate keyspace
 docker exec -i $CONTAINER cqlsh -f /bootstrap_data/schema.cql 
 
 # use cqlsh to import data

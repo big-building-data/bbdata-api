@@ -55,7 +55,7 @@ INSERT INTO `objects` (`id`, `name`, `description`, `ugrp_id`, `unit_symbol`, `c
     -- one object owned by the "other" usergroup
     (6, 'owned by other', NULL, 3, 'V', DEFAULT),
     -- objects that have values in cassandra
-    (3008, 'blueFactory sensor', 'test values endpoint', 2, 'W', DEFAULT),
+    (3008, 'blueFactory sensor', 'test empty values endpoint', 2, 'W', DEFAULT),
     (6602, 'aggr simple', 'test for aggr simple', 2, 'lx', '2019-01-01'),
     (13370, 'aggr extended', 'test for agg extended', 2, 'V', '2019-01-01');
 
