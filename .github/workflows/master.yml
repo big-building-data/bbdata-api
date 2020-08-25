@@ -28,20 +28,18 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
         restore-keys: ${{ runner.os }}-gradle
       
-    - name: Create MySQL image
+    - name: Create and run MySQL image
       run: |
         cd other/mysql
-        docker build -t bbsql .
+        ./docker-build.sh
+        ./docker-start.sh
         cd ../..
 
-    - name: Start MySQL container
-      run: |
-        docker run -p 3306:3306 --rm --name bbsql -d bbsql
-
-    - name: Start Cassandra container
+    - name: Create and run Cassandra image
       run: |
         cd other/cassandra
-        ./init_and_start_docker_container.sh 
+        ./docker-build.sh
+        ./docker-start.sh
         cd ../..
         
     - name: Docker ps

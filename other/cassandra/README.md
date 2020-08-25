@@ -1,48 +1,34 @@
-# Cassandra docker container
+# Cassandra schema
 
-**TLDR;** use `init_and_start_docker_container.sh` the first time, then `start_docker_container.sh`
+This folder contains the structure of the cassandra database required for BBData, as well as dockerfiles and data for testing purposes. 
 
-### Quick start
+### Cassandra schema
 
-First, pull the cassandra image (same version as in production): 
+In production, you only need the schema definition, that you can find in `bootstrap_data/schema.cql`.
+
+
+### Dev setup (docker)
+
+__Important__: if you change the structure or test data (`bootstrap_data/*.cql`), you need to rebuild the image !
+
+Build the image (see `docker-build.sh`):
 ```bash
-docker pull cassandra:3.11
+docker build -t bbdata-cassandra .
+``` 
+
+Launch the image (see `docker-start.sh`):
+```bash
+ docker run --rm -p 9042:9042 --name bbcassandra bbdata-cassandra
+```
+or, *if you want to persist the data* between container runs, use:
+```bash
+ docker run --rm -p 9042:9042 -v $PWD/data:/var/lib/cassandra --name bbcassandra bbdata-cassandra
 ```
 
-We will use the local directory `./data` to store the cassandra data. Thus, running the container amounts to
-(see `start_docker_container.sh`):
+Connect:
 ```bash
-docker run -d --rm \
-    --name cassandra \
-    -p 9042:9042 \
-    -v $PWD/data:/var/lib/cassandra \
-    cassandra:3.11
+docker exec -it bbcassandra cqlsh
 ```
 
-### Populating the database
-
-
-Launch a cassandra container, this time also attaching the directory `bootstrap_data`:
-```bash
-docker run -d --rm \
-    --name cassandra \
-    -p 9042:9042 \
-    -v $PWD/data:/var/lib/cassandra \
-    -v $PWD/bootstrap_data:/bootstrap_data \
-    cassandra:3.11
-```
-
-Then, what's left is to:
-1. create the cassandra schema (`schema.cql`);
-2. import the data (`import_data.cql`).
-
-All this can be done using:
-```bash
-# !! only works if the bootstrap_data directory is mounted inside the container !
-# create the schema
-docker exec -it cassandra cqlsh -f /bootstrap_data/schema.cql
-# import the data
-docker exec -it cassandra cqlsh -k bbdata2 -f /bootstrap_data/import_data.cql
-```
-
-
+If you want more information on how I fixed the problem of initializing the Cassandra container,
+have a look at [this gist](https://gist.github.com/derlin/0d4c98f7787140805793d6268dae8440).
