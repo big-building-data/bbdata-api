@@ -28,12 +28,12 @@ class TestObject {
     private lateinit var restTemplate: TestRestTemplate
 
     companion object {
-        val id = 2 // disabling an object will delete its tokens, so don't do it on object 1 used in other tests
+        var id = -1
     }
 
     @Test
-    fun `1-0 ensure has tokens`() {
-        // create a token
+    fun `1-0 create object and token`() {
+        id = restTemplate.createObject(owner = REGULAR_USER_ID)
         val response = restTemplate.putQueryString("/objects/$id/tokens")
         assertEquals(HttpStatus.OK, response.statusCode)
     }

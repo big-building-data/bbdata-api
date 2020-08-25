@@ -49,13 +49,10 @@ class TestObjectDelete {
     @Test
     fun `1-2 delete object`() {
         // == create
-        var resp = restTemplate.putWithBody("/objects",
-                """{"name": "del-${Random.nextInt()}", "owner": $REGULAR_USER_ID, "unitSymbol": "V"}""")
-        assertEquals(HttpStatus.OK, resp.statusCode)
-        val id = JsonPath.parse(resp.body).read<Int>("$.id")
+        val id = restTemplate.createObject(owner = REGULAR_USER_ID)
 
         // == get
-        resp = restTemplate.getQueryString("/objects/$id")
+        var resp = restTemplate.getQueryString("/objects/$id")
         assertEquals(HttpStatus.OK, resp.statusCode)
 
         // == delete

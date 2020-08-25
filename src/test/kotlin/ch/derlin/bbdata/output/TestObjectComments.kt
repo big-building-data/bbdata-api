@@ -3,7 +3,6 @@ package ch.derlin.bbdata.output
 import ch.derlin.bbdata.*
 import ch.derlin.bbdata.common.dates.JodaUtils
 import com.jayway.jsonpath.JsonPath
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
@@ -38,21 +37,7 @@ class TestObjectComments {
         val to = "2020-02-03T08:30"
 
         // id of the last created comment
-        var id: Int? = null
-        var tpl: TestRestTemplate? = null
-
-        @AfterAll
-        @JvmStatic
-        fun cleanup() {
-            tpl?.let { tpl ->
-                id?.let {
-                    try {
-                        tpl.deleteQueryString("/objects/$objectId/comments/$it")
-                    } catch (e: Exception) {
-                    }
-                }
-            }
-        }
+        var id: Int = -1
     }
 
     @Test
@@ -93,7 +78,6 @@ class TestObjectComments {
 
         // == store variables
         id = JsonPath.parse(putResponse.body).read<Int>("$.id")
-        tpl = restTemplate
 
         // == get
         val getResponse = restTemplate.getQueryString("/objects/$objectId/comments/$id")

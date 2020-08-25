@@ -34,7 +34,7 @@ class TestObjectCreate {
     companion object {
         // id of the last created object
         private var id: Int = -1
-        private val name = "SpringBootTest-safeToRemove-${Random.nextInt()}"
+        private val name = "object-create ${Random.nextInt()}"
     }
 
     @Test
@@ -66,7 +66,7 @@ class TestObjectCreate {
 
         // == get
         id = JsonPath.parse(putResponse.body).read<Int>("$.id")
-        val getResponse = restTemplate.getForEntity("/objects/${id}", String::class.java)
+        val getResponse = restTemplate.getForEntity("/objects/$id", String::class.java)
         JSONAssert.assertEquals(putResponse.body, getResponse.body, false)
 
         // check some json variables
@@ -85,11 +85,11 @@ class TestObjectCreate {
     @Test
     fun `1-3 edit object`() {
 
-        val newName = "test-${Random.nextInt(10000)}"
-        val newDescr = "descr-${Random.nextInt(10000)}"
+        val newName = "object-create new ${Random.nextInt(10000)}"
+        val newDescr = newName
 
         // == change name + description
-        var postResponse = restTemplate.postWithBody("/objects/${id}",
+        var postResponse = restTemplate.postWithBody("/objects/$id",
                 """{"name": "$newName", "description": "$newDescr"}""")
         assertEquals(HttpStatus.OK, postResponse.statusCode)
 
@@ -98,7 +98,7 @@ class TestObjectCreate {
         assertEquals(newDescr, json.read<String>("$.description"))
 
         // == change name only
-        postResponse = restTemplate.postWithBody("/objects/${id}",
+        postResponse = restTemplate.postWithBody("/objects/$id",
                 """{"name": "$name"}""")
         assertEquals(HttpStatus.OK, postResponse.statusCode)
 

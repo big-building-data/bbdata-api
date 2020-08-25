@@ -2,7 +2,6 @@ package ch.derlin.bbdata.output
 
 import ch.derlin.bbdata.*
 import com.jayway.jsonpath.JsonPath
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
@@ -31,22 +30,8 @@ class TestLoginLogout {
 
     companion object {
         val user = ROOT_USER
-        var ids: MutableList<Int> = mutableListOf()
-        val secrets: MutableList<String> = mutableListOf()
-        var tpl: TestRestTemplate? = null
-
-        @AfterAll
-        @JvmStatic
-        fun cleanup() {
-            tpl?.let { tpl ->
-                ids.map {
-                    try {
-                        tpl.deleteQueryString("/apikeys/$it")
-                    } catch (e: Exception) {
-                    }
-                }
-            }
-        }
+        var id: Int = 0
+        var secret: String = ""
     }
 
     @Test
@@ -64,11 +49,8 @@ class TestLoginLogout {
         val json = JsonPath.parse(putResponse.body)
 
         // == store variables
-        val id = json.read<Int>("$.id")
-        val secret = json.read<String>("$.secret")
-        ids.add(id)
-        secrets.add(secret)
-        tpl = restTemplate
+        id = json.read<Int>("$.id")
+        secret = json.read<String>("$.secret")
 
         // check some json variables
         assertEquals(false, json.read("$.readOnly"))
@@ -83,11 +65,11 @@ class TestLoginLogout {
     @Test
     fun `1-1 test logout`() {
         // == logout
-        val secret = secrets.first()
-        val putResponse = restTemplate.postQueryString("/logout", HU to user.get("id"), HA to secret)
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
+        var resp = restTemplate.postQueryString("/logout", HU to user.get("id"), HA to secret)
+        assertEquals(HttpStatus.OK, resp.statusCode)
 
-        val resp = restTemplate.getQueryString("/objects", HU to user.get("id"), HA to secret)
+        // == ensure it does not work anymore
+        resp = restTemplate.getQueryString("/objects", HU to user.get("id"), HA to secret)
         assertEquals(HttpStatus.FORBIDDEN, resp.statusCode)
     }
 }

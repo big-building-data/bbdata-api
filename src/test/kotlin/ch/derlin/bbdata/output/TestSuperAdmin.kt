@@ -103,13 +103,13 @@ class TestSuperAdmin {
 
         // can create an object in group other
         resp = restTemplate.putWithBody("/objects",
-                """{"name": "new ${Random.nextInt()}", "owner": 3, "unitSymbol": "lx"}""", additionalHeaders)
+                """{"name": "superadmin ${Random.nextInt()}", "owner": 3, "unitSymbol": "lx"}""", additionalHeaders)
         assertEquals(HttpStatus.OK, resp.statusCode)
         val newObjectId = JsonPath.parse(resp.body).read<Int>("$.id")
 
         // can create an object group in group other
         resp = restTemplate.putWithBody("/objectGroups",
-                """{"name": "new ${Random.nextInt()}", "owner": 3}""", additionalHeaders)
+                """{"name": "superadmin ${Random.nextInt()}", "owner": 3}""", additionalHeaders)
         assertEquals(HttpStatus.OK, resp.statusCode)
         val newObjectGroupId = JsonPath.parse(resp.body).read<Int>("$.id")
 

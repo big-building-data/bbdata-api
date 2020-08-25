@@ -49,14 +49,8 @@ class TestStats {
 
     @Test
     fun `0-1 create object`() {
-        var resp = restTemplate.putWithBody("/objects",
-                """{"name": "Stats-${Random.nextInt()}", "owner": $REGULAR_USER_ID, "unitSymbol": "V"}""")
-        assertEquals(HttpStatus.OK, resp.statusCode)
-        OID = JsonPath.parse(resp.body).read<Int>("$.id")
-
-        resp = restTemplate.putQueryString("/objects/$OID/tokens")
-        assertEquals(HttpStatus.OK, resp.statusCode)
-        token = JsonPath.parse(resp.body).read<String>("$.token")
+        OID = restTemplate.createObject(owner = REGULAR_USER_ID)
+        token = restTemplate.createToken(OID)
     }
 
     @Test

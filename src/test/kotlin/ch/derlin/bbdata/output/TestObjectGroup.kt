@@ -2,7 +2,6 @@ package ch.derlin.bbdata.output
 
 import ch.derlin.bbdata.*
 import com.jayway.jsonpath.JsonPath
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
@@ -32,21 +31,7 @@ class TestObjectGroup {
 
     companion object {
         val name = "test-${Random.nextInt(10000)}"
-        var id: Int? = -1
-        var tpl: TestRestTemplate? = null
-
-        @AfterAll
-        @JvmStatic
-        fun cleanup() {
-            tpl?.let { tpl ->
-                id?.let {
-                    try {
-                        tpl.deleteQueryString("/objectGroups/$it")
-                    } catch (e: Exception) {
-                    }
-                }
-            }
-        }
+        var id: Int = -1
     }
 
     @Test
@@ -81,7 +66,6 @@ class TestObjectGroup {
 
         // == store variables
         id = JsonPath.parse(putResponse.body).read<Int>("$.id")
-        tpl = restTemplate
 
         // == get
         val getResponse = restTemplate.getQueryString("/objectGroups/${id}")

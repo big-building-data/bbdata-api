@@ -2,7 +2,6 @@ package ch.derlin.bbdata.output
 
 import ch.derlin.bbdata.*
 import com.jayway.jsonpath.JsonPath
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
@@ -33,20 +32,6 @@ class TestObjectTokens {
     companion object {
         val objectId: Int = 1
         var ids: MutableList<Int> = mutableListOf()
-        var tpl: TestRestTemplate? = null
-
-        @AfterAll
-        @JvmStatic
-        fun cleanup() {
-            tpl?.let { tpl ->
-                ids.map {
-                    try {
-                        tpl.deleteQueryString("/objects/$objectId/tokens/$it")
-                    } catch (e: Exception) {
-                    }
-                }
-            }
-        }
     }
 
     @Test
@@ -58,7 +43,6 @@ class TestObjectTokens {
         // == store variables
         val id = JsonPath.parse(putResponse.body).read<Int>("$.id")
         ids.add(id)
-        tpl = restTemplate
 
         // == get
         val getResponse = restTemplate.getQueryString("/objects/$objectId/tokens/$id")
@@ -82,7 +66,6 @@ class TestObjectTokens {
         // == store variables
         val id = JsonPath.parse(putResponse.body).read<Int>("$.id")
         ids.add(id)
-        tpl = restTemplate
 
         // == get
         val getResponse = restTemplate.getForEntity("/objects/$objectId/tokens/$id", String::class.java)

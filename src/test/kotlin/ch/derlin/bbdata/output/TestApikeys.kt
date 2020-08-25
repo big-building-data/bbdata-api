@@ -3,7 +3,6 @@ package ch.derlin.bbdata.output
 import ch.derlin.bbdata.*
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
@@ -15,6 +14,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
+import kotlin.random.Random
 
 /**
  * date: 28.12.19
@@ -33,31 +33,14 @@ class TestApikeys {
     companion object {
         var ids: MutableList<Int> = mutableListOf()
         val secrets: MutableList<String> = mutableListOf()
-        var tpl: TestRestTemplate? = null
 
         val user = REGULAR_USER_ID
-        val headers = arrayOf("bbuser" to REGULAR_USER_ID, "bbtoken" to APIKEY(REGULAR_USER_ID))
-
-        @AfterAll
-        @JvmStatic
-        fun cleanup() {
-            tpl?.let { tpl ->
-                ids.map {
-                    try {
-                        tpl.deleteQueryString("/apikeys/$it", *headers)
-                    } catch (e: Exception) {
-                        println("!! delete failed for $it")
-                    }
-                }
-            }
-        }
+        val headers = arrayOf(HU to user, HA to APIKEY(user))
     }
 
 
     @Test
     fun `1-1 test create apikeys`() {
-        tpl = restTemplate
-
         createApikey()
         createApikey(expirationDate = "1d")
         createApikey(expirationDate = "1d-2m-3s")
@@ -68,14 +51,19 @@ class TestApikeys {
 
     @Test
     fun `2-1 test apikeys`() {
+        // all apikeys have read access
         secrets.map {
             val resp = restTemplate.getQueryString("/objectGroups", HU to user, HA to it)
-            assertEquals(HttpStatus.OK, resp.statusCode)
+            assertEquals(HttpStatus.OK, resp.statusCode, resp.body)
         }
+        // only read/write apikey has write access
+        val body ="""{"name": "apikeys-${Random.nextInt()}", "description": "xx", "owner": $user}"""
         secrets.take(secrets.size - 1).map {
-            val resp = restTemplate.putQueryString("/objectGroups", HU to user, HA to it)
-            assertEquals(HttpStatus.FORBIDDEN, resp.statusCode)
+            val resp = restTemplate.putWithBody("/objectGroups", body, HU to user, HA to it)
+            assertEquals(HttpStatus.FORBIDDEN, resp.statusCode, resp.body)
         }
+        val resp = restTemplate.putWithBody("/objectGroups", body, HU to user, HA to secrets.last())
+        assertEquals(HttpStatus.OK, resp.statusCode, resp.body)
     }
 
     @Test

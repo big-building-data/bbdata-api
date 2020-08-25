@@ -2,7 +2,6 @@ package ch.derlin.bbdata.output
 
 import ch.derlin.bbdata.*
 import com.jayway.jsonpath.JsonPath
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Test
@@ -31,23 +30,8 @@ class TestUserGroup {
     private lateinit var restTemplate: TestRestTemplate
 
     companion object {
-        val name = "usergroup-${Random.nextInt(10000)}"
         var addedUserId: Int = -1 // will be created
-        var id: Int? = -1
-        var tpl: TestRestTemplate? = null
-
-        @AfterAll
-        @JvmStatic
-        fun cleanup() {
-            tpl?.let { tpl ->
-                id?.let {
-                    try {
-                        tpl.deleteQueryString("/userGroups/$it")
-                    } catch (e: Exception) {
-                    }
-                }
-            }
-        }
+        var id: Int = -1
     }
 
     @Test
@@ -64,12 +48,11 @@ class TestUserGroup {
     @Test
     fun `1-1 test create user group`() {
         // == create
-        val putResponse = restTemplate.putWithBody("/userGroups", """{"name": "$name"}""")
+        val putResponse = restTemplate.putWithBody("/userGroups", """{"name": "usergroup-${Random.nextInt()}"}""")
         assertEquals(HttpStatus.OK, putResponse.statusCode)
 
         // == store variables
         id = JsonPath.parse(putResponse.body).read<Int>("$.id")
-        tpl = restTemplate
 
         // == get
         val getResponse = restTemplate.getQueryString("/userGroups/${id}")
