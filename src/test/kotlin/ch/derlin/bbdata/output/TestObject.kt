@@ -34,37 +34,41 @@ class TestObject {
     @Test
     fun `1-0 create object and token`() {
         id = restTemplate.createObject(owner = REGULAR_USER_ID)
-        val response = restTemplate.putQueryString("/objects/$id/tokens")
-        assertEquals(HttpStatus.OK, response.statusCode)
+        val resp = restTemplate.putQueryString("/objects/$id/tokens")
+        assertEquals(HttpStatus.OK, resp.statusCode, "put /objects/$id/tokens returned ${resp.body}")
     }
 
     @Test
     fun `1-1 object disable`() {
-        var response = restTemplate.postQueryString("/objects/$id/disable")
-        assertEquals(HttpStatus.OK, response.statusCode)
+        val url = "/objects/$id/disable"
+        var resp = restTemplate.postQueryString(url)
+        assertEquals(HttpStatus.OK, resp.statusCode, "post $url returned ${resp.body}")
 
-        response = restTemplate.postQueryString("/objects/$id/disable")
-        assertEquals(HttpStatus.NOT_MODIFIED, response.statusCode)
+        resp = restTemplate.postQueryString("/objects/$id/disable")
+        assertEquals(HttpStatus.NOT_MODIFIED, resp.statusCode, "post $url (2) returned ${resp.body}")
     }
 
     @Test
     fun `1-2 object tokens on disabled`() {
         // ensure all tokens have been wiped out
         val (status, json) = restTemplate.getQueryJson("/objects/$id/tokens")
-        assertEquals(HttpStatus.OK, status)
+        assertEquals(HttpStatus.OK, status,
+                "get /objects/$id/tokens (disabled object) returned ${json.jsonString()}")
         assertEquals(0, json.read<List<Any>>("$").size)
         // ensure we can't create new tokens
         val response = restTemplate.putQueryString("/objects/$id/tokens")
-        assertEquals(HttpStatus.BAD_REQUEST, response.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, response.statusCode,
+                "put /objects/$id/tokens (disabled object) returned ${json.jsonString()}")
     }
 
     @Test
     fun `1-3 object enable`() {
+        val url = "/objects/$id/enable"
         // enable once => OK
-        val response1 = restTemplate.postQueryString("/objects/$id/enable")
-        assertEquals(HttpStatus.OK, response1.statusCode)
+        var resp = restTemplate.postQueryString(url)
+        assertEquals(HttpStatus.OK, resp.statusCode, "post $url returned ${resp.body}")
         // enable twice => not modified
-        val response2 = restTemplate.postQueryString("/objects/$id/enable")
-        assertEquals(HttpStatus.NOT_MODIFIED, response2.statusCode)
+        resp = restTemplate.postQueryString("/objects/$id/enable")
+        assertEquals(HttpStatus.NOT_MODIFIED, resp.statusCode, "post $url (2) returned ${resp.body}")
     }
 }

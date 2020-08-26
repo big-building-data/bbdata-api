@@ -30,73 +30,69 @@ class TestObjectTags {
 
     companion object {
         val id = 1
-        val tag1 = "test-${Random.nextInt(10000)}"
-        val tag2 = "test-${Random.nextInt(10000)}"
+        val tag1 = "tag1-${Random.nextInt(10000)}"
+        val tag2 = "tag2-${Random.nextInt(10000)}"
     }
 
     @Test
     @Throws(Exception::class)
     fun `1-1 add tags`() {
         // == add tags
-        val response = restTemplate.putWithBody("/objects/${id}/tags?tags=${tag1},${tag2}", "")
-        assertEquals(HttpStatus.OK, response.statusCode)
+        val url = "/objects/${id}/tags?tags=${tag1},${tag2}"
+        val resp = restTemplate.putWithBody(url, "")
+        assertEquals(HttpStatus.OK, resp.statusCode, "put $url returned ${resp.body}")
 
         val json = restTemplate.getQueryJson("/objects/$id").second
-        assertTrue(json.read<List<String>>("$.tags").contains(tag1))
-        assertTrue(json.read<List<String>>("$.tags").contains(tag2))
-    }
+        listOf(tag1, tag2).forEach { tag ->
+            assertTrue(json.read<List<String>>("$.tags").contains(tag),
+                    "get /objects/$id: should have tag $tag")
+        }
 
-    @Test
-    @Throws(Exception::class)
-    fun `1-2 add tags not modified`() {
         // == add tags bis
-        val response = restTemplate.putQueryString("/objects/${id}/tags?tags=${tag1},${tag2}")
-        assertEquals(HttpStatus.NOT_MODIFIED, response.statusCode)
+        val response = restTemplate.putQueryString(url)
+        assertEquals(HttpStatus.NOT_MODIFIED, response.statusCode, "put $url (2) returned ${resp.body}")
     }
 
     @Test
     @Throws(Exception::class)
-    fun `1-3 get objects by tag`() {
-        // == get with one tag
-        var resp = restTemplate.getQueryJson("/objects?tags=${tag1}")
-        assertEquals(HttpStatus.OK, resp.first)
-        var objs = resp.second.read<List<Map<String, Any>>>("$")
-        assertEquals(1, objs.size)
-        assertEquals(1, objs.first().get("id") as Int)
-        // == get with two tag
-        resp = restTemplate.getQueryJson("/objects?tags=${tag1},${tag2}")
-        assertEquals(HttpStatus.OK, resp.first)
-        objs = resp.second.read<List<Map<String, Any>>>("$")
-        assertEquals(1, objs.size)
-        assertEquals(1, objs.first().get("id") as Int)
-        // == get with one only one tag matching (or, not and) TODO should it be and ?
-        resp = restTemplate.getQueryJson("/objects?tags=${tag1},lala")
-        assertEquals(HttpStatus.OK, resp.first)
-        objs = resp.second.read<List<Map<String, Any>>>("$")
-        assertEquals(1, objs.size)
+    fun `1-2 get objects by tag`() {
+
+        listOf(
+                "/objects?tags=${tag1}",
+                "/objects?tags=${tag1},${tag2}",
+                "/objects?tags=${tag1},lala"
+        ).forEach { url ->
+            val (status, json) = restTemplate.getQueryJson(url)
+            assertEquals(HttpStatus.OK, status, "get $url returned ${json.jsonString()}")
+            val objs = json.read<List<Map<String, Any>>>("$")
+            assertEquals(1, objs.size, "get $url should have one object")
+            assertEquals(1, objs.first().get("id") as Int, "get $url should have object #$id")
+        }
     }
 
     @Test
     @Throws(Exception::class)
-    fun `1-4 remove first tag`() {
+    fun `1-3 remove first tag`() {
         // == remove first tag
-        val response = restTemplate.deleteQueryString("/objects/${id}/tags?tags=${tag1}")
-        assertEquals(HttpStatus.OK, response.statusCode)
+        val url = "/objects/${id}/tags?tags=${tag1}"
+        val resp = restTemplate.deleteQueryString(url)
+        assertEquals(HttpStatus.OK, resp.statusCode, "delete $url returned ${resp.body}")
 
         val json = restTemplate.getQueryJson("/objects/$id").second
-        assertFalse(json.read<List<String>>("$.tags").contains(tag1))
-        assertTrue(json.read<List<String>>("$.tags").contains(tag2))
+        assertFalse(json.read<List<String>>("$.tags").contains(tag1), "tag $tag1 should NOT be present ${json.jsonString()}")
+        assertTrue(json.read<List<String>>("$.tags").contains(tag2), "tag $tag1 should be present ${json.jsonString()}")
     }
 
     @Test
     @Throws(Exception::class)
-    fun `1-5 remove second tag`() {
+    fun `1-4 remove second tag`() {
         // == remove second tag
-        val response = restTemplate.deleteQueryString("/objects/${id}/tags?tags=${tag2}")
-        assertEquals(HttpStatus.OK, response.statusCode)
+        val url = "/objects/${id}/tags?tags=${tag2}"
+        val resp = restTemplate.deleteQueryString(url)
+        assertEquals(HttpStatus.OK, resp.statusCode, "delete $url returned ${resp.body}")
 
         val json = restTemplate.getQueryJson("/objects/$id").second
-        assertFalse(json.read<List<String>>("$.tags").contains(tag1))
-        assertFalse(json.read<List<String>>("$.tags").contains(tag2))
+        assertFalse(json.read<List<String>>("$.tags").contains(tag1), "tag $tag1 should NOT be present ${json.jsonString()}")
+        assertFalse(json.read<List<String>>("$.tags").contains(tag2), "tag $tag2 should NOT be present ${json.jsonString()}")
     }
 }

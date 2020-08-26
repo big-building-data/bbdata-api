@@ -36,27 +36,27 @@ class TestCreateUnit {
 
     @Test
     fun `1-1 test create unit fail`() {
-        val putWrongType = restTemplate.postWithBody("/units",
+        var resp = restTemplate.postWithBody("/units",
                 """{"symbol": "$symbol", "name": "test", "type": "hello"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putWrongType.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "post /units returned ${resp.body}")
 
-        val putNoSymbol = restTemplate.postWithBody("/units",
+        resp = restTemplate.postWithBody("/units",
                 """{"symbol": "", "name": "test", "type": "float"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putNoSymbol.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "post /units returned ${resp.body}")
 
-        val putDupName = restTemplate.postWithBody("/units",
+        resp = restTemplate.postWithBody("/units",
                 """{"symbol": "$symbol", "name": "volt", "type": "float"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putDupName.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "post /units returned ${resp.body}")
     }
 
     @Test
     fun `1-2 test create unit`() {
-        val put1 = restTemplate.postWithBody("/units",
+        var resp = restTemplate.postWithBody("/units",
                 """{"symbol": "$symbol", "name": "$symbol", "type": "float"}""")
-        assertEquals(HttpStatus.OK, put1.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode, "post /units returned ${resp.body}")
 
-        val put2 = restTemplate.postWithBody("/units",
+        resp = restTemplate.postWithBody("/units",
                 """{"symbol": "$symbol", "name": "$symbol", "type": "float"}""")
-        assertNotEquals(HttpStatus.OK, put2.statusCode)
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "post /units returned ${resp.body}")
     }
 }

@@ -37,100 +37,116 @@ class TestUserGroup {
     @Test
     fun `1-0 test create user group fail`() {
         // == create no name
-        var putResponse = restTemplate.putWithBody("/userGroups", """{"name": ""}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        var resp = restTemplate.putWithBody("/userGroups", """{"name": ""}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode,
+                "put /userGroups with an empty name returned ${resp.body}")
 
         // == create no owner
-        putResponse = restTemplate.putWithBody("/userGroups", """{"name": "a"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        resp = restTemplate.putWithBody("/userGroups", """{"name": "a"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode,
+                "put /userGroups with a short name returned ${resp.body}")
     }
 
     @Test
     fun `1-1 test create user group`() {
         // == create
-        val putResponse = restTemplate.putWithBody("/userGroups", """{"name": "usergroup-${Random.nextInt()}"}""")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
+        val putResp = restTemplate.putWithBody("/userGroups", """{"name": "usergroup-${Random.nextInt()}"}""")
+        assertEquals(HttpStatus.OK, putResp.statusCode, "put /userGroups returned ${putResp.body}")
 
         // == store variables
-        id = JsonPath.parse(putResponse.body).read<Int>("$.id")
+        id = JsonPath.parse(putResp.body).read<Int>("$.id")
 
         // == get
-        val getResponse = restTemplate.getQueryString("/userGroups/${id}")
-        JSONAssert.assertEquals(putResponse.body, getResponse.body, false)
-        val json = restTemplate.getQueryJson("/userGroups/${id}/users").second
-        assertEquals(1, json.read<List<Any>>("$").size) // Ensure one user id added as admin
-        assertTrue(json.read<Boolean>("$.[0].admin"))
+        val getResp = restTemplate.getQueryString("/userGroups/$id")
+        JSONAssert.assertEquals(putResp.body, getResp.body, false)
+        val json = restTemplate.getQueryJson("/userGroups/$id/users").second
+        assertEquals(1, json.read<List<Any>>("$").size,
+                "put /userGroups: one user should have been added, ${json.jsonString()}")
+        assertTrue(json.read<Boolean>("$.[0].admin"),
+                "put /userGroups: after creation, one user must be admin ${json.jsonString()}")
     }
 
     @Test
-    fun `1-2 test get user groups`(){
+    fun `1-2 test get user groups`() {
         val (status, json) = restTemplate.getQueryJson("/userGroups")
-        assertEquals(HttpStatus.OK, status)
-        assertEquals(1, json.read<List<Any>>("$[?(@.id == $id)]").size)
+        assertEquals(HttpStatus.OK, status, "get /userGroups returned ${json.jsonString()}")
+        assertEquals(1, json.read<List<Any>>("$[?(@.id == $id)]").size,
+                "get /userGroups: missing newly created group #$id, ${json.jsonString()}")
     }
 
     @Test
     fun `1-3 test what user not in group sees`() {
         // create a user
-        val response = restTemplate.putWithBody("/users",
+        var resp = restTemplate.putWithBody("/users",
                 """{"name": "user-${Random.nextInt()}", "email": "lasdf@sdfg.com", "password": "alsdkfj"}""")
-        assertEquals(HttpStatus.OK, response.statusCode)
-        addedUserId = JsonPath.parse(response.body).read<Int>("$.id")
+        assertEquals(HttpStatus.OK, resp.statusCode, "put /users returned ${resp.body}")
+        addedUserId = JsonPath.parse(resp.body).read<Int>("$.id")
 
         // user is not in group
         val (status, json) = restTemplate.getQueryJson("/me/userGroups", HU to addedUserId)
-        assertEquals(HttpStatus.OK, status)
-        assertEquals(0, json.read<List<Any>>("$[?(@.id == $id)]").size)
+        assertEquals(HttpStatus.OK, status, "/me/userGroups returned ${json.jsonString()}")
+        assertEquals(0, json.read<List<Any>>("$[?(@.id == $id)]").size,
+                "get /me/userGroups: userGroup #$id should NOT be present ${json.jsonString()}")
 
         // user has still access to basic information about group
-        val getUserGroupResponse = restTemplate.getQueryString("/userGroups/$id", HU to addedUserId)
-        assertEquals(HttpStatus.OK, getUserGroupResponse.statusCode)
+        var url = "/userGroups/$id"
+        resp = restTemplate.getQueryString(url, HU to addedUserId)
+        assertEquals(HttpStatus.OK, resp.statusCode, "get $url returned ${resp.body}")
 
         // user cannot see users in group
-        val getUsersInGroupResponse = restTemplate.getQueryString("/userGroups/$id/users", HU to addedUserId)
-        assertEquals(HttpStatus.NOT_FOUND, getUsersInGroupResponse.statusCode)
+        url = "/userGroups/$id/users"
+        resp = restTemplate.getQueryString(url, HU to addedUserId)
+        assertEquals(HttpStatus.NOT_FOUND, resp.statusCode, "get $url returned ${resp.body}")
 
         // user cannot add users to group
-        val putUserResponse = restTemplate.putQueryString("/userGroups/$id/users/$addedUserId", HU to addedUserId)
-        assertEquals(HttpStatus.NOT_FOUND, putUserResponse.statusCode)
+        url = "/userGroups/$id/users/$addedUserId"
+        resp = restTemplate.putQueryString(url, HU to addedUserId)
+        assertEquals(HttpStatus.NOT_FOUND, resp.statusCode, "put $url returned ${resp.body}")
     }
 
     @Test
     fun `2-0 test add user`() {
-        val putResponse = restTemplate.putQueryString("/userGroups/$id/users/$addedUserId")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
+        var url = "/userGroups/$id/users/$addedUserId"
+        val resp = restTemplate.putQueryString(url)
+        assertEquals(HttpStatus.OK, resp.statusCode, "put $url returned ${resp.body}")
 
-        val json = restTemplate.getQueryJson("/userGroups/${id}/users").second
-        assertEquals(2, json.read<List<Any>>("$").size)
+        url = "/userGroups/$id/users"
+        val json = restTemplate.getQueryJson(url).second
+        assertEquals(2, json.read<List<Any>>("$").size,
+                "get $url: expecting two users (admin and #$addedUserId), ${json.jsonString()}")
 
         val u = json.read<List<Boolean>>("$[?(@.id == $addedUserId)].admin")
-        assertEquals(1, u.size)
-        assertFalse(u[0]) // not admin
+        assertEquals(1, u.size, "get $url: expecting #$addedUserId to be present, ${json.jsonString()}")
+        assertFalse(u[0], "get $url: expecting #$addedUserId to NOT be admin, ${json.jsonString()}")
     }
 
     @Test
     fun `2-1 test what non-admins can see`() {
         // can see users
-        val (status, _) = restTemplate.getQueryJson("/userGroups/${id}/users", HU to addedUserId)
-        assertEquals(HttpStatus.OK, status)
+        var url = "/userGroups/$id/users"
+        val (status, json) = restTemplate.getQueryJson(url, HU to addedUserId)
+        assertEquals(HttpStatus.OK, status, "get $url returned ${json.jsonString()}")
 
         // cannot add users
-        val putResponse = restTemplate.putQueryString("/userGroups/$id/users/$addedUserId", HU to addedUserId)
-        assertEquals(HttpStatus.FORBIDDEN, putResponse.statusCode)
+        url = "/userGroups/$id/users/$addedUserId"
+        val resp = restTemplate.putQueryString(url, HU to addedUserId)
+        assertEquals(HttpStatus.FORBIDDEN, resp.statusCode,
+                "get $url returned ${json.jsonString()}")
     }
 
     @Test
     fun `3-0 test edit user admin`() {
-        val putResponse = restTemplate.putQueryString("/userGroups/$id/users/$addedUserId?admin=true")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
+        val url = "/userGroups/$id/users/$addedUserId?admin=true"
+        var resp = restTemplate.putQueryString(url)
+        assertEquals(HttpStatus.OK, resp.statusCode, "put $url returned ${resp.body}")
 
-        val putResponseNM = restTemplate.putQueryString("/userGroups/$id/users/$addedUserId?admin=true")
-        assertEquals(HttpStatus.NOT_MODIFIED, putResponseNM.statusCode)
+        resp = restTemplate.putQueryString(url)
+        assertEquals(HttpStatus.NOT_MODIFIED, resp.statusCode, "put $url (2) returned ${resp.body}")
 
-        val json = restTemplate.getQueryJson("/userGroups/${id}/users").second
+        val json = restTemplate.getQueryJson("/userGroups/$id/users").second
         val u = json.read<List<Boolean>>("$[?(@.id == $addedUserId)].admin")
-        assertEquals(1, u.size)
-        assertTrue(u[0]) // now admin
+        assertEquals(1, u.size, "get $url: expecting #$addedUserId to be present, ${json.jsonString()}")
+        assertTrue(u[0], "get $url: expecting #$addedUserId have been made admin, ${json.jsonString()}")
     }
 
 

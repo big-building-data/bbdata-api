@@ -91,23 +91,28 @@ class TestPermissions {
     fun `2-1 object groups must be created by owners`() {
         // try to create an object group with user "illegal" but specifying usergroup he's not an admin of
         val name = "xxx${Random.nextInt(1000)}"
-        val response = restTemplate.putWithBody("/objectGroups",
+        val resp = restTemplate.putWithBody("/objectGroups",
                 """{"name": "$name", "owner": $REGULAR_USER_ID}""", *ILLEGAL)
 
-        if (response.statusCode == HttpStatus.OK) {
+        if (resp.statusCode == HttpStatus.OK) {
             // FAILED: delete the group before making any assert
-            JsonPath.parse(response.body).read<Int?>("$.id").let { id ->
+            JsonPath.parse(resp.body).read<Int?>("$.id").let { id ->
                 restTemplate.delete("/objectGroups/$id")
             }
         }
-        assertEquals(HttpStatus.NOT_FOUND, response.statusCode)
+        assertEquals(HttpStatus.NOT_FOUND, resp.statusCode,
+                "creating an objectGroup without admin right returned ${resp.body}")
     }
 
     @Test
-    fun `3-1 only admin can add new units`() {
-        val response = restTemplate.postWithBody("/units",
-                """{"type": "float", "name": "lala", "symbol": "L"}""", *ILLEGAL)
-        assertEquals(HttpStatus.FORBIDDEN, response.statusCode, response.body)
+    fun `3-1 only super admin can add new units`() {
+        // neither regular user nor no rights user is superadmin
+        listOf(OWNER, ILLEGAL).forEach { headers ->
+        val resp = restTemplate.postWithBody("/units",
+                """{"type": "float", "name": "lala", "symbol": "L"}""", *headers)
+        assertEquals(HttpStatus.FORBIDDEN, resp.statusCode,
+            "creating a unit without SUPERADMIN rights returned ${resp.body}")
+        }
     }
 
 

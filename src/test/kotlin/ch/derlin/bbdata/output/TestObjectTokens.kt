@@ -32,49 +32,49 @@ class TestObjectTokens {
     companion object {
         val objectId: Int = 1
         var ids: MutableList<Int> = mutableListOf()
+        val url = "/objects/$objectId/tokens"
     }
 
     @Test
     fun `1-1 test create token`() {
         // == create
-        val putResponse = restTemplate.putQueryString("/objects/$objectId/tokens")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
+        var resp = restTemplate.putQueryString(url)
+        assertEquals(HttpStatus.OK, resp.statusCode, "put $url returned ${resp.body}")
 
         // == store variables
-        val id = JsonPath.parse(putResponse.body).read<Int>("$.id")
+        val id = JsonPath.parse(resp.body).read<Int>("$.id")
         ids.add(id)
 
         // == get
-        val getResponse = restTemplate.getQueryString("/objects/$objectId/tokens/$id")
-        JSONAssert.assertEquals(putResponse.body, getResponse.body, false)
+        resp = restTemplate.getQueryString("$url/$id")
+        JSONAssert.assertEquals(resp.body, resp.body, false)
 
         // check some json variables
-        val json = JsonPath.parse(getResponse.body)
-        assertEquals(objectId, json.read<Int>("$.objectId"))
-        assertNull(json.read<String>("$.description"))
-        assertEquals(32, json.read<String>("$.token").length)
+        val json = JsonPath.parse(resp.body)
+        assertEquals(objectId, json.read<Int>("$.objectId"), "put $url/$id: wrong objectId")
+        assertNull(json.read<String>("$.description"), "put $url/$id: description should be null")
+        assertEquals(32, json.read<String>("$.token").length, "put $url/$id: token should be 32 chars")
     }
 
     @Test
     fun `1-2 test create token with description`() {
         // == create
         val descr = "hello token"
-        val putResponse = restTemplate.putWithBody("/objects/$objectId/tokens",
-                """{"description": "$descr"}""")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
+        val resp = restTemplate.putWithBody(url, """{"description": "$descr"}""")
+        assertEquals(HttpStatus.OK, resp.statusCode, "put $url with body returned ${resp.body}")
 
         // == store variables
-        val id = JsonPath.parse(putResponse.body).read<Int>("$.id")
+        val id = JsonPath.parse(resp.body).read<Int>("$.id")
         ids.add(id)
 
         // == get
-        val getResponse = restTemplate.getForEntity("/objects/$objectId/tokens/$id", String::class.java)
-        JSONAssert.assertEquals(putResponse.body, getResponse.body, false)
+        val getResponse = restTemplate.getForEntity("$url/$id", String::class.java)
+        JSONAssert.assertEquals(resp.body, getResponse.body, false)
 
         // check some json variables
         val json = JsonPath.parse(getResponse.body)
-        assertEquals(objectId, json.read<Int>("$.objectId"))
-        assertEquals(descr, json.read<Int>("$.description"))
+        assertEquals(objectId, json.read<Int>("$.objectId"), "put $url/$id with body: wrong objectId")
+        assertEquals(descr, json.read<Int>("$.description"), "put $url/$id with body: wrong description")
     }
 
     @Test
@@ -82,39 +82,43 @@ class TestObjectTokens {
         val newDescr = "hello token new descr"
         val id = ids.last()
 
-        val putResponse = restTemplate.postWithBody(
-                "/objects/$objectId/tokens/$id",
-                """{"description": "$newDescr"}""")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
+        val resp = restTemplate.postWithBody("$url/$id", """{"description": "$newDescr"}""")
+        assertEquals(HttpStatus.OK, resp.statusCode, "post $url/$id returned ${resp.body}")
 
         // == get
-        val getResponse = restTemplate.getQueryString("/objects/$objectId/tokens/$id")
-        JSONAssert.assertEquals(putResponse.body, getResponse.body, false)
+        val getResponse = restTemplate.getQueryString("$url/$id")
+        JSONAssert.assertEquals(resp.body, getResponse.body, false)
 
         // check some json variables
         val json = JsonPath.parse(getResponse.body)
-        assertEquals(objectId, json.read<Int>("$.objectId"))
-        assertEquals(newDescr, json.read<Int>("$.description"))
+        assertEquals(objectId, json.read<Int>("$.objectId"), "edit $url/$id: wrong objectId")
+        assertEquals(newDescr, json.read<Int>("$.description"), "edit $url/$id: description didn't change")
     }
 
     @Test
     fun `1-4 test get tokens`() {
-        val json = restTemplate.getQueryJson("/objects/$objectId/tokens").second
-        ids.map { id -> assertNotEquals(0, json.read<List<Any>>("$[?(@.id == $id)]").size) }
+        val json = restTemplate.getQueryJson(url).second
+        ids.map { id ->
+            assertNotEquals(0, json.read<List<Any>>("$[?(@.id == $id)]").size,
+                    "get $url should have token #$id, ${json.jsonString()}")
+        }
     }
 
     @Test
     fun `1-5 test delete tokens`() {
         ids.map { id ->
-            val deleteResponse1 = restTemplate.deleteQueryString("/objects/$objectId/tokens/$id")
-            assertEquals(HttpStatus.OK, deleteResponse1.statusCode)
+            var resp = restTemplate.deleteQueryString("$url/$id")
+            assertEquals(HttpStatus.OK, resp.statusCode, "delete $url/$id returned ${resp.body}")
 
-            val deleteResponse2 = restTemplate.deleteQueryString("/objects/$objectId/tokens/$id")
-            assertEquals(HttpStatus.NOT_MODIFIED, deleteResponse2.statusCode)
+            resp = restTemplate.deleteQueryString("$url/$id")
+            assertEquals(HttpStatus.NOT_MODIFIED, resp.statusCode, "delete $url/$id (2) returned ${resp.body}")
         }
 
-        val json = restTemplate.getQueryJson("/objects/$objectId/tokens").second
-        ids.map { id -> assertEquals(0, json.read<List<Any>>("$[?(@.id == $id)]").size) }
+        val json = restTemplate.getQueryJson(url).second
+        ids.map { id ->
+            assertEquals(0, json.read<List<Any>>("$[?(@.id == $id)]").size,
+                    "get $url should NOT have token #$id, ${json.jsonString()}")
+        }
 
     }
 

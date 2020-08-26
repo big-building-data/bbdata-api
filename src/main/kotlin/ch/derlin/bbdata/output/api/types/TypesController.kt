@@ -58,7 +58,7 @@ class TypesController(private val unitRepository: UnitRepository,
             "__IMPORTANT__: this endpoint is only accessible to the user group ADMIN (id=1).")
     @PostMapping("/units")
     fun addUnit(@UserId userId: Int, @Valid @NotNull @RequestBody newUnit: NewUnit): Unit {
-        if (!userGroupMappingRepository.existsById(UserUgrpMappingId(userId = userId, groupId = SUPERADMIN_GROUP)))
+        if (!userGroupMappingRepository.isSuperAdmin(userId))
             throw ForbiddenException("Only users part of the 'admin' group can add new units.")
 
         val type = baseTypeRepository.findById(newUnit.type).orElseThrow {

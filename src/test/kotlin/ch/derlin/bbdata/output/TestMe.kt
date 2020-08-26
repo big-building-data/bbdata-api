@@ -30,21 +30,22 @@ class TestMe {
     @Test
     fun `1-1 test get me`() {
         val (status, json) = restTemplate.getQueryJson("/me")
-        assertEquals(HttpStatus.OK, status)
+        assertEquals(HttpStatus.OK, status, "/me returned ${json.jsonString()}")
 
-        assertEquals(REGULAR_USER_ID, json.read<Int>("$.id"))
-        assertEquals(REGULAR_USER.get("name"), json.read<String>("$.name"))
-        assertTrue(json.read<String>("$.creationdate").isBBDataDatetime(), "proper datetime format")
+        assertEquals(REGULAR_USER_ID, json.read<Int>("$.id"), "/me: wrong userId")
+        assertEquals(REGULAR_USER.get("name"), json.read<String>("$.name"), "/me: wrong name")
+        assertTrue(json.read<String>("$.creationdate").isBBDataDatetime(), "/me: improper datetime format")
     }
 
     @Test
     fun `2-1 test get my groups`() {
         val (status, json) = restTemplate.getQueryJson("/me/userGroups")
-        assertEquals(HttpStatus.OK, status)
+        assertEquals(HttpStatus.OK, status, "get /me/userGroups returned ${json.jsonString()}")
+
         val myGroupMatches = json.read<List<Map<String,Any>>>("$[?(@.id == $REGULAR_USER_ID)]")
-        assertEquals(1, myGroupMatches.size)
+        assertEquals(1, myGroupMatches.size, "get /me/userGroups: missing group #$REGULAR_USER_ID")
         val myGroup = myGroupMatches.first()
-        assertEquals(REGULAR_USER.get("group"), myGroup.get("name"))
-        assertEquals(true, myGroup.get("admin"))
+        assertEquals(REGULAR_USER.get("group"), myGroup.get("name"), "get /me/userGroups #$REGULAR_USER_ID: wrong name")
+        assertEquals(true, myGroup.get("admin"), "get /me/userGroups #$REGULAR_USER_ID: wrong admin flat")
     }
 }

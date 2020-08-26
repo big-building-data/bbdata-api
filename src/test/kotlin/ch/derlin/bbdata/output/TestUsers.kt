@@ -41,106 +41,116 @@ class TestUsers {
     fun `1-0 test create user fail`() {
         val url = "/users"
         // == create empty name
-        var putResponse = restTemplate.putWithBody(url, """{"name": ""}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        var resp = restTemplate.putWithBody(url, """{"name": ""}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode,
+                "put $url with only an empty name returned ${resp.body}")
 
         // == create no email / password
-        putResponse = restTemplate.putWithBody(url, """{"name": "$name"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        resp = restTemplate.putWithBody(url, """{"name": "$name"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode,
+                "put $url with only a name returned ${resp.body}")
 
         // == create short password
-        putResponse = restTemplate.putWithBody(url, """{"name": "$name", "password": "x", "email": "$email"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        resp = restTemplate.putWithBody(url, """{"name": "$name", "password": "x", "email": "$email"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode,
+                "put $url with a short password (1 char) returned ${resp.body}")
 
         // == create no email
-        putResponse = restTemplate.putWithBody(url, """{"name": "$name", "password": "$password"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        resp = restTemplate.putWithBody(url, """{"name": "$name", "password": "$password"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode,
+                "put $url with no email returned ${resp.body}")
 
         // == create wrong email
-        putResponse = restTemplate.putWithBody(url, """{"name": "$name", "password": "$password", "email": "nope"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        resp = restTemplate.putWithBody(url, """{"name": "$name", "password": "$password", "email": "nope"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode,
+                "put $url with an improper email returned ${resp.body}")
     }
 
     @Test
     fun `1-1 test create user`() {
         // == create
-        val putResponse = restTemplate.putWithBody("/users",
+        val resp = restTemplate.putWithBody("/users",
                 """{"name": "$name", "password": "$password", "email": "$email"}""")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
-        val json = JsonPath.parse(putResponse.body)
+        assertEquals(HttpStatus.OK, resp.statusCode, "put /users returned ${resp.body}")
+        val json = JsonPath.parse(resp.body)
 
         // == store variables
         id = json.read<Int>("$.id")
 
         // == check response
         // same name
-        assertEquals(name, json.read<String>("$.name"))
+        assertEquals(name, json.read<String>("$.name"), "put /users: wrong name, ${json.jsonString()}")
         // neither password not email sent back
-        assertFalse(putResponse.body!!.contains("password"))
-        assertFalse(putResponse.body!!.contains("email"))
+        assertFalse(resp.body!!.contains("password"), "put /users: a password has been returned, ${json.jsonString()}")
+        assertFalse(resp.body!!.contains("email"), "put /users: an email has been returned, ${json.jsonString()}")
     }
 
     @Test
     fun `1-2 test create user duplicated`() {
         // == no duplicate names allowed
-        val putResponse2 = restTemplate.putWithBody("/users",
+        val resp = restTemplate.putWithBody("/users",
                 """{"name": "$name", "password": "$password", "email": "$email"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putResponse2.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "put /users (2) ${resp.body}")
     }
 
     @Test
     fun `1-3 get users`() {
         // == no duplicate names allowed
         val (status, json) = restTemplate.getQueryJson("/users")
-        assertEquals(HttpStatus.OK, status)
-        assertEquals(1, json.read<List<Any>>("$[?(@.name == '$name')]").size)
+        assertEquals(HttpStatus.OK, status, "get /users returned ${json.jsonString()}")
+        assertEquals(1, json.read<List<Any>>("$[?(@.name == '$name')]").size,
+                "get /users: expecting user '$name' to be present ${json.jsonString()}")
     }
 
     @Test
     fun `1-4 get user`() {
         // == no duplicate names allowed
         val (status, json) = restTemplate.getQueryJson("/users/$id")
-        assertEquals(HttpStatus.OK, status)
-        assertEquals(name, json.read<String>("$.name"))
+        assertEquals(HttpStatus.OK, status, "get /users/$id returned ${json.jsonString()}")
+        assertEquals(name, json.read<String>("$.name"), "get /users/$id: wrong name")
     }
 
 
     @Test
     fun `2-1 test create user with userGroup`() {
         // == create
-        val putResponse = restTemplate.putWithBody("/users?userGroupId=$REGULAR_USER_ID",
+        var url = "/users?userGroupId=$REGULAR_USER_ID"
+        val resp = restTemplate.putWithBody(url,
                 """{"name": "$name-withGroup", "password": "$password", "email": "$email"}""")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
-        id = JsonPath.parse(putResponse.body).read<Int>("$.id")
+        assertEquals(HttpStatus.OK, resp.statusCode, "put $url returned ${resp.body}")
+        id = JsonPath.parse(resp.body).read<Int>("$.id")
 
         // == get using user
-        val getResponse = restTemplate.getQueryJson("/userGroups/$REGULAR_USER_ID/users/$id")
-        assertEquals(HttpStatus.OK, getResponse.first)
-        assertEquals(id!!, getResponse.second.read<Int>("$.id"))
+        url = "/userGroups/$REGULAR_USER_ID/users/$id"
+        val (status, json) = restTemplate.getQueryJson(url)
+        assertEquals(HttpStatus.OK, status, "get $url returned ${json.jsonString()}")
+        assertEquals(id!!, json.read<Int>("$.id"), "get $url: wrong id")
     }
 
     @Test
     fun `3-1 test delete user fail (regular user)`() {
-        val response = restTemplate.deleteQueryString("/users/$id")
-        assertEquals(HttpStatus.FORBIDDEN, response.statusCode)
+        val resp = restTemplate.deleteQueryString("/users/$id")
+        assertEquals(HttpStatus.FORBIDDEN, resp.statusCode, "delete /users/$id returned ${resp.body}")
     }
 
     @Test
     fun `3-1 test delete user (root user)`() {
-        var response = restTemplate.deleteQueryString("/users/$id", HU to ROOT_ID)
-        assertEquals(HttpStatus.OK, response.statusCode)
+        var resp = restTemplate.deleteQueryString("/users/$id", HU to ROOT_ID)
+        assertEquals(HttpStatus.OK, resp.statusCode, "delete /users/$id returned ${resp.body}")
 
-        response = restTemplate.deleteQueryString("/users/$id", HU to ROOT_ID)
-        assertEquals(HttpStatus.NOT_MODIFIED, response.statusCode)
+        resp = restTemplate.deleteQueryString("/users/$id", HU to ROOT_ID)
+        assertEquals(HttpStatus.NOT_MODIFIED, resp.statusCode, "delete /users/$id returned ${resp.body}")
     }
 
     @Test
     fun `3-2 test get deleted user`() {
-        val response = restTemplate.getQueryString("/users/$id")
-        assertEquals(HttpStatus.NOT_FOUND, response.statusCode)
+        val resp = restTemplate.getQueryString("/users/$id")
+        assertEquals(HttpStatus.NOT_FOUND, resp.statusCode, "get /users/$id returned ${resp.body}")
 
-        val (status, json) = restTemplate.getQueryJson("/userGroups/$REGULAR_USER_ID/users")
-        assertEquals(HttpStatus.OK, status)
-        assertEquals(0, json.read<List<Any>>("$[?(@.id == '$id')]").size)
+        val url = "/userGroups/$REGULAR_USER_ID/users"
+        val (status, json) = restTemplate.getQueryJson(url)
+        assertEquals(HttpStatus.OK, status, "get $url returned ${json.jsonString()}")
+        assertEquals(0, json.read<List<Any>>("$[?(@.id == '$id')]").size,
+                "get $url: user #$id should NOT to be present ${json.jsonString()}")
     }
 }

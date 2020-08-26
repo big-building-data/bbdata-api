@@ -3,7 +3,6 @@ package ch.derlin.bbdata.output
 import ch.derlin.bbdata.*
 import ch.derlin.bbdata.input.InputApiTest
 import com.jayway.jsonpath.DocumentContext
-import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.MethodOrderer
@@ -17,7 +16,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.lang.Double.isNaN
-import kotlin.random.Random
 
 /**
  * date: 28.12.19
@@ -56,8 +54,9 @@ class TestStats {
     @Test
     fun `1-1 test no values`() {
         // get current stats
-        val (status, json) = restTemplate.getQueryJson("/objects/$OID/stats")
-        assertEquals(HttpStatus.OK, status)
+        val url = "/objects/$OID/stats"
+        val (status, json) = restTemplate.getQueryJson(url)
+        assertEquals(HttpStatus.OK, status, "get $url returned ${json.jsonString()}")
 
         listOf(
                 "objectId" to OID,
@@ -66,7 +65,7 @@ class TestStats {
                 "avgSamplePeriod" to .0,
                 "lastTs" to null
         ).forEach { (key, expected) ->
-            assertEquals(expected, json.read("$.$key"))
+            assertEquals(expected, json.read("$.$key"), "get $url: should have $key=$expected, ${json.jsonString()}")
         }
     }
 
@@ -74,20 +73,23 @@ class TestStats {
     fun `1-2 test one value`() {
         // post a new measure
         val json = submitAndCheck("12.2")
-        assertEquals(.0, json.readPeriod())
+        assertEquals(.0, json.readPeriod(),
+                "after submitting only one value, avgSamplePeriod should be 0")
     }
 
     @Test
     fun `1-3 test another value`() {
         // post a new measure
         val json = submitAndCheck("6.")
-        assertTrue(json.readPeriod() > .0)
+        assertTrue(json.readPeriod() > .0,
+                "after submitting more than one value, avgSamplePeriod should be > 0")
     }
 
     @Test
     fun `1-4 test nReads`() {
-        val response = restTemplate.getQueryString("/objects/$OID/values?from=${InputApiTest.tsFmt()}")
-        assertEquals(HttpStatus.OK, response.statusCode)
+        val url = "/objects/$OID/values?from=${InputApiTest.tsFmt()}"
+        val resp = restTemplate.getQueryString(url)
+        assertEquals(HttpStatus.OK, resp.statusCode, "get $url returned ${resp.body}")
         nReads = +1
         submitAndCheck("6.")
 
@@ -96,8 +98,9 @@ class TestStats {
     @Test
     fun `2-1 test wrong object`() {
         // get object with no write
-        val (status, _) = restTemplate.getQueryJson("/objects/12352/stats")
-        assertNotEquals(HttpStatus.OK, status)
+        val url = "/objects/12352/stats"
+        val (status, json) = restTemplate.getQueryJson(url)
+        assertNotEquals(HttpStatus.OK, status, "get $url returned ${json.jsonString()}")
     }
 
     // ----------
@@ -105,22 +108,23 @@ class TestStats {
     private fun submitAndCheck(value: String): DocumentContext {
         // post a new measure
         val ts = InputApiTest.tsFmt()
-        val resp = restTemplate.postWithBody(InputApiTest.URL,
-                InputApiTest.getMeasureBody(objectId = OID, token = token, value = value, ts = ts))
-        assertEquals(HttpStatus.OK, resp.statusCode)
+        val body = InputApiTest.getMeasureBody(objectId = OID, token = token, value = value, ts = ts)
+        val resp = restTemplate.postWithBody(InputApiTest.URL, body)
+        assertEquals(HttpStatus.OK, resp.statusCode, "post value $body returend ${resp.body}")
         nWrites += 1
         // get updated stats
-        val (status, json) = restTemplate.getQueryJson("/objects/$OID/stats")
-        assertEquals(HttpStatus.OK, status)
+        val url = "/objects/$OID/stats"
+        val (status, json) = restTemplate.getQueryJson(url)
+        assertEquals(HttpStatus.OK, status, "get $url returned ${json.jsonString()}")
         listOf(
                 "objectId" to OID,
                 "nReads" to nReads,
                 "nWrites" to nWrites,
                 "lastTs" to ts
         ).forEach { (key, expected) ->
-            assertEquals(expected, json.read("$.$key"), "for property $key")
+            assertEquals(expected, json.read("$.$key"), "get $url: should have $key=$expected, ${json.jsonString()}")
         }
-        assertFalse(isNaN(json.readPeriod()))
+        assertFalse(isNaN(json.readPeriod()), "get $url: avgSamplePeriod is NaN !")
         return json
     }
 

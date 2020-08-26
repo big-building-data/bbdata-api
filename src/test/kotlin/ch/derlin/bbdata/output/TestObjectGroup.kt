@@ -31,149 +31,175 @@ class TestObjectGroup {
 
     companion object {
         val name = "test-${Random.nextInt(10000)}"
+        val userAdd = 1 // user added to group to test permissions
         var id: Int = -1
     }
 
     @Test
     fun `1-0 test create object group fail`() {
         // == create no name
-        var putResponse = restTemplate.putWithBody("/objectGroups",
+        var resp = restTemplate.putWithBody("/objectGroups",
                 """{"owner": $REGULAR_USER_ID, "description": "test"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode,
+                "put /objectGroups no name returned ${resp.body}")
 
         // == create short name
-        putResponse = restTemplate.putWithBody("/objectGroups",
+        resp = restTemplate.putWithBody("/objectGroups",
                 """{"name": "a", "owner": $REGULAR_USER_ID, "description": "test"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode,
+                "put /objectGroups name too short returned ${resp.body}")
 
         // == create no owner
-        putResponse = restTemplate.putWithBody("/objectGroups",
+        resp = restTemplate.putWithBody("/objectGroups",
                 """{"name": "$name"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, putResponse.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode,
+                "put /objectGroups no owner returned ${resp.body}")
 
         // == create wrong owner
-        putResponse = restTemplate.putWithBody("/objectGroups",
+        resp = restTemplate.putWithBody("/objectGroups",
                 """{"name": "$name", "owner": -1, "description": "test"}""")
-        assertEquals(HttpStatus.NOT_FOUND, putResponse.statusCode)
+        assertEquals(HttpStatus.NOT_FOUND, resp.statusCode,
+                "put /objectGroups wrong owner returned ${resp.body}")
     }
 
     @Test
     fun `1-1 test create object group`() {
         // == create
-        val putResponse = restTemplate.putWithBody("/objectGroups",
+        val resp = restTemplate.putWithBody("/objectGroups",
                 """{"name": "$name", "owner": $REGULAR_USER_ID}""")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode,
+                "put /objectGroups ok returned ${resp.body}")
 
         // == store variables
-        id = JsonPath.parse(putResponse.body).read<Int>("$.id")
+        id = JsonPath.parse(resp.body).read<Int>("$.id")
 
         // == get
-        val getResponse = restTemplate.getQueryString("/objectGroups/${id}")
-        JSONAssert.assertEquals(putResponse.body, getResponse.body, false)
+        val getResponse = restTemplate.getQueryString("/objectGroups/$id")
+        JSONAssert.assertEquals(resp.body, getResponse.body, false)
 
         // check some json variables
         val json = JsonPath.parse(getResponse.body)
-        assertEquals(REGULAR_USER.get("group"), json.read<String>("$.owner.name"))
+        assertEquals(REGULAR_USER.get("group"), json.read<String>("$.owner.name"),
+                "get /objectGroups/$id has wrong owner name")
     }
-    
-    @Test
-    fun `1-2 test edit object group`(){
-        // == change name + description
-        var postResponse = restTemplate.postWithBody("/objectGroups/$id",
-                """{"name": "xxx", "description": "test"}""")
-        assertEquals(HttpStatus.OK, postResponse.statusCode)
 
-        var json = JsonPath.parse(postResponse.body)
-        assertEquals("xxx", json.read<String>("$.name"))
-        assertEquals("test", json.read<String>("$.description"))
+    @Test
+    fun `1-2 test edit object group`() {
+        // == change name + description
+        var resp = restTemplate.postWithBody("/objectGroups/$id",
+                """{"name": "xxx", "description": "test"}""")
+        assertEquals(HttpStatus.OK, resp.statusCode, "edit /objectGroups/$id (all fields) returned ${resp.body}")
+
+        var json = JsonPath.parse(resp.body)
+        assertEquals("xxx", json.read<String>("$.name"),
+                "edit /objectGroups/$id all fields: name didn't change")
+        assertEquals("test", json.read<String>("$.description"),
+                "edit /objectGroups/$id all fields: description didn't change")
 
         // == change name only
-        postResponse = restTemplate.postWithBody("/objectGroups/$id", """{"name": "$name"}""")
-        assertEquals(HttpStatus.OK, postResponse.statusCode)
+        resp = restTemplate.postWithBody("/objectGroups/$id", """{"name": "$name"}""")
+        assertEquals(HttpStatus.OK, resp.statusCode, "edit /objectGroups/$id (name only) returned ${resp.body}")
 
-        json = JsonPath.parse(postResponse.body)
-        assertEquals(name, json.read<String>("$.name"))
-        assertEquals("test", json.read<String>("$.description"))
+        json = JsonPath.parse(resp.body)
+        assertEquals(name, json.read<String>("$.name"),
+                "edit /objectGroups/$id name only: name didn't change")
+        assertEquals("test", json.read<String>("$.description"),
+                "edit /objectGroups/$id name only: description did change")
     }
 
     @Test
     fun `2-1 test add object`() {
-        val putResponse = restTemplate.putQueryString("/objectGroups/$id/objects/1")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
+        val resp = restTemplate.putQueryString("/objectGroups/$id/objects/1")
+        assertEquals(HttpStatus.OK, resp.statusCode,
+                "add object 1 to /objectGroups/$id returned ${resp.body}")
 
-        val json = restTemplate.getQueryJson("/objectGroups/${id}/objects").second
-        assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size > 0)
+        val json = restTemplate.getQueryJson("/objectGroups/$id/objects").second
+        assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size > 0,
+                "get objects in objectGroups/$id missing object 1, ${json.jsonString()}")
     }
 
     @Test
     fun `2-2 test get objects`() {
-        val json = restTemplate.getQueryJson("/objectGroups/${id}?withObjects=true").second
+        val json = restTemplate.getQueryJson("/objectGroups/$id?withObjects=true").second
         val objs1 = json.read<List<String>>("$.objects")
-        assertTrue(objs1.size > 0)
+        assertTrue(objs1.size > 0,
+                "/objectGroups/$id?withObjects returned zero objects (should be 1), ${json.jsonString()}")
 
-        val objs2 = restTemplate.getQueryString("/objectGroups/${id}/objects").body!!
+        val objs2 = restTemplate.getQueryString("/objectGroups/$id/objects").body!!
         JSONAssert.assertEquals(objs1.toString(), objs2, false)
     }
 
     @Test
     fun `2-4 test object withObjects`() {
-        val respFalse = restTemplate.getQueryString("/objectGroups/$id?withObjects=false")
-        assertFalse(respFalse.body!!.contains("\"objects\""))
+        val url = "/objectGroups/$id?withObjects"
+        var resp = restTemplate.getQueryString("$url=false")
+        assertFalse(resp.body!!.contains("\"objects\""),
+                "get $url=false shouldn't have objects property, ${resp.body}")
 
-        val respTrue = restTemplate.getQueryString("/objectGroups/$id?withObjects=true")
-        assertTrue(respTrue.body!!.contains("\"objects\""))
+        resp = restTemplate.getQueryString("$url=true")
+        assertTrue(resp.body!!.contains("\"objects\""),
+                "get $url=true should have objects property, ${resp.body}")
     }
 
     @Test
     fun `2-5 test remove object`() {
-        val putResponse = restTemplate.deleteQueryString("/objectGroups/$id/objects/1")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
+        val url = "/objectGroups/$id/objects/1"
+        var resp = restTemplate.deleteQueryString(url)
+        assertEquals(HttpStatus.OK, resp.statusCode, "delete $url returned ${resp.body}")
 
-        val putResponse2 = restTemplate.deleteQueryString("/objectGroups/$id/objects/1")
-        assertEquals(HttpStatus.NOT_MODIFIED, putResponse2.statusCode)
+        resp = restTemplate.deleteQueryString(url)
+        assertEquals(HttpStatus.NOT_MODIFIED, resp.statusCode, "delete $url (2) returned ${resp.body}")
     }
 
     @Test
     fun `3-1 test objectGroup withObjects`() {
-        val respFalse = restTemplate.getQueryString("/objectGroups?withObjects=false")
-        assertFalse(respFalse.body!!.contains("\"objects\""))
+        val url = "/objectGroups?withObjects"
+        var resp = restTemplate.getQueryString("$url=false")
+        assertFalse(resp.body!!.contains("\"objects\""),
+                "get $url=false shouldn't have objects property, ${resp.body}")
 
-        val respTrue = restTemplate.getQueryString("/objectGroups?withObjects=true")
-        assertTrue(respTrue.body!!.contains("\"objects\""))
+        resp = restTemplate.getQueryString("/objectGroups?withObjects=true")
+        assertTrue(resp.body!!.contains("\"objects\""),
+                "get $url=true should have objects property, ${resp.body}")
     }
 
 
     @Test
     fun `3-1 test add permission`() {
-        val putResp1 = restTemplate.putQueryString("/objectGroups/$id/userGroups/1")
-        assertEquals(HttpStatus.OK, putResp1.statusCode)
-        val putResp2 = restTemplate.putQueryString("/objectGroups/$id/userGroups/1")
-        assertEquals(HttpStatus.NOT_MODIFIED, putResp2.statusCode)
+        val url = "/objectGroups/$id/userGroups"
+        var resp = restTemplate.putQueryString("$url/$userAdd")
+        assertEquals(HttpStatus.OK, resp.statusCode, "put $url/$userAdd returned ${resp.body}")
+        resp = restTemplate.putQueryString("$url/1")
+        assertEquals(HttpStatus.NOT_MODIFIED, resp.statusCode, "put $url/$userAdd (2) returned ${resp.body}")
 
-        val json = restTemplate.getQueryJson("/objectGroups/$id/userGroups").second
-        assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size > 0)
+        val json = restTemplate.getQueryJson(url).second
+        assertTrue(json.read<List<Any>>("$[?(@.id == $userAdd)]").size > 0,
+                "get $url should have user #$userAdd ${json.jsonString()}")
     }
 
     @Test
     fun `3-1 test remove permission`() {
-        val putResp1 = restTemplate.deleteQueryString("/objectGroups/$id/userGroups/1")
-        assertEquals(HttpStatus.OK, putResp1.statusCode)
-        val putResp2 = restTemplate.deleteQueryString("/objectGroups/$id/userGroups/1")
-        assertEquals(HttpStatus.NOT_MODIFIED, putResp2.statusCode)
+        val url = "/objectGroups/$id/userGroups"
+        var resp = restTemplate.deleteQueryString("$url/$userAdd")
+        assertEquals(HttpStatus.OK, resp.statusCode, "delete $url/$userAdd returned ${resp.body}")
+        resp = restTemplate.deleteQueryString("$url/$userAdd")
+        assertEquals(HttpStatus.NOT_MODIFIED, resp.statusCode, "delete $url/$userAdd (2) returned ${resp.body}")
 
         val json = restTemplate.getQueryJson("/objectGroups/$id/permissions").second
-        assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size == 0)
+        assertTrue(json.read<List<Any>>("$[?(@.id == 1)]").size == 0,
+                "get $url should NOT have user #$userAdd ${json.jsonString()}")
     }
 
     @Test
     fun `5-0 test remove object group`() {
-        val putResponse = restTemplate.deleteQueryString("/objectGroups/$id")
-        assertEquals(putResponse.statusCode, HttpStatus.OK)
+        val url = "/objectGroups/$id"
+        var resp = restTemplate.deleteQueryString(url)
+        assertEquals(resp.statusCode, HttpStatus.OK, "delete $url returned ${resp.body}")
 
-        val putResponse2 = restTemplate.deleteQueryString("/objectGroups/$id")
-        assertEquals(putResponse2.statusCode, HttpStatus.NOT_MODIFIED)
+        resp = restTemplate.deleteQueryString(url)
+        assertEquals(resp.statusCode, HttpStatus.NOT_MODIFIED, "delete $url (2) returned ${resp.body}")
 
-        val getStatus = restTemplate.getQueryJson("/objectGroups/$id").first
-        assertEquals(HttpStatus.NOT_FOUND, getStatus)
+        val (status, json) = restTemplate.getQueryJson(url)
+        assertEquals(HttpStatus.NOT_FOUND, status, "get $url after delete returned ${json.jsonString()}")
     }
 }

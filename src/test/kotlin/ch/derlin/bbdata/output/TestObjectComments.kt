@@ -32,6 +32,7 @@ class TestObjectComments {
 
     companion object {
         val objectId: Int = 1
+        val url = "/objects/$objectId/comments"
 
         val from = "2020-02-01T23:30"
         val to = "2020-02-03T08:30"
@@ -42,58 +43,57 @@ class TestObjectComments {
 
     @Test
     fun `1-1 test create comment fail`() {
-
-        val putResponseNoComment = restTemplate.putWithBody("/objects/$objectId/comments",
+        var resp = restTemplate.putWithBody(url,
                 """{"from": "$from", "to": "$to"}""")
-        assertNotEquals(HttpStatus.OK, putResponseNoComment.statusCode)
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "put $url missing comment returned ${resp.body}")
 
-        val putResponseEmptyComment = restTemplate.putWithBody("/objects/$objectId/comments",
+        resp = restTemplate.putWithBody(url,
                 """{"from": "$from", "to": "$to", "comment": ""}""")
-        assertNotEquals(HttpStatus.OK, putResponseEmptyComment.statusCode)
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "put $url empty comment returned ${resp.body}")
 
-        val putResponseNoFrom = restTemplate.putWithBody("/objects/$objectId/comments",
+        resp = restTemplate.putWithBody(url,
                 """{"to": "$to", "comment": "hello"}""")
-        assertNotEquals(HttpStatus.OK, putResponseNoFrom.statusCode)
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "put $url missing from returned ${resp.body}")
 
-        val putResponseWrongFrom = restTemplate.putWithBody("/objects/$objectId/comments",
+        resp = restTemplate.putWithBody(url,
                 """{"from": "not-a-date", "to": "$to", "comment": "hello"}""")
-        assertNotEquals(HttpStatus.OK, putResponseWrongFrom.statusCode)
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "put $url improper from (not a date) returned ${resp.body}")
 
-        val putResponseWrongFrom2 = restTemplate.putWithBody("/objects/$objectId/comments",
+        resp = restTemplate.putWithBody(url,
                 """{"from": "1900-13-32", "to": "$to", "comment": "hello"}""")
-        assertNotEquals(HttpStatus.OK, putResponseWrongFrom2.statusCode)
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "put $url improper from (1990) returned ${resp.body}")
 
-        val putResponseFromGreaterThanTo = restTemplate.putWithBody("/objects/$objectId/comments",
+        resp = restTemplate.putWithBody(url,
                 """{"from": "$to", "to": "$from", "comment": "hello"}""")
-        assertNotEquals(HttpStatus.OK, putResponseFromGreaterThanTo.statusCode)
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "put $url from > to returned ${resp.body}")
 
     }
 
     @Test
     fun `1-2 test create comment`() {
         // == create
-        val putResponse = restTemplate.putWithBody("/objects/$objectId/comments",
+        val resp = restTemplate.putWithBody(url,
                 """{"from": "$from", "to": "$to", "comment": "comment"}""")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode, "put $url ok returned ${resp.body}")
 
         // == store variables
-        id = JsonPath.parse(putResponse.body).read<Int>("$.id")
+        id = JsonPath.parse(resp.body).read<Int>("$.id")
 
         // == get
-        val getResponse = restTemplate.getQueryString("/objects/$objectId/comments/$id")
-        JSONAssert.assertEquals(putResponse.body, getResponse.body, false)
+        val getResponse = restTemplate.getQueryString("$url/$id")
+        JSONAssert.assertEquals(resp.body, getResponse.body, false)
 
         // check some json variables
         val json = JsonPath.parse(getResponse.body)
-        assertEquals(objectId, json.read<Int>("$.objectId"))
-        assertTrue(json.read<String>("$.from").isBBDataDatetime())
+        assertEquals(objectId, json.read<Int>("$.objectId"), "get $url/$id: wrong objectId")
+        assertTrue(json.read<String>("$.from").isBBDataDatetime(), "get $url/$id: improper datetime")
     }
 
 
     @Test
     fun `1-3 test get comments`() {
-        val json = restTemplate.getQueryJson("/objects/$objectId/comments").second
-        assertEquals(1, json.read<List<Any>>("$[?(@.id == $id)]").size)
+        val json = restTemplate.getQueryJson(url).second
+        assertEquals(1, json.read<List<Any>>("$[?(@.id == $id)]").size, "get $url: missing comment #$id")
     }
 
     @Test
@@ -102,28 +102,29 @@ class TestObjectComments {
         val between = JodaUtils.format(toDate.plusMinutes(-30))
         val notBetween = JodaUtils.format(toDate.plusMinutes(30))
 
-        val jsonBetween = restTemplate.getQueryJson("/objects/$objectId/comments?forDate=$between").second
-        assertEquals(1, jsonBetween.read<List<Any>>("$[?(@.id == $id)]").size)
+        var resp = restTemplate.getQueryJson("$url?forDate=$between").second
+        assertEquals(1, resp.read<List<Any>>("$[?(@.id == $id)]").size,
+                "get $url between: missing comment #$id, ${resp.jsonString()}")
 
-        val jsonLimit = restTemplate.getQueryJson("/objects/$objectId/comments?forDate=$to").second
-        assertEquals(1, jsonLimit.read<List<Any>>("$[?(@.id == $id)]").size)
+        resp = restTemplate.getQueryJson("$url?forDate=$to").second
+        assertEquals(1, resp.read<List<Any>>("$[?(@.id == $id)]").size,
+                "get $url forDate: missing comment #$id, ${resp.jsonString()}")
 
-        val jsonNotBetween = restTemplate.getQueryJson("/objects/$objectId/comments?forDate=$notBetween").second
-        assertEquals(0, jsonNotBetween.read<List<Any>>("$[?(@.id == $id)]").size)
-
-
+        resp = restTemplate.getQueryJson("$url?forDate=$notBetween").second
+        assertEquals(0, resp.read<List<Any>>("$[?(@.id == $id)]").size,
+                "get $url forDate: shouldn't have comment #$id, ${resp.jsonString()}")
     }
 
     @Test
     fun `1-5 test delete comments`() {
-        val deleteResponse1 = restTemplate.deleteQueryString("/objects/$objectId/comments/$id")
-        assertEquals(HttpStatus.OK, deleteResponse1.statusCode)
+        var resp = restTemplate.deleteQueryString("$url/$id")
+        assertEquals(HttpStatus.OK, resp.statusCode, "delete $url/$id returned ${resp.body}")
 
-        val deleteResponse2 = restTemplate.deleteQueryString("/objects/$objectId/comments/$id")
-        assertEquals(HttpStatus.NOT_MODIFIED, deleteResponse2.statusCode)
+        resp = restTemplate.deleteQueryString("$url/$id")
+        assertEquals(HttpStatus.NOT_MODIFIED, resp.statusCode, "delete $url/$id (2) returned ${resp.body}")
 
-        val json = restTemplate.getQueryJson("/objects/$objectId/comments").second
-        assertEquals(0, json.read<List<Any>>("$[?(@.id == $id)]").size)
+        val json = restTemplate.getQueryJson(url).second
+        assertEquals(0, json.read<List<Any>>("$[?(@.id == $id)]").size, "get $url/$id after delete returned ${resp.body}")
 
     }
 

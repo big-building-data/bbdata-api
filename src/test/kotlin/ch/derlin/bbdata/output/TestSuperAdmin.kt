@@ -38,11 +38,11 @@ class TestSuperAdmin {
     @Test
     fun `0-0 create regular user in group "regular"`() {
         // == create a user, added to no group at all
-        val putResponse = restTemplate.putWithBody("/users",
-                """{"name": "TestUser${Random.nextInt()}", "password": "testtest", "email": "lala@lulu.com"}""",
+        val resp = restTemplate.putWithBody("/users",
+                """{"name": "TestUser-${Random.nextInt()}", "password": "testtest", "email": "lala@lulu.com"}""",
                 HU to ROOT_ID)
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
-        val json = JsonPath.parse(putResponse.body)
+        assertEquals(HttpStatus.OK, resp.statusCode, "put /users returned ${resp.body}")
+        val json = JsonPath.parse(resp.body)
 
         userId = json.read<Int>("$.id")
         additionalHeaders = (HU to userId)
@@ -56,9 +56,9 @@ class TestSuperAdmin {
                 "/objects"
         ).map { url ->
             val (status, json) = restTemplate.getQueryJson(url, additionalHeaders)
-            assertEquals(HttpStatus.OK, status)
+            assertEquals(HttpStatus.OK, status, "get $url returned ${json.jsonString()}")
             val cnt = json.read<List<Any>>("$").size
-            assertEquals(0, cnt, "$url: $cnt resources returned, expected 0")
+            assertEquals(0, cnt, "get $url: $cnt resources returned, expected 0")
         }
     }
 
@@ -69,15 +69,17 @@ class TestSuperAdmin {
                 "/objects/1",
                 "/userGroups/1/users"
         ).map { url ->
-            val response = restTemplate.getQueryString(url, additionalHeaders)
-            assertTrue(response.statusCode in listOf(HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN))
+            val resp = restTemplate.getQueryString(url, additionalHeaders)
+            assertTrue(resp.statusCode in listOf(HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN),
+                "get $url returned ${resp.body}")
         }
     }
 
     @Test
     fun `1-0 test set admin`() {
-        val resp = restTemplate.putQueryString("/userGroups/$ROOT_ID/users/${userId}?admin=true", HU to ROOT_ID)
-        assertEquals(HttpStatus.OK, resp.statusCode)
+        val url = "/userGroups/$ROOT_ID/users/${userId}?admin=true"
+        val resp = restTemplate.putQueryString(url, HU to ROOT_ID)
+        assertEquals(HttpStatus.OK, resp.statusCode, "put $url returned ${resp.body}")
     }
 
     @Test
@@ -88,9 +90,9 @@ class TestSuperAdmin {
                 ("/objects" to 9)
         ).map { (url, minCount) ->
             val (status, json) = restTemplate.getQueryJson(url, additionalHeaders)
-            assertEquals(HttpStatus.OK, status)
+            assertEquals(HttpStatus.OK, status, "get $url returned ${json.jsonString()}")
             val cnt = json.read<List<Any>>("$").size
-            assertTrue(cnt >= minCount, "$url: $cnt resources returned, expected >= $minCount")
+            assertTrue(cnt >= minCount, "get $url: $cnt resources returned, expected >= $minCount")
         }
     }
 
@@ -99,31 +101,31 @@ class TestSuperAdmin {
         // can edit an object not owned by admin
         var resp = restTemplate.postWithBody("/objects/6",
                 """{"description": "changed ${Random.nextInt()}"}""", additionalHeaders)
-        assertEquals(HttpStatus.OK, resp.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode, "edit object not owned by admin returned ${resp.body}")
 
         // can create an object in group other
         resp = restTemplate.putWithBody("/objects",
                 """{"name": "superadmin ${Random.nextInt()}", "owner": 3, "unitSymbol": "lx"}""", additionalHeaders)
-        assertEquals(HttpStatus.OK, resp.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode, "put object in an objectGroup not owned returned ${resp.body}")
         val newObjectId = JsonPath.parse(resp.body).read<Int>("$.id")
 
         // can create an object group in group other
         resp = restTemplate.putWithBody("/objectGroups",
                 """{"name": "superadmin ${Random.nextInt()}", "owner": 3}""", additionalHeaders)
-        assertEquals(HttpStatus.OK, resp.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode, "create objectGroup with another owner returned ${resp.body}")
         val newObjectGroupId = JsonPath.parse(resp.body).read<Int>("$.id")
 
         // can add the object to the objectGroup
         resp = restTemplate.putQueryString("/objectGroups/$newObjectGroupId/objects/$newObjectId", additionalHeaders)
-        assertEquals(HttpStatus.OK, resp.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode, "put object in the new objectGroup returned ${resp.body}")
 
         // can remove the object to the objectGroup
         resp = restTemplate.deleteQueryString("/objectGroups/$newObjectGroupId/objects/$newObjectId", additionalHeaders)
-        assertEquals(HttpStatus.OK, resp.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode, "remove object from the new objectGroup returned ${resp.body}")
 
         //  can remove objectGroup
         resp = restTemplate.deleteQueryString("/objectGroups/$newObjectGroupId", additionalHeaders)
-        assertEquals(HttpStatus.OK, resp.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode, "remove the new objectGroup returned ${resp.body}")
 
         // ... etc ...
 

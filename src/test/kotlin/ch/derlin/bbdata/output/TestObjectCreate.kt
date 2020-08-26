@@ -42,69 +42,70 @@ class TestObjectCreate {
         // empty name
         var resp = restTemplate.putWithBody("/objects",
                 """{"name": "", "owner": $REGULAR_USER_ID, "unitSymbol": "V"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode)
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "put /objects no name returned ${resp.body}")
         // wrong unit
         resp = restTemplate.putWithBody("/objects",
-                """{"name": "", "owner": $REGULAR_USER_ID, "unitSymbol": "@badUnit"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode)
+                """{"name": "$name", "owner": $REGULAR_USER_ID, "unitSymbol": "@badUnit"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "put /objects wrong unit returned ${resp.body}")
         // missing owner
         resp = restTemplate.putWithBody("/objects",
-                """{"name": "", "unitSymbol": "V"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode)
+                """{"name": "$name", "unitSymbol": "V"}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "put /objects missing owner returned ${resp.body}")
         // wrong owner
         resp = restTemplate.putWithBody("/objects",
-                """{"name": "", "owner": 19123187, "unitSymbol": "V"}""")
-        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode)
+                """{"name": "$name", "owner": 19123187, "unitSymbol": "V"}""")
+        assertEquals(HttpStatus.NOT_FOUND, resp.statusCode, "put /objects inexistant owner returned ${resp.body}")
     }
 
     @Test
     fun `1-2 create object`() {
         // == create
-        val putResponse = restTemplate.putWithBody("/objects",
+        var resp = restTemplate.putWithBody("/objects",
                 """{"name": "$name", "owner": $REGULAR_USER_ID, "unitSymbol": "V"}""")
-        assertEquals(HttpStatus.OK, putResponse.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode, "put /objects returned ${resp.body}")
 
         // == get
-        id = JsonPath.parse(putResponse.body).read<Int>("$.id")
-        val getResponse = restTemplate.getForEntity("/objects/$id", String::class.java)
-        JSONAssert.assertEquals(putResponse.body, getResponse.body, false)
+        id = JsonPath.parse(resp.body).read<Int>("$.id")
+        resp = restTemplate.getForEntity("/objects/$id", String::class.java)
+        JSONAssert.assertEquals(resp.body, resp.body, false)
 
         // check some json variables
-        val json = JsonPath.parse(getResponse.body)
-        assertTrue(json.read<String>("$.creationdate").isBBDataDatetime())
-        assertTrue(json.read<String>("$.unit.type").equals("float"))
-        assertNotNull(json.read<String>("$.owner.name"))
-        assertNull(json.read<String>("$.description"))
+        val json = JsonPath.parse(resp.body)
+        assertTrue(json.read<String>("$.creationdate").isBBDataDatetime(), "get /object/$id: improper creation date")
+        assertTrue(json.read<String>("$.unit.type").equals("float"), "get /object/$id: wrong unit")
+        assertEquals(REGULAR_USER.get("group"), json.read<String>("$.owner.name"), "get /object/$id: wrong owner name")
+        assertNull(json.read<String>("$.description"), "get /object/$id: description should be null")
 
         // ensure it is not part of any group
-        val (statusCode, js) = restTemplate.getQueryJson("/objects/$id/objectGroups")
+        val (statusCode, json2) = restTemplate.getQueryJson("/objects/$id/objectGroups")
         assertEquals(HttpStatus.OK, statusCode)
-        assertEquals(0, js.read<Int>("$.length()"))
+        assertEquals(0, json2.read<Int>("$.length()"),
+                "get /objects/$id/objectGroups should be empty, ${json2.jsonString()}")
     }
 
     @Test
     fun `1-3 edit object`() {
-
+        val url = "/objects/$id"
         val newName = "object-create new ${Random.nextInt(10000)}"
         val newDescr = newName
 
         // == change name + description
-        var postResponse = restTemplate.postWithBody("/objects/$id",
+        var resp = restTemplate.postWithBody(url,
                 """{"name": "$newName", "description": "$newDescr"}""")
-        assertEquals(HttpStatus.OK, postResponse.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode, "edit $url all fields returned ${resp.body}")
 
-        var json = JsonPath.parse(postResponse.body)
-        assertEquals(newName, json.read<String>("$.name"))
-        assertEquals(newDescr, json.read<String>("$.description"))
+        var json = JsonPath.parse(resp.body)
+        assertEquals(newName, json.read<String>("$.name"), "edit $url all fields: name not modified")
+        assertEquals(newDescr, json.read<String>("$.description"), "edit $url all fields: description not modified")
 
         // == change name only
-        postResponse = restTemplate.postWithBody("/objects/$id",
+        resp = restTemplate.postWithBody(url,
                 """{"name": "$name"}""")
-        assertEquals(HttpStatus.OK, postResponse.statusCode)
+        assertEquals(HttpStatus.OK, resp.statusCode, "edit $url name only returned ${resp.body}")
 
-        json = JsonPath.parse(postResponse.body)
-        assertEquals(name, json.read<String>("$.name"))
-        assertEquals(newDescr, json.read<String>("$.description"))
+        json = JsonPath.parse(resp.body)
+        assertEquals(name, json.read<String>("$.name"), "edit $url name only: name not modified")
+        assertEquals(newDescr, json.read<String>("$.description"), "edit $url name only: description modified")
     }
 
 }

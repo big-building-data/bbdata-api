@@ -31,15 +31,17 @@ class TestBasics {
 
     @Test
     fun `1-1 test get units`() {
-        val resp = restTemplate.getQueryJson("/units")
-        assertEquals(HttpStatus.OK, resp.first)
-        assertNotEquals(0, resp.second.read<List<Any>>("$.[?(@.type == 'float')]").size)
+        val (status, json) = restTemplate.getQueryJson("/units")
+        assertEquals(HttpStatus.OK, status, "get /units returned ${json.jsonString()}")
+        assertNotEquals(0, json.read<List<Any>>("$.[?(@.type == 'float')]").size,
+            "get /units returned 0 units of type float")
     }
 
     @Test
     fun `2-1 test get types`() {
-        val resp = restTemplate.getQueryJson("/types")
-        assertEquals(HttpStatus.OK, resp.first)
-        assertNotEquals(0, resp.second.read<List<String>>("$").contains("float"))
+        val (status, json) = restTemplate.getQueryJson("/types")
+        assertEquals(HttpStatus.OK, status, "get /types returned ${json.jsonString()}")
+        assertNotEquals(0, json.read<List<String>>("$").contains("float"),
+            "get /types missing type float")
     }
 }
