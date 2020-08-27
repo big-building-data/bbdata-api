@@ -24,7 +24,7 @@ import kotlin.random.Random
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = [UNSECURED_REGULAR, NO_KAFKA])
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = [UNSECURED_REGULAR, NO_KAFKA, "spring.cache.type=simple"])
 @ActiveProfiles(Profiles.UNSECURED, Profiles.CACHING)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class CachingTest {
