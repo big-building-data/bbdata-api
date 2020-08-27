@@ -1,0 +1,2 @@
+# Register a custom post processor, able to override and manipulate properties before the application is created
+org.springframework.boot.env.EnvironmentPostProcessor=ch.derlin.bbdata.ExcludeAutoConfigPostProcessor

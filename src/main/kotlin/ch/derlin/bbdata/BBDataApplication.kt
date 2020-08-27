@@ -26,7 +26,7 @@ import javax.annotation.PostConstruct
 
 @SpringBootApplication
 @ComponentScan(excludeFilters = [
-        ComponentScan.Filter(type = FilterType.CUSTOM, classes = [ExcludePackageFilter::class])
+        ComponentScan.Filter(type = FilterType.CUSTOM, classes = [ExcludePackagesFilter::class])
 ])
 @EnableTransactionManagement
 @OpenAPIDefinition( // see https://github.com/swagger-api/swagger-core/wiki/Swagger-2.X---Annotations
