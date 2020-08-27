@@ -173,6 +173,14 @@ By default, the cache logger is set to `TRACE`. This can be problematic in produ
 logging.level.org.springframework.cache=WARN
 ```
 
+If caching is enabled, a hidden endpoint is available in order to clear all cache entries: `GET /cache-evict`. 
+In order to avoid having folks discover this endpoint and play with it, you can configure a secret key to use via the property:
+```
+cache.evict.secret-key=XXX
+```
+If this property is defined, you will have to use `GET /cache-evict?key=XXX` for the eviction to be performed.
+
+
 **IMPORTANT**: in case you deploy the input api and the output api separately (using profiles), 
 YOU NEED TO USE AN EXTERNAL CACHE (e.g. redis). This is because the output API is responsible for evicting old entries
 from the cache. If the input and the output do not run in the same JVM, the cache strategy `simple` is *dangerous*:
