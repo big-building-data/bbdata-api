@@ -85,7 +85,7 @@ class ExcludePackagesFilter : TypeFilter, EnvironmentAware {
         private const val PREFIX_NAME = "scan.exclude"
     }
 
-    private var excludes: List<String>? = null
+    private var excludes: Set<String>? = null
 
     @Throws(IOException::class)
     override fun match(metadataReader: MetadataReader, metadataReaderFactory: MetadataReaderFactory): Boolean {
@@ -122,8 +122,8 @@ class ExcludePackagesFilter : TypeFilter, EnvironmentAware {
  * @param prefix: the properties prefix to match
  * @return a list of property values
  */
-fun ConfigurableEnvironment.getPrefixedProperties(prefix: String): MutableList<String> {
-    val excludes = mutableListOf<String>()
+fun ConfigurableEnvironment.getPrefixedProperties(prefix: String): MutableSet<String> {
+    val excludes = mutableSetOf<String>()
     this.propertySources.forEach { ps ->
         if (ps is EnumerablePropertySource<*>) {
             excludes.addAll(ps.propertyNames
