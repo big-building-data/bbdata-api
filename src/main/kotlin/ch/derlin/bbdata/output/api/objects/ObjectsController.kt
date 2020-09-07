@@ -24,6 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.data.domain.Pageable
 import org.springframework.http.ResponseEntity
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 import javax.validation.constraints.NotEmpty
@@ -50,6 +51,8 @@ class ObjectsController(private val objectsAccessManager: ObjectsAccessManager,
 
         @NotEmpty
         val unitSymbol: String = ""
+
+        val tags: List<String>? = null
     }
 
     class EditableObjectFields {
@@ -61,28 +64,57 @@ class ObjectsController(private val objectsAccessManager: ObjectsAccessManager,
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)
+    @Transactional
     @Operation(description = "Create a new object.<br>" +
             "_NOTE_: since users can be _admins_ of multiple user groups, " +
             "you need to explicitly pass the ID of the user group that will own the object via `owner`.")
     @PutMapping("")
     fun newObject(@UserId userId: Int,
                   @RequestBody @Valid newObject: NewObject
-    ): Objects {
+    ): Objects = newObjectBulk(userId, listOf(newObject))[0]
 
-        val userGroup = userGroupAccessManager.getAccessibleGroup(userId, newObject.owner!!, admin = true).orElseThrow {
-            ItemNotFoundException("UserGroup ('${newObject.owner}', admin=true)")
+
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @Transactional
+    @Operation(description = "Create new objects in bulk.<br>" +
+            "This is similar to PUT /objects, but accepts an array of objects to create. " +
+            "**RESTRICTION**: all objects MUST have the SAME OWNER.")
+    @PutMapping("/bulk")
+    fun newObjectBulk(@UserId userId: Int,
+                      @RequestBody @Valid newObjects: List<NewObject>
+    ): List<Objects> {
+
+        if (newObjects.size == 0)
+            throw WrongParamsException("object array is empty.")
+        if (newObjects.any { it.owner != newObjects[0].owner })
+            throw WrongParamsException("cannot create objects in bulk with different owners")
+
+        val userGroup = userGroupAccessManager.getAccessibleGroup(userId, newObjects[0].owner!!, admin = true).orElseThrow {
+            ItemNotFoundException("UserGroup ('${newObjects[0].owner}', admin=true)")
         }
 
-        val unit = unitRepository.findById(newObject.unitSymbol).orElseThrow {
-            WrongParamsException("Unit '${newObject.unitSymbol}' does not exist.")
-        }
+        val objects = objectsAccessManager.objectRepository.saveAll(
+                newObjects.map {
+                    Objects(
+                            name = it.name,
+                            description = it.description,
+                            unit = unitRepository.findById(it.unitSymbol).orElseThrow {
+                                WrongParamsException("Object '${it.name}': unit '${it.unitSymbol}' does not exist.")
+                            },
+                            owner = userGroup
+                    )
+                })
 
-        return objectsAccessManager.objectRepository.saveAndFlush(Objects(
-                name = newObject.name,
-                description = newObject.description,
-                unit = unit,
-                owner = userGroup
-        ))
+
+        if (newObjects.any { it.tags != null }) {
+            newObjects.zip(objects).forEach { (newObj, obj) ->
+                newObj.tags?.forEach { obj.addTag(it) }
+            }
+            return objectsAccessManager.objectRepository.saveAll(objects)
+
+        } else {
+            return objects
+        }
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)

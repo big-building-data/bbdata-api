@@ -16,6 +16,7 @@ import org.springframework.cache.CacheManager
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
+import javax.validation.constraints.Size
 
 /**
  * date: 23.12.19
@@ -28,6 +29,15 @@ import javax.validation.Valid
 class ObjectsTokenController(private val objectsAccessManager: ObjectsAccessManager,
                              private val tokenRepository: TokenRepository,
                              private val cacheManager: CacheManager?) {
+
+
+    data class BulkTokenBody(
+            @NotNull
+            val objectId: Long = 0,
+
+            @Size(max = Beans.DESCRIPTION_MAX)
+            val description: String? = null
+    )
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @Operation(description = "Get the list of tokens for an object.")
@@ -61,16 +71,31 @@ class ObjectsTokenController(private val objectsAccessManager: ObjectsAccessMana
     fun addObjectToken(
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long,
-            @Valid @RequestBody descriptionBody: Beans.Description?): Token {
+            @Valid @RequestBody descriptionBody: Beans.Description?): Token =
+            addObjectTokenBulk(userId, listOf(BulkTokenBody(objectId = objectId, description = descriptionBody?.description)))[0]
 
-        // ensure rights
-        val obj = objectsAccessManager.findById(objectId, userId, writable = true).orElseThrow {
-            ItemNotFoundException("object ($objectId)")
+
+    @Protected(SecurityConstants.SCOPE_WRITE)
+    @Operation(description = "Create new tokens for in bulk. " +
+            "This is similar to PUT /{objectId}/tokens, but it accepts an array of objectId and description. " +
+            "Garanties: either all tokens are created, or none.")
+    @PutMapping("bulk/tokens")
+    fun addObjectTokenBulk(
+            @UserId userId: Int,
+            @Valid @RequestBody tokenBodies: List<BulkTokenBody>): MutableList<Token> {
+
+        tokenBodies.forEach {
+            // ensure rights
+            val obj = objectsAccessManager.findById(it.objectId, userId, writable = true).orElseThrow {
+                ItemNotFoundException("object ($it.objectId)")
+            }
+            if (obj.disabled)
+                throw WrongParamsException(msg = "Object $it.objectId is disabled.")
         }
-        if (obj.disabled)
-            throw WrongParamsException(msg = "Object $objectId is disabled.")
 
-        return tokenRepository.saveAndFlush(Token.create(objectId, descriptionBody?.description))
+        return tokenRepository.saveAll(tokenBodies.map {
+            Token.create(it.objectId, it.description)
+        })
     }
 
     @Protected(SecurityConstants.SCOPE_WRITE)

@@ -55,6 +55,14 @@ class TestObjectCreate {
         resp = restTemplate.putWithBody("/objects",
                 """{"name": "$name", "owner": 19123187, "unitSymbol": "V"}""")
         assertEquals(HttpStatus.NOT_FOUND, resp.statusCode, "put /objects inexistant owner returned ${resp.body}")
+        // invalid tag: too long
+        resp = restTemplate.putWithBody("/objects",
+                """{"name": "$name", "owner": $REGULAR_USER_ID, "unitSymbol": "V", "tags": ["ok", ${"x".repeat(100)}]}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "put /objects long tag returned ${resp.body}")
+        // invalid tag: not a string
+        resp = restTemplate.putWithBody("/objects",
+                """{"name": "$name", "owner": $REGULAR_USER_ID, "unitSymbol": "V", "tags": [{}]}""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "put /objects object tag returned ${resp.body}")
     }
 
     @Test
@@ -63,11 +71,12 @@ class TestObjectCreate {
         var resp = restTemplate.putWithBody("/objects",
                 """{"name": "$name", "owner": $REGULAR_USER_ID, "unitSymbol": "V"}""")
         assertEquals(HttpStatus.OK, resp.statusCode, "put /objects returned ${resp.body}")
+        val putBody = resp.body
 
         // == get
         id = JsonPath.parse(resp.body).read<Int>("$.id")
         resp = restTemplate.getForEntity("/objects/$id", String::class.java)
-        JSONAssert.assertEquals(resp.body, resp.body, false)
+        JSONAssert.assertEquals(putBody, resp.body, false)
 
         // check some json variables
         val json = JsonPath.parse(resp.body)
@@ -106,6 +115,38 @@ class TestObjectCreate {
         json = JsonPath.parse(resp.body)
         assertEquals(name, json.read<String>("$.name"), "edit $url name only: name not modified")
         assertEquals(newDescr, json.read<String>("$.description"), "edit $url name only: description modified")
+    }
+
+    @Test
+    fun `1-2 create objects in bulk`() {
+        // == create
+        val tag = "bulk-tag-${Random.nextInt()}"
+        val names = listOf("bulk-${Random.nextInt()}", "bulk-${Random.nextInt()}")
+
+        val bodyTemplate = """[
+            |{"name": "${names[0]}", "owner": $REGULAR_USER_ID, "unitSymbol": "V", "tags": ["$tag"]},
+            |{"name": "${names[1]}", "owner": %d, "unitSymbol": "V", "tags": ["$tag"]}
+            |]""".trimMargin()
+
+        // create with two different owners
+        var resp = restTemplate.putWithBody("/objects/bulk", bodyTemplate.format(1))
+        assertNotEquals(HttpStatus.OK, resp.statusCode, "put /objects/bulk with different owners returned ${resp.body}")
+
+        // create ok
+        resp = restTemplate.putWithBody("/objects/bulk", bodyTemplate.format(REGULAR_USER_ID))
+        assertEquals(HttpStatus.OK, resp.statusCode, "put /objects/bulk returned ${resp.body}")
+        val putBody = resp.body
+
+        // == get
+        resp = restTemplate.getForEntity("/objects?tags=$tag", String::class.java)
+        JSONAssert.assertEquals(putBody, resp.body, false)
+
+        // == check
+        val json = JsonPath.parse(putBody)
+        assertEquals(REGULAR_USER.get("group"),
+                json.read<List<String>>("$[?(@.name == \"${names.random()}\")].owner.name")[0],
+                "put in bulk: one owner group is wrong ${json.jsonString()}")
+
     }
 
 }

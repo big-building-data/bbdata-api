@@ -73,12 +73,41 @@ class TestObjectTokens {
 
         // check some json variables
         val json = JsonPath.parse(getResponse.body)
-        assertEquals(objectId, json.read<Int>("$.objectId"), "put $url/$id with body: wrong objectId")
-        assertEquals(descr, json.read<Int>("$.description"), "put $url/$id with body: wrong description")
+        assertEquals(objectId, json.read<Int>("$.objectId"), "put $url/$id with body: wrong objectId ${json.jsonString()}")
+        assertEquals(descr, json.read<Int>("$.description"), "put $url/$id with body: wrong description ${json.jsonString()}")
     }
 
     @Test
-    fun `1-3 test edit token`() {
+    fun `1-3 test create token in bulk`() {
+        // == create
+        val otherId = 2
+        val resp = restTemplate.putWithBody("/objects/bulk/tokens", """[
+            |{"objectId": $objectId},
+            |{"objectId": $otherId, "description": "second"}
+            |]""".trimMargin())
+        assertEquals(HttpStatus.OK, resp.statusCode, "put /objects/bulk/tokens returned ${resp.body}")
+        val json = JsonPath.parse(resp.body)
+        val putIds = json.read<List<Int>>("$[*].id")
+        ids.add(putIds[0]) // add first id, as it has the "proper" objectId
+
+        val lst = json.read<List<Map<String,Any>>>("$[*]") // get second token
+        // check some variables
+        assertEquals(2, lst.size, "put in bulk: expected two created objects ${resp.body}")
+        assertEquals(objectId, lst[0].get("objectId"), "put in bulk: 0 wrong object id ${resp.body}")
+        assertEquals(otherId, lst[1].get("objectId"), "put in bulk: 1 wrong object id ${resp.body}")
+        assertEquals("second", lst[1].get("description"), "put in bulk: 1 wrong description ${resp.body}")
+
+        // == get (second only)
+        val (status, json2) = restTemplate.getQueryJson("/objects/$otherId/tokens/${lst[1].get("id")}")
+        assertEquals(HttpStatus.OK, status)
+        val mp2 = json2.read<Map<String,Any>>("$")
+        assertTrue(lst[1].equals(mp2), "put in bulk: ${lst[1]} should equal $mp2")
+
+
+    }
+
+    @Test
+    fun `2-1 test edit token`() {
         val newDescr = "hello token new descr"
         val id = ids.last()
 
@@ -96,7 +125,7 @@ class TestObjectTokens {
     }
 
     @Test
-    fun `1-4 test get tokens`() {
+    fun `3-1 test get tokens`() {
         val json = restTemplate.getQueryJson(url).second
         ids.map { id ->
             assertNotEquals(0, json.read<List<Any>>("$[?(@.id == $id)]").size,
@@ -105,7 +134,7 @@ class TestObjectTokens {
     }
 
     @Test
-    fun `1-5 test delete tokens`() {
+    fun `4-1 test delete tokens`() {
         ids.map { id ->
             var resp = restTemplate.deleteQueryString("$url/$id")
             assertEquals(HttpStatus.OK, resp.statusCode, "delete $url/$id returned ${resp.body}")
