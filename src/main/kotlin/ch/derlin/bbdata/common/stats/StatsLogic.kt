@@ -30,6 +30,9 @@ data class Stats(
 
 interface StatsLogic {
     fun updateStats(v: NewValue)
+    fun updateAllStats(vs: List<NewValue>) {
+        vs.forEach { updateStats(it) }
+    }
     fun incrementReadCounter(objectId: Long)
     fun getStats(objectId: Long): Stats
 }
@@ -78,10 +81,19 @@ class CassandraStatsLogic(private val objectStatsRepository: ObjectStatsReposito
 @Component
 @Profile(Profiles.SQL_STATS)
 class SqlStatsLogic(private val statsRepository: SqlStatsRepository) : StatsLogic {
+
     override fun updateStats(v: NewValue) {
         val stats = statsRepository.findById(v.objectId!!).orElse(SqlStats(objectId = v.objectId))
         stats.updateWithNewValue(v)
         statsRepository.save(stats)
+    }
+
+    override fun updateAllStats(vs: List<NewValue>) {
+        statsRepository.saveAll(vs.map { v ->
+            val stats = statsRepository.findById(v.objectId!!).orElse(SqlStats(objectId = v.objectId))
+            stats.updateWithNewValue(v)
+            stats
+        })
     }
 
     override fun incrementReadCounter(objectId: Long) =
