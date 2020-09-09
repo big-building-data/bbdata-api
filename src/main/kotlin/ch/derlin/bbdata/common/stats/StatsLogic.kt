@@ -5,14 +5,12 @@ import ch.derlin.bbdata.common.cassandra.ObjectStats
 import ch.derlin.bbdata.common.cassandra.ObjectStatsCounter
 import ch.derlin.bbdata.common.cassandra.ObjectStatsCounterRepository
 import ch.derlin.bbdata.common.cassandra.ObjectStatsRepository
-import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.input.NewValue
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.joda.time.DateTime
 import org.springframework.context.annotation.Profile
+import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
-import javax.persistence.Column
-import javax.persistence.Id
 
 /**
  * date: 25.05.20
@@ -29,12 +27,17 @@ data class Stats(
 )
 
 interface StatsLogic {
+    fun incrementReadCounter(objectId: Long)
+    fun getStats(objectId: Long): Stats
     fun updateStats(v: NewValue)
+
+    @Async
+    fun updateAllStatsAsync(vs: List<NewValue>) = updateAllStats(vs)
+
     fun updateAllStats(vs: List<NewValue>) {
         vs.forEach { updateStats(it) }
     }
-    fun incrementReadCounter(objectId: Long)
-    fun getStats(objectId: Long): Stats
+
 }
 
 @Component
@@ -51,7 +54,7 @@ class CassandraStatsLogic(private val objectStatsRepository: ObjectStatsReposito
         // compute new stats
         val deltaMs = Math.abs(v.timestamp!!.millis - (objectStats.lastTimestamp ?: v.timestamp).millis)
         val nRecords = objectStatsCounter.nValues
-        val newSamplePeriod = if(nRecords > 0) (objectStats.avgSamplePeriod * (nRecords - 1) + deltaMs) / nRecords else .0f
+        val newSamplePeriod = if (nRecords > 0) (objectStats.avgSamplePeriod * (nRecords - 1) + deltaMs) / nRecords else .0f
 
         // save new stats
         objectStatsRepository.update(v.objectId.toInt(), newSamplePeriod, v.timestamp)
@@ -89,6 +92,7 @@ class SqlStatsLogic(private val statsRepository: SqlStatsRepository) : StatsLogi
     }
 
     override fun updateAllStats(vs: List<NewValue>) {
+        // use the bulk save option of MySQL repositories to speed up the process
         statsRepository.saveAll(vs.map { v ->
             val stats = statsRepository.findById(v.objectId!!).orElse(SqlStats(objectId = v.objectId))
             stats.updateWithNewValue(v)

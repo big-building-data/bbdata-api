@@ -252,6 +252,7 @@ class InputApiTest {
     }
 
     private fun getWriteCounter(oid: Int = OBJ): Int {
+        Thread.sleep(500) // the stats are updated asynchronously... wait a bit
         val (status, json) = restTemplate.getQueryJson("/objects/$oid/stats")
         assertEquals(HttpStatus.OK, status, "Counter: returned a strange status code $status: $json")
         return json.read<Int>("$.nWrites")

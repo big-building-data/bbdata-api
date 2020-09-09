@@ -1,6 +1,5 @@
 package ch.derlin.bbdata.input
 
-import ch.derlin.bbdata.common.cassandra.RawValue
 import ch.derlin.bbdata.common.cassandra.RawValueRepository
 import ch.derlin.bbdata.common.stats.StatsLogic
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
@@ -69,7 +68,7 @@ class InputController(
 
     @PostMapping("objects/values")
     @Operation(description = "Submit new measures. " +
-            "Each objectId/timestamp coulple must be unique, both in the body and the database. Hence, any duplicate will make the request fail. " +
+            "Each objectId/timestamp couple must be unique, both in the body and the database. Hence, any duplicate will make the request fail. " +
             "If you omit to provide a timestamp for any measure, it will be added automatically (server time). " +
             "This request is *atomic*: either *all* measures are valid and saved, or none. ")
     fun postNewMeasures(@Valid @NotNull @RequestBody rawMeasures: List<NewValue>,
@@ -140,7 +139,7 @@ class InputController(
         rawValueRepository.saveAll(rawValues)
 
         // update stats
-        statsLogic.updateAllStats(measures)
+        val future = statsLogic.updateAllStatsAsync(measures)
 
         // publish to Kafka
         if (!NO_KAFKA) {

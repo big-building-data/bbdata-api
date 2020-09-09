@@ -112,6 +112,8 @@ class TestStats {
         val resp = restTemplate.postWithBody(InputApiTest.URL, body)
         assertEquals(HttpStatus.OK, resp.statusCode, "post value $body returend ${resp.body}")
         nWrites += 1
+        // wait async
+        Thread.sleep(500)
         // get updated stats
         val url = "/objects/$OID/stats"
         val (status, json) = restTemplate.getQueryJson(url)
