@@ -14,6 +14,7 @@ import javax.validation.constraints.NotNull
  * date: 24.01.20
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
+// TODO: remove this controller after migration
 @RestController
 @Tag(name = "Objects Values [Deprecated]", description = "Please, use /objects/values instead.")
 class InputControllerDeprecated(

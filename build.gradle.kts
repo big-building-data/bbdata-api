@@ -6,9 +6,10 @@ plugins {
     id("io.spring.dependency-management") version "1.0.8.RELEASE"
     id("com.gorylenko.gradle-git-properties") version "2.0.0"
     war
-    kotlin("jvm") version "1.3.50"
-    kotlin("plugin.spring") version "1.3.50"
-    kotlin("plugin.jpa") version "1.3.50"
+    kotlin("jvm") version "1.4.0"
+    kotlin("plugin.spring") version "1.4.0"
+    kotlin("plugin.jpa") version "1.4.0"
+    kotlin("kapt") version "1.4.0"
 }
 
 group = "ch.derlin.bbdata.api"
@@ -66,6 +67,13 @@ dependencies {
 
     // for XML support
     // implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
+
+    // generating metadata on custom properties
+    // see https://spring.io/guides/tutorials/spring-boot-kotlin/ Configuration properties
+    // in intellij: Preferences > Annotation Processors > Enable annotation processor for project (classpath)
+    val configurationProcessor = "org.springframework.boot:spring-boot-configuration-processor"
+    kapt(configurationProcessor) // for jar
+    annotationProcessor(configurationProcessor) // for IntelliJ Idea
 }
 
 tasks.withType<Test> {

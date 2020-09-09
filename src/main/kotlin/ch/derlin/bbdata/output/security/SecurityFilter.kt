@@ -1,6 +1,7 @@
 package ch.derlin.bbdata.output.security
 
 
+import ch.derlin.bbdata.HiddenEnvironmentVariables
 import ch.derlin.bbdata.Profiles
 import ch.derlin.bbdata.common.exceptions.BadApikeyException
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
@@ -34,7 +35,7 @@ class DummyAuthInterceptor : HandlerInterceptor {
 
     private final val log = LoggerFactory.getLogger(DummyAuthInterceptor::class.java)
 
-    @Value("\${UNSECURED_BBUSER:1}")
+    @Value("\${${HiddenEnvironmentVariables.UNSECURED_USER}:1}")
     private val UNSECURED_BBUSER: Int = 1
 
     @PostConstruct

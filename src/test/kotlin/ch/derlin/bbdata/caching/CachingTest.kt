@@ -1,7 +1,8 @@
-package ch.derlin.bbdata.input
+package ch.derlin.bbdata.caching
 
 import ch.derlin.bbdata.*
 import ch.derlin.bbdata.common.CacheConstants
+import ch.derlin.bbdata.input.InputApiTest
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
@@ -64,7 +65,7 @@ class CachingTest {
     }
 
     @Test
-    fun `1-1 test cache evict`() {
+    fun `1-1 test auto cache evict`() {
         // delete token 0
         val resp = restTemplate.deleteQueryString("/objects/$OBJ_ID/tokens/${tokenIds[0]}")
         assertEquals(HttpStatus.OK, resp.statusCode)
@@ -79,7 +80,7 @@ class CachingTest {
     }
 
     @Test
-    fun `1-2 test cache evict all`() {
+    fun `1-2 test auto cache evict all`() {
         // add two values in the cache, for different objects
         submitAndCheckCache(tokenStrings[1])
         // use another object

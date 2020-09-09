@@ -81,10 +81,6 @@ class ExcludePackagesFilter : TypeFilter, EnvironmentAware {
 
     var logger: Logger = LoggerFactory.getLogger(ExcludePackagesFilter::class.java)
 
-    companion object {
-        private const val PREFIX_NAME = "scan.exclude"
-    }
-
     private var excludes: Set<String>? = null
 
     @Throws(IOException::class)
@@ -98,7 +94,7 @@ class ExcludePackagesFilter : TypeFilter, EnvironmentAware {
 
     override fun setEnvironment(environment: Environment) {
         if (environment is ConfigurableEnvironment) {
-            excludes = environment.getPrefixedProperties(PREFIX_NAME)
+            excludes = environment.getPrefixedProperties(ScanExcludeProperties.PREFIX)
             logger.info("Ready to exclude packages: ${excludes?.joinToString(" + ")}")
         } else {
             logger.warn("environment is not a ConfigurableEnvironment")

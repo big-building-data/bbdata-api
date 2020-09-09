@@ -1,5 +1,6 @@
 package ch.derlin.bbdata.input
 
+import ch.derlin.bbdata.HiddenEnvironmentVariables
 import ch.derlin.bbdata.common.cassandra.RawValueRepository
 import ch.derlin.bbdata.common.stats.StatsLogic
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
@@ -36,7 +37,7 @@ class InputController(
 
     // Just for tests, if you don't want to have kafka running, do:
     // export BB_NO_KAFKA=true
-    @Value("\${BB_NO_KAFKA:false}")
+    @Value("\${${HiddenEnvironmentVariables.NO_KAFKA}:false}")
     private val NO_KAFKA: Boolean = false
 
     private val MAX_LAG: Long = 2000 // in millis
