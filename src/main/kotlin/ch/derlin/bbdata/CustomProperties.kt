@@ -35,6 +35,10 @@ class ScanExcludeProperties {
 class AsyncProperties {
     /** Whether or not to turn async on: see AsyncConfig */
     var enabled: Boolean = true
+
+    companion object {
+        const val ENABLED = "async.enabled"
+    }
 }
 
 @Configuration
