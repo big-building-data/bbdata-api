@@ -20,8 +20,12 @@ This repository is the cornerstone of BBData. It contains:
   * [Minimal properties to provide](#minimal-properties-to-provide)
   * [Executing the jar](#executing-the-jar)
   * [Caching](#caching)
+  * [Async](#async)
 - [Permission system](#permission-system)
-- [Customizing the `/info` endpoint](#customizing-the-info-endpoint)
+- [Actuators](#actuators)
+  * [Customizing the `/info` endpoint](#customizing-the-info-endpoint)
+  * [Hidden async task executor endpoint](#hidden-async-task-executor-endpoint)
+  * [Changing exposed actuators](#changing-exposed-actuators)
     
 ## Development setup
 
@@ -195,6 +199,13 @@ Current caching strategy:
 * the entire cache is flushed when an object changes state (enabled/disabled), this is because we use compound keys,
   and have no way of using wildcard (e.g. `objectId:*`) in `@CacheEvict`. However, this operation is usually rare. 
 
+### Async
+
+To speed up the input endpoints, object statistics are updated asynchronously.
+Under the hood, a `TheadPoolTaskExecutor` is configured through the `spring.task.execution.*` properties (see `application.properties` 
+in this repo for default values). You can of course override any of those in your properties file.
+
+If you want to **TURN OFF** asynchronous processing, simply set the custom property `async.enabled=false`.
 
 ## Permission system
 
@@ -217,7 +228,9 @@ This is the equivalent of `SUDO`: any admin of this group has read/write access 
 
 (see the documentation for more info)
 
-## Customizing the `/info` endpoint
+## Actuators
+
+### Customizing the `/info` endpoint
 
 The info endpoint can be customized using properties. 
 
@@ -241,3 +254,18 @@ dynamic.info.<JSON-KEY-NAME-WITHOUT-DOTS>=<ANOTHER PROPERTY>
 ```
 
 To hide a dynamic property that is displayed, simply redefine it with an empty value, e.g. `dynamic.info.cache-type=`.
+
+### Hidden async task executor endpoint
+
+By default, and if `sync.enabled=true`, there is a hidden `/tasks` endpoint that returns statistics about the task executor
+(core size, active threads) and the tasks. I is though hidden from the swagger documentation.
+
+To disable this endpoint, see changing exposed actuators.
+
+### Changing exposed actuators
+
+By default, the exposed actuators are:
+```properties
+management.endpoints.web.exposure.include=info, health, metrics, tasks
+```
+Feel free to change this list as you see fit, but remember that they are all public !
