@@ -3,10 +3,8 @@ package ch.derlin.bbdata.output.api.types
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.api.user_groups.UserGroupMappingRepository
-import ch.derlin.bbdata.output.api.user_groups.UserUgrpMappingId
 import ch.derlin.bbdata.output.security.Protected
 import ch.derlin.bbdata.output.security.SecurityConstants
-import ch.derlin.bbdata.output.security.SecurityConstants.SUPERADMIN_GROUP
 import ch.derlin.bbdata.output.security.UserId
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag

@@ -43,7 +43,7 @@ class ExcludeAutoConfigPostProcessor : EnvironmentPostProcessor {
     var logger: DeferredLog = DeferredLog()
 
     companion object {
-        val PROP = "spring.autoconfigure.exclude"
+        const val PROP = "spring.autoconfigure.exclude"
     }
 
     override fun postProcessEnvironment(env: ConfigurableEnvironment, application: SpringApplication) {

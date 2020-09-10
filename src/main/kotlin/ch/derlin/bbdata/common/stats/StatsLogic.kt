@@ -11,6 +11,7 @@ import org.joda.time.DateTime
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
+import kotlin.math.abs
 
 /**
  * date: 25.05.20
@@ -52,7 +53,7 @@ class CassandraStatsLogic(private val objectStatsRepository: ObjectStatsReposito
         val objectStatsCounter = objectStatsCounterRepository.findById(objectId).orElse(ObjectStatsCounter())
 
         // compute new stats
-        val deltaMs = Math.abs(v.timestamp!!.millis - (objectStats.lastTimestamp ?: v.timestamp).millis)
+        val deltaMs = abs(v.timestamp!!.millis - (objectStats.lastTimestamp ?: v.timestamp).millis)
         val nRecords = objectStatsCounter.nValues
         val newSamplePeriod = if (nRecords > 0) (objectStats.avgSamplePeriod * (nRecords - 1) + deltaMs) / nRecords else .0f
 

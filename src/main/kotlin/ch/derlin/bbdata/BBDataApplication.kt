@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import javax.annotation.PostConstruct
+import kotlin.system.exitProcess
 
 
 @SpringBootApplication
@@ -107,7 +108,7 @@ class CachingConfig {
             // forbid in-memory caching if launching the app in split mode (input only or output only)
             logger.error("Using in-memory caching with split application (input|output in different JVMs) can lead to security issues." +
                     "Please, either disable caching or use an external cache such as redis.")
-            System.exit(1)
+            exitProcess(1)
         }
     }
 }

@@ -46,7 +46,7 @@ class MeController(private val userRepository: UserRepository,
             return userGroupRepository.findAll().map { UsergroupInfo(id = it.id!!, name = it.name, admin = true) }
         }
         val ugrps = userGroupMappingRepository.getByUserId(userId).map { UsergroupInfo.fromUserGroupMapping(it) }
-        return if (isAdmin) ugrps.filter { it.admin == true }
+        return if (isAdmin) ugrps.filter { it.admin }
         else ugrps
     }
 

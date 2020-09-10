@@ -24,7 +24,7 @@ object DurationParser {
     /**
      * Parse a duration string.
      *
-     * @param periodString the duration string
+     * @param durationString the duration string
      * @return the period object, or a zero period if the parsing failed.
      */
     fun parse(durationString: String): MutablePeriod {

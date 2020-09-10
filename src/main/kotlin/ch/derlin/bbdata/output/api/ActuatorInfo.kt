@@ -31,7 +31,7 @@ class CustomInfoContributor : InfoContributor {
     fun prepareDynamicValues() {
         info?.forEach { (k, ref) ->
             env.getProperty(ref)?.let { v ->
-                if (v.isNotBlank()) staticDetails.put(k, v)
+                if (v.isNotBlank()) staticDetails[k] = v
             }
         }
     }

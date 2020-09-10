@@ -15,9 +15,9 @@ import java.util.*
  */
 object JodaUtils {
 
-    val FMT_ISO_MINUTES = "yyyy-MM-dd'T'HH:mm'Z'"
-    val FMT_ISO_SECONDS = "yyyy-MM-dd'T'HH:mm:ss'Z'"
-    val FMT_ISO_MILLIS = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+    const val FMT_ISO_MINUTES = "yyyy-MM-dd'T'HH:mm'Z'"
+    const val FMT_ISO_SECONDS = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+    const val FMT_ISO_MILLIS = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 
     var defaultPattern: String = FMT_ISO_MILLIS
         set(value) {

@@ -27,7 +27,7 @@ annotation class CType
 @Component
 class ContentTypeHandlerMethodArgumentResolver : HandlerMethodArgumentResolver {
     override fun supportsParameter(methodParameter: MethodParameter): Boolean {
-        return methodParameter.getParameterType().equals(String::class.java) &&
+        return methodParameter.parameterType == String::class.java &&
                 methodParameter.hasParameterAnnotation(CType::class.java)
     }
 

@@ -44,7 +44,7 @@ class DummyAuthInterceptor : HandlerInterceptor {
     }
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
-        // for tests: allow the header "bbuser"
+        // for tests: allow the header "bbuser" (but not in Basic format !)
         request.setAttribute(HEADER_USER, request.getHeader(HEADER_USER) ?: UNSECURED_BBUSER.toString())
         return true
     }
@@ -104,25 +104,25 @@ class AuthInterceptor : HandlerInterceptor {
         // missing one of the two headers...
         if (bbuser == "" || bbtoken == "") {
             throw UnauthorizedException("This resource is protected. "
-                    + "Missing authorization headers: ${HEADER_USER}=<user_id:int>, ${HEADER_TOKEN}=<token:string>");
+                    + "Missing authorization headers: ${HEADER_USER}=<user_id:int>, ${HEADER_TOKEN}=<token:string>")
         }
 
         bbuser.toIntOrNull()?.let { userId ->
             // check valid tokens
             val apikey = apikeyRepository.findValid(userId, bbtoken).orElseThrow {
-                BadApikeyException("Access denied for user ${userId} : bad apikey")
+                BadApikeyException("Access denied for user $userId : bad apikey")
             }
             // check if write access is necessary
             if (apikey.isReadOnly && writeRequired) {
                 // check write permissions
-                throw ForbiddenException("Access denied for user ${userId} : this apikey is read-only")
+                throw ForbiddenException("Access denied for user $userId : this apikey is read-only")
             }
             // every checks passed !
             return true
         }
 
         // bbuser is not an int
-        throw BadApikeyException("Wrong header $HEADER_USER=${bbuser}. Should be an integer")
+        throw BadApikeyException("Wrong header $HEADER_USER=$bbuser. Should be an integer")
 
     }
 
@@ -152,7 +152,7 @@ class AuthInterceptor : HandlerInterceptor {
     }
 
     companion object {
-        val UTF_8_CHARSET = Charset.forName("utf-8")
+        val UTF_8_CHARSET: Charset = Charset.forName("utf-8")
     }
 
 }

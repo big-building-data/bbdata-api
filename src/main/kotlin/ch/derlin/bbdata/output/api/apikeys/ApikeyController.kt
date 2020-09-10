@@ -70,7 +70,7 @@ class ApikeyController(
     @Protected
     @Operation(description = "Logout from the API by deleting the apikey used for the request.")
     @PostMapping("/logout")
-    fun logout(@UserId userId: Int, @RequestAttribute(SecurityConstants.HEADER_TOKEN) apikey: String): Unit {
+    fun logout(@UserId userId: Int, @RequestAttribute(SecurityConstants.HEADER_TOKEN) apikey: String) {
         apikeyRepository.findValid(userId, apikey).map { apikeyRepository.delete(it) }
     }
 

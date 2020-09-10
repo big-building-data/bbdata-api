@@ -50,7 +50,7 @@ class UserGroupMappingController(
         userRepository.findById(newUserId).orElseThrow { ItemNotFoundException("user ($newUserId)") }
         // do the deed, either updating or creating a new mapping
         val optional = userGroupMappingRepository.findById(UserUgrpMappingId(newUserId, id))
-        if (optional.isPresent()) {
+        if (optional.isPresent) {
             // mapping exists, this is an update
             val mapping = optional.get()
             if (mapping.isAdmin == admin) {
@@ -80,7 +80,7 @@ class UserGroupMappingController(
         ensureUserCanAccessGroup(userId, id, requireAdminRight = true)
         // only remove if exists
         val optional = userGroupMappingRepository.findById(UserUgrpMappingId(userIdToDelete, id))
-        if (optional.isPresent()) {
+        if (optional.isPresent) {
             userGroupMappingRepository.delete(optional.get())
             return CommonResponses.ok()
         }

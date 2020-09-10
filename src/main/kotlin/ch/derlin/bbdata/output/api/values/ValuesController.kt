@@ -98,14 +98,14 @@ class ValuesController(
             @CType contentType: String,
             @PathVariable(name = "objectId") objectId: Long,
             @RequestParam(name = "from", required = true) from: DateTime,
-            @RequestParam(name = "to", required = false) to: DateTime?,
+            @RequestParam(name = "to", required = false) optionalTo: DateTime?,
             @RequestParam(name = "granularity", defaultValue = "hours") granularity: AggregationGranularity? = null,
             response: HttpServletResponse) {
         // check/prepare params
         checkObject(userId, objectId)
         if (granularity == null) throw WrongParamsException("granularity should be one of ${AggregationGranularity.aceptableValues}")
         val minutes = granularity.minutes
-        val to = to ?: DateTime.now()
+        val to = optionalTo ?: DateTime.now()
         val months = CassandraUtils.monthsBetween(YearMonth(from), YearMonth(to))
         // stream the results
         cassandraObjectStreamer.stream(

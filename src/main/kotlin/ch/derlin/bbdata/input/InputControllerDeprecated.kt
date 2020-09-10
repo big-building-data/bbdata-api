@@ -29,7 +29,7 @@ class InputControllerDeprecated(
 
     @PostMapping("input/measures/bulk")
     @Operation(description = "**DEPRECATED**: this endpoint may disappear in newer versions. Please use `/objects/values` instead.")
-    fun postNewMeasureBulkOld(@Valid @NotNull @RequestBody rawMeasures: List<NewValue>,
+    fun postNewMeasureBulk(@Valid @NotNull @RequestBody rawMeasures: List<NewValue>,
                               @RequestParam("simulate", defaultValue = "false") sim: Boolean): List<InputController.NewValueAugmented> =
             inputController.postNewMeasures(rawMeasures, sim)
 

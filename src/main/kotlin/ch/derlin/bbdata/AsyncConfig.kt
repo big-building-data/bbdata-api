@@ -1,5 +1,6 @@
 package ch.derlin.bbdata
 
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler
 import org.springframework.beans.factory.annotation.Value
@@ -32,7 +33,7 @@ import java.util.concurrent.ThreadPoolExecutor
 class AsyncExecutorCustomizer : TaskExecutorCustomizer {
     @Value("\${spring.task.execution.pool.queue-capacity}")
     val queueCapacity: Int = -1
-    val logger = LoggerFactory.getLogger(AsyncExecutorCustomizer::class.java)
+    val logger: Logger = LoggerFactory.getLogger(AsyncExecutorCustomizer::class.java)
 
     override fun customize(taskExecutor: ThreadPoolTaskExecutor?) {
         taskExecutor?.let { executor ->
@@ -55,14 +56,14 @@ class AsyncConfig : AsyncConfigurer {
 
 class AsyncExceptionHandler : AsyncUncaughtExceptionHandler {
 
-    val logger = LoggerFactory.getLogger(AsyncExceptionHandler::class.java)
+    val logger: Logger = LoggerFactory.getLogger(AsyncExceptionHandler::class.java)
 
     /**
      * Ensure we get the exception logged.
      * Attention: this will be called only on async method with void return type !
      */
     override fun handleUncaughtException(throwable: Throwable, method: Method, vararg params: Any) {
-        val niceParams = params.take(2).map { it.toString() }.joinToString(",")
+        val niceParams = params.take(2).joinToString(",") { it.toString() }
         logger.error("in ${method.name} with ${params.size} params: $niceParams ...", throwable)
     }
 }

@@ -8,6 +8,7 @@ import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
 import javax.persistence.Table
+import kotlin.math.abs
 
 /**
  * date: 25.05.20
@@ -37,7 +38,7 @@ data class SqlStats(
 ) {
     fun updateWithNewValue(v: NewValue) {
         if (nWrites > 0L) {
-            val deltaMs = Math.abs(v.timestamp!!.millis - lastTs!!.millis)
+            val deltaMs = abs(v.timestamp!!.millis - lastTs!!.millis)
             avgSamplePeriod = (avgSamplePeriod * (nWrites - 1) + deltaMs) / nWrites
         }
 

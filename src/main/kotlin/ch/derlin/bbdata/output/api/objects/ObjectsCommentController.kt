@@ -54,8 +54,7 @@ class ObjectsCommentController(private val objectsAccessManager: ObjectsAccessMa
         val obj = objectsAccessManager.findById(objectId, userId, writable = false).orElseThrow {
             ItemNotFoundException("object ($objectId)")
         }
-        if(forDate != null) return commentRepository.findForDate(obj.id!!, forDate)
-        else return obj.comments
+        return if (forDate != null) commentRepository.findForDate(obj.id!!, forDate) else return obj.comments
     }
 
 

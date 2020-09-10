@@ -37,7 +37,7 @@ data class Token(
 ) {
     companion object {
 
-        val TOKEN_LENGTH = 32
+        const val TOKEN_LENGTH = 32
 
         fun create(objectId: Long, description: String? = null): Token = Token(
                 objectId = objectId,

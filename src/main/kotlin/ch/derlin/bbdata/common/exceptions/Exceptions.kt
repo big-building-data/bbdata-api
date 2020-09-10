@@ -11,7 +11,7 @@ open class AppException(val details: Any) : Throwable() {
 
 
 class ItemNotFoundException(itemName: String = "resource", msg: String? = null) :
-        AppException(msg ?: "The ${itemName} was not found or can't be accessed with this apikey.")
+        AppException(msg ?: "The $itemName was not found or can't be accessed with this apikey.")
 
 class UnauthorizedException(msg: String = "This resource is protected.") :
         AppException(msg)

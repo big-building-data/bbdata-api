@@ -73,7 +73,7 @@ class InputController(
             "If you omit to provide a timestamp for any measure, it will be added automatically (server time). " +
             "This request is *atomic*: either *all* measures are valid and saved, or none. ")
     fun postNewMeasures(@Valid @NotNull @RequestBody rawMeasures: List<NewValue>,
-                           @RequestParam("simulate", defaultValue = "false") sim: Boolean): List<NewValueAugmented> {
+                        @RequestParam("simulate", defaultValue = "false") sim: Boolean): List<NewValueAugmented> {
 
         val now = DateTime()
 
@@ -83,7 +83,7 @@ class InputController(
         val (measures, rawValues) = rawMeasures.map { rawMeasure ->
             val measure = if (rawMeasure.timestamp != null) {
                 // check that date is in the past
-                if (rawMeasure.timestamp.getMillis() > now.millis + MAX_LAG) {
+                if (rawMeasure.timestamp.millis > now.millis + MAX_LAG) {
                     throw WrongParamsException("objectId ${rawMeasure.objectId}: date should be in the past. input='${rawMeasure.timestamp}', now='$now'")
                 }
                 rawMeasure
@@ -102,10 +102,10 @@ class InputController(
             }
             // ensure the measure matches the type declared, and parse it
             val parsedValue = BaseType.parseType(measure.value!!, meta.type)
-            if (parsedValue == null) {
-                throw WrongParamsException("objectId ${rawMeasure.objectId}: the value '${measure.value}' does not match " +
-                        "the unit ${meta.unitSymbol} (${meta.type}) declared in the object definition.")
-            }
+            parsedValue
+                    ?: throw WrongParamsException("objectId ${rawMeasure.objectId}: the value '${measure.value}' does not match " +
+                            "the unit ${meta.unitSymbol} (${meta.type}) declared in the object definition.")
+
             measure.value = parsedValue.toString()
 
             // create rawValue for cassandra

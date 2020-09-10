@@ -77,7 +77,7 @@ class UserGroupController(
     @Transactional(rollbackFor = [WrongParamsException::class])
     @SimpleModificationStatusResponse
     @Operation(description = "Delete a user group you are admin of.<br>" +
-            "__IMORTANT__: only user groups who DO NOT own resources (objects, object groups) can be deleted. " +
+            "__IMPORTANT__: only user groups who DO NOT own resources (objects, object groups) can be deleted. " +
             "That is, groups whose purpose is to give _permissions_ to some resources, for a limited amount of time. " +
             "Note also that userGroup with id 1 (SUPERADMIN) cannot be deleted.")
     @DeleteMapping("/userGroups/{userGroupId}")

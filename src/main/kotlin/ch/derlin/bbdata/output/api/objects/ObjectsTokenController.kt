@@ -78,7 +78,7 @@ class ObjectsTokenController(private val objectsAccessManager: ObjectsAccessMana
     @Protected(SecurityConstants.SCOPE_WRITE)
     @Operation(description = "Create new tokens for in bulk. " +
             "This is similar to PUT /{objectId}/tokens, but it accepts an array of objectId and description. " +
-            "Garanties: either all tokens are created, or none.")
+            "Guaranties: either all tokens are created, or none.")
     @PutMapping("bulk/tokens")
     fun addObjectTokenBulk(
             @UserId userId: Int,

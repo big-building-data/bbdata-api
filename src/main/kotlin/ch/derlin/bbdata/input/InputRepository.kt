@@ -17,7 +17,7 @@ import javax.persistence.EntityManager
 @Component
 class InputRepository {
 
-    class MeasureMeta(fields: Array<Any>): Serializable {
+    class MeasureMeta(fields: Array<Any>) : Serializable {
         val unitName: String = fields[0] as String
         val unitSymbol: String = fields[1] as String
         val type: String = fields[2] as String
@@ -45,9 +45,9 @@ class InputRepository {
         query.setParameter("token", token)
 
         val resList = query.resultList
-        if (resList.isEmpty())
-            return Optional.empty()
+        return if (resList.isEmpty())
+            Optional.empty()
         else
-            return Optional.of(MeasureMeta(resList.first() as Array<Any>))
+            Optional.of(MeasureMeta(resList.first() as Array<Any>))
     }
 }

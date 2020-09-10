@@ -43,8 +43,8 @@ class ErrorAttributes : DefaultErrorAttributes() {
     override fun getErrorAttributes(webRequest: WebRequest, includeStackTrace: Boolean): Map<String, Any?> {
         val attrs = super.getErrorAttributes(webRequest, false)
         return mapOf(
-                "exception" to attrs.get("error"),
-                "details" to attrs.get("message"))
+                "exception" to attrs["error"],
+                "details" to attrs["message"])
     }
 }
 
@@ -99,20 +99,23 @@ class GlobalControllerExceptionHandler : ResponseEntityExceptionHandler() {
 
         fun List<ObjectError>.body(): ExceptionBody = ExceptionBody(
                 exception = WrongParamsException::class.simpleName.toString(),
-                details = this.associateBy({ (it as FieldError).getField() }, { it.defaultMessage })
+                details = this.associateBy({ (it as FieldError).field }, { it.defaultMessage })
         )
 
         fun DataIntegrityViolationException.body(): ExceptionBody =
                 (this.cause as? ConstraintViolationException)?.sqlException?.let {
                     val sqlMsg = it.message ?: ""
-                    val (name, msg) =
-                            if ("foreign key constraint fails" in sqlMsg) {
-                                "ForeignKeyException" to "A field references a non-existing resource."
-                            } else if ("Duplicate entry" in sqlMsg) {
-                                "DuplicateFieldException" to "value ${sqlMsg.split(" ")[2]} already exists."
-                            } else {
-                                "SqlException" to sqlMsg
-                            }
+                    val (name, msg) = when {
+                        "foreign key constraint fails" in sqlMsg -> {
+                            "ForeignKeyException" to "A field references a non-existing resource."
+                        }
+                        "Duplicate entry" in sqlMsg -> {
+                            "DuplicateFieldException" to "value ${sqlMsg.split(" ")[2]} already exists."
+                        }
+                        else -> {
+                            "SqlException" to sqlMsg
+                        }
+                    }
                     ExceptionBody(name, msg)
                 } ?: ExceptionBody.fromThrowable(this)
     }

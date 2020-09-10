@@ -27,7 +27,7 @@ annotation class UserId
 @Component
 class UserIdHandlerMethodArgumentResolver : HandlerMethodArgumentResolver {
     override fun supportsParameter(methodParameter: MethodParameter): Boolean {
-        return methodParameter.getParameterType().equals(Int::class.java) &&
+        return methodParameter.parameterType == Int::class.java &&
                 methodParameter.hasParameterAnnotation(UserId::class.java)
     }
 
