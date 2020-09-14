@@ -20,14 +20,14 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = [UNSECURED_REGULAR, "spring.cache.type=simple", "cache.evict.secret-key=111"])
-@ActiveProfiles(Profiles.UNSECURED, Profiles.NO_CASSANDRA, Profiles.CACHING)
+@ActiveProfiles(Profiles.UNSECURED, Profiles.NO_CASSANDRA)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class ManualCacheEvictProtectedTest {
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
 
     @Autowired
-    private lateinit var cacheProperties: CacheProperties
+    private lateinit var cacheEvictProperties: CacheEvictProperties
 
     @Test
     fun `1-1 test cache evict protected fail`() {
@@ -43,7 +43,7 @@ class ManualCacheEvictProtectedTest {
     @Test
     fun `1-1 test cache evict protected ok`() {
         // call manual cache evict with the right key
-        val resp = restTemplate.getQueryString("/cache-evict?key=${cacheProperties.secretKey}")
+        val resp = restTemplate.getQueryString("/cache-evict?key=${cacheEvictProperties.secretKey}")
         Assertions.assertEquals(HttpStatus.OK, resp.statusCode)
     }
 }

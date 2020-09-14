@@ -1,7 +1,6 @@
 package ch.derlin.bbdata.caching
 
 import ch.derlin.bbdata.*
-import ch.derlin.bbdata.common.CacheConstants
 import ch.derlin.bbdata.input.InputApiTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
@@ -9,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.cache.CacheManager
@@ -23,7 +23,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = [UNSECURED_REGULAR, NO_KAFKA, "spring.cache.type=simple", "cache.evict.secret-key="])
-@ActiveProfiles(Profiles.UNSECURED, Profiles.CACHING)
+@ActiveProfiles(Profiles.UNSECURED)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class ManualCacheEvictTest {
     @Autowired
@@ -39,7 +39,7 @@ class ManualCacheEvictTest {
     @Test
     fun `1-1 test cache evict`() {
         val token = TOKEN(objectId)
-        val cache = cacheManager.getCache(CacheConstants.CACHE_NAME)!!
+        val cache = cacheManager.getCache(Constants.META_CACHE)!!
         val cacheKey = "$objectId:$token"
 
         // check nothing in the cache

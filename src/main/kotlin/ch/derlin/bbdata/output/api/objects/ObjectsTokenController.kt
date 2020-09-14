@@ -1,7 +1,7 @@
 package ch.derlin.bbdata.output.api.objects
 
+import ch.derlin.bbdata.Constants
 import ch.derlin.bbdata.common.Beans
-import ch.derlin.bbdata.common.CacheConstants
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.api.CommonResponses
@@ -132,7 +132,7 @@ class ObjectsTokenController(private val objectsAccessManager: ObjectsAccessMana
         val token = obj.getToken(id)
         if (token != null) {
             tokenRepository.delete(token)
-            cacheManager?.getCache(CacheConstants.CACHE_NAME)?.evict("${objectId}${CacheConstants.KEY_SEP}${token.token}")
+            cacheManager?.getCache(Constants.META_CACHE)?.evict("${objectId}:${token.token}")
             return CommonResponses.ok()
         }
         return CommonResponses.notModifed()

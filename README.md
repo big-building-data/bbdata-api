@@ -152,41 +152,43 @@ The application needs to fetch the metadata associated to an object (and a token
 To speed it up, the application can be configured to cache those metadata using either an in-memory concurrent hashmap,
 or an external database such as redis.
 
-**To enable caching**, set the `caching` active profile. It will use in-memory caching by default (`simple`). 
-To use another caching strategy, use the property `spring.cache.type=redis|simple|none` (none = no cache).
-Note that `none` doesn't disable caching, just ensures nothing is actually put into the cache.
+**To enable/disable caching**, set the `spring.cache.type` property. The former can take three values:
+
+* `none`: value by default, no caching at all,
+* `simple`: in-memory caching, only possible when the application runs in standalone mode, with both input and output enabled,
+* `redis`: use a redis instance for caching; this is mandatory if you want to deploy input and output separately and still use a cache.
+
 Example:
 ```
-./bbdata-api-*.jar --spring.profiles.active=caching
+./bbdata-api-*.jar --spring.cache.type=simple
 ```
 
-
-Redis default properties are shown below (can be overriden from a property file). To use redis, activate the `caching` profile
-and set `spring.cache.type=redis`:
+Redis default properties are shown below (can be overriden from a property file). When using `spring.cache.type=redis`,
+you can override any of those properties to point to your redis server instance:
 
 ```properties
-# To actually use redis cache, enable caching through the caching profile and uncomment this line:
-#spring.cache.type=redis
+# Relevant properties in order to use redis (localhost and 6379 are the default)
+spring.cache.type=redis
 spring.redis.host=localhost
 spring.redis.port=6379
 ```
 
-By default, the cache logger is set to `TRACE`. This can be problematic in production, so feel free to turn it off using:
+By default, the cache logger is set to `INFO`. Feel free to change it using:
 ```properties
-# default to TRACE
-logging.level.org.springframework.cache=WARN
+# default to INFO
+logging.level.org.springframework.cache=TRACE
 ```
 
-If caching is enabled, a hidden endpoint is available in order to clear all cache entries: `GET /cache-evict`. 
+When caching is enabled, a hidden endpoint is available in order to clear all cache entries: `GET /cache-evict`. 
 In order to avoid having folks discover this endpoint and play with it, you can configure a secret key to use via the property:
-```
+```properties
 cache.evict.secret-key=XXX
 ```
 If this property is defined, you will have to use `GET /cache-evict?key=XXX` for the eviction to be performed.
 
 
 **IMPORTANT**: in case you deploy the input api and the output api separately (using profiles), 
-YOU NEED TO USE AN EXTERNAL CACHE (e.g. redis). This is because the output API is responsible for evicting old entries
+YOU NEED TO USE AN EXTERNAL CACHE (i.e. redis). This is because the output API is responsible for evicting old entries
 from the cache. If the input and the output do not run in the same JVM, the cache strategy `simple` is *dangerous*:
 the input api won't see if a token gets deleted, or if an object becomes disabled.
 

@@ -1,5 +1,6 @@
 package ch.derlin.bbdata
 
+import ch.derlin.bbdata.common.OnCacheEnabled
 import ch.derlin.bbdata.common.dates.JodaUtils
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.enums.SecuritySchemeType
@@ -83,9 +84,9 @@ class CassandraConfig
 
 // @EnableCaching adds many layers of AOP/interceptor, even if spring.cache.type=none
 // Hence, we only enable it if explicitly asked.
-// see https://stackoverflow.com/a/56901878
+// see @OnCacheEnabled and https://stackoverflow.com/a/56901878
 @Configuration
-@Profile(Profiles.CACHING)
+@OnCacheEnabled
 @EnableCaching
 class CachingConfig {
 
@@ -99,11 +100,8 @@ class CachingConfig {
 
     @PostConstruct
     fun checkCacheType() {
-        if (cacheType.toLowerCase() == "none") {
-            // ensure some caching mechanism is set, or generate an error in the log
-            logger.error("${Profiles.CACHING} is set, but cache type is none. This create unnecessary overhead. " +
-                    "Either disable caching or set spring.cache.type=simple.")
-        } else if (cacheType.toLowerCase() == "simple" &&
+        logger.info("caching ENABLED")
+        if (cacheType.toLowerCase() == "simple" &&
                 (environment.activeProfiles.contains(Profiles.INPUT_ONLY) || environment.activeProfiles.contains(Profiles.OUTPUT_ONLY))) {
             // forbid in-memory caching if launching the app in split mode (input only or output only)
             logger.error("Using in-memory caching with split application (input|output in different JVMs) can lead to security issues." +
@@ -112,7 +110,6 @@ class CachingConfig {
         }
     }
 }
-
 
 fun main(args: Array<String>) {
     runApplication<BBDataApplication>(*args)

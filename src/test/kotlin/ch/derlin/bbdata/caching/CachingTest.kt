@@ -1,7 +1,6 @@
 package ch.derlin.bbdata.caching
 
 import ch.derlin.bbdata.*
-import ch.derlin.bbdata.common.CacheConstants
 import ch.derlin.bbdata.input.InputApiTest
 import com.jayway.jsonpath.JsonPath
 import org.junit.jupiter.api.Assertions.*
@@ -10,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.cache.CacheManager
@@ -25,8 +25,9 @@ import kotlin.random.Random
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = [UNSECURED_REGULAR, NO_KAFKA, "spring.cache.type=simple"])
-@ActiveProfiles(Profiles.UNSECURED, Profiles.CACHING)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = [UNSECURED_REGULAR, NO_KAFKA, "spring.cache.type=simple"])
+@ActiveProfiles(Profiles.UNSECURED)
 @TestMethodOrder(MethodOrderer.Alphanumeric::class)
 class CachingTest {
 
@@ -38,7 +39,6 @@ class CachingTest {
 
 
     companion object {
-        val CACHE_NAME = CacheConstants.CACHE_NAME
         var OBJ_ID = -1
 
         // dynamically create tokens
@@ -119,10 +119,10 @@ class CachingTest {
         assertEquals(HttpStatus.OK, resp.statusCode)
 
         // assert value in the cache
-        assertTrue(cacheManager.cacheNames.contains(CACHE_NAME))
+        assertTrue(cacheManager.cacheNames.contains(Constants.META_CACHE))
         assertNotNull(cacheEntry(token, objectId))
     }
 
     private fun cacheEntry(token: String, oid: Int = OBJ_ID) =
-            cacheManager.getCache(CACHE_NAME)?.get("$oid:$token")
+            cacheManager.getCache(Constants.META_CACHE)?.get("$oid:$token")
 }

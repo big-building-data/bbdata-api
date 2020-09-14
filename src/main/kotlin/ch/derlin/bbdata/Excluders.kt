@@ -50,7 +50,7 @@ class ExcludeAutoConfigPostProcessor : EnvironmentPostProcessor {
 
         val excludes = env.getPrefixedProperties(PROP)
         // also exclude Redis AutoConfiguration unless the caching profile is enabled and redis is selected
-        if (!(env.activeProfiles.contains("caching") && env.getProperty("spring.cache.type") == "redis"))
+        if (env.getProperty("spring.cache.type") != "redis")
             excludes.add(RedisAutoConfiguration::class.qualifiedName!!)
         // override $PROP
         env.propertySources.addFirst(MapPropertySource(PROP, mapOf(PROP to excludes)))

@@ -5,10 +5,8 @@ package ch.derlin.bbdata.output.api.objects
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
-import ch.derlin.bbdata.common.Beans
-import ch.derlin.bbdata.common.CacheConstants
-import ch.derlin.bbdata.common.HiddenParam
-import ch.derlin.bbdata.common.PageableAsQueryParam
+import ch.derlin.bbdata.Constants
+import ch.derlin.bbdata.common.*
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.api.CommonResponses
@@ -215,9 +213,9 @@ class ObjectsController(private val objectsAccessManager: ObjectsAccessManager,
 
     @Protected(SecurityConstants.SCOPE_WRITE)
     @Operation(description = "Enable an object you own. If the object is already enabled, it simply returns NOT MODIFIED.")
+    @CacheEvict(Constants.META_CACHE, allEntries = true)
     @SimpleModificationStatusResponse
     @PostMapping("{objectId}/enable")
-    @CacheEvict(CacheConstants.CACHE_NAME, allEntries = true) // TODO: find a better way
     fun enableObject(
             @UserId userId: Int,
             @PathVariable(value = "objectId") id: Long): ResponseEntity<String> =
@@ -226,9 +224,9 @@ class ObjectsController(private val objectsAccessManager: ObjectsAccessManager,
     @Protected(SecurityConstants.SCOPE_WRITE)
     @Operation(description = "Disable an object you own. If the object is already disabled, it simply returns NOT MODIFIED. " +
             "When an object gets disabled, all its tokens are deleted and it cannot receive new values (no new measures).")
+    @CacheEvict(Constants.META_CACHE, allEntries = true)
     @SimpleModificationStatusResponse
     @PostMapping("{objectId}/disable")
-    @CacheEvict(CacheConstants.CACHE_NAME, allEntries = true) // TODO: find a better way
     fun disableObject(
             @UserId userId: Int,
             @PathVariable(value = "objectId") id: Long): ResponseEntity<String> =

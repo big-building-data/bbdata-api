@@ -14,8 +14,13 @@ object HiddenEnvironmentVariables {
 
     /** boolean to turn off kafka */
     const val NO_KAFKA = "BB_NO_KAFKA"
+
     /** integer to override the default user when the unsecured profile is used */
     const val UNSECURED_USER = "UNSECURED_BBUSER"
+}
+
+object Constants {
+    const val META_CACHE = "metas"
 }
 
 @Configuration
@@ -43,7 +48,8 @@ class AsyncProperties {
 
 @Configuration
 @ConfigurationProperties(prefix = "cache.evict")
-class CacheProperties {
+class CacheEvictProperties {
+
     /** Optional secret key to call cache evict: see CacheEvictController */
     var secretKey: String = ""
 
