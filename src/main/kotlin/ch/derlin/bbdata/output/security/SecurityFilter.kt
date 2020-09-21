@@ -126,32 +126,34 @@ class AuthInterceptor : HandlerInterceptor {
 
     }
 
-    private fun extractAuth(request: HttpServletRequest) {
-        // Basic Authorization header has the format: "Basic <base64-encoded user:pass>"
-        val auth = request.getHeader("Authorization")
-        if (auth != null && auth.startsWith("Basic")) {
-            try {
-                val decoded = String(
-                        Base64.getDecoder().decode(auth.replaceFirst("Basic ", "").toByteArray()),
-                        charset = UTF_8_CHARSET
-                ).split(":")
-
-                if (decoded.size == 2) {
-                    request.setAttribute(HEADER_USER, decoded[0])
-                    request.setAttribute(HEADER_TOKEN, decoded[1])
-                    return
-                }
-            } catch (ex: Exception) {
-                throw BadApikeyException("The Basic Authentication provided (Base64) is invalid.")
-            }
-        }
-
-        // If not working, extract from the headers
-        request.setAttribute(HEADER_USER, request.getHeader(HEADER_USER) ?: "")
-        request.setAttribute(HEADER_TOKEN, request.getHeader(HEADER_TOKEN) ?: "")
-    }
 
     companion object {
+
+        fun extractAuth(request: HttpServletRequest) {
+            // Basic Authorization header has the format: "Basic <base64-encoded user:pass>"
+            val auth = request.getHeader("Authorization")
+            if (auth != null && auth.startsWith("Basic")) {
+                try {
+                    val decoded = String(
+                            Base64.getDecoder().decode(auth.replaceFirst("Basic ", "").toByteArray()),
+                            charset = UTF_8_CHARSET
+                    ).split(":")
+
+                    if (decoded.size == 2) {
+                        request.setAttribute(HEADER_USER, decoded[0])
+                        request.setAttribute(HEADER_TOKEN, decoded[1])
+                        return
+                    }
+                } catch (ex: Exception) {
+                    throw BadApikeyException("The Basic Authentication provided (Base64) is invalid.")
+                }
+            }
+
+            // If not working, extract from the headers
+            request.setAttribute(HEADER_USER, request.getHeader(HEADER_USER) ?: "")
+            request.setAttribute(HEADER_TOKEN, request.getHeader(HEADER_TOKEN) ?: "")
+        }
+
         val UTF_8_CHARSET: Charset = Charset.forName("utf-8")
     }
 

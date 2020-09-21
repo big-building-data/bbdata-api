@@ -23,8 +23,9 @@ This repository is the cornerstone of BBData. It contains:
   * [Async](#async)
 - [Permission system](#permission-system)
 - [Actuators](#actuators)
-  * [Customizing the `/info` endpoint](#customizing-the-info-endpoint)
-  * [Hidden async task executor endpoint](#hidden-async-task-executor-endpoint)
+  * [Management interface](#management-interface)
+  * [Customizing the `/info` endpoint](#customizing-the-about-info-endpoint)
+  * [Task executor monitoring](#task-executor-monitoring)
   * [Changing exposed actuators](#changing-exposed-actuators)
     
 ## Development setup
@@ -115,13 +116,16 @@ spring.datasource.url = jdbc:mysql://HOST:PORT/bbdata2?autoReconnect=true&useUni
 spring.datasource.username=bbdata-admin
 spring.datasource.password=PASSWORD
 
-## Cassandra properties
+## Cassandra properties
 spring.data.cassandra.contact-points=IP_1,IP_2,IP_X
 spring.data.cassandra.consistency-level=quorum
 
 ## Kafka properties
 spring.kafka.producer.bootstrap-servers=HOST:PORT
 spring.kafka.template.default-topic=bbdata2-augmented
+
+## Secured actuators endpoints (ensure the port is not available to the outside world)
+management.server.port=SECURED-PORT
 ```
 
 ### Executing the jar
@@ -179,12 +183,8 @@ By default, the cache logger is set to `INFO`. Feel free to change it using:
 logging.level.org.springframework.cache=TRACE
 ```
 
-When caching is enabled, a hidden endpoint is available in order to clear all cache entries: `GET /cache-evict`. 
-In order to avoid having folks discover this endpoint and play with it, you can configure a secret key to use via the property:
-```properties
-cache.evict.secret-key=XXX
-```
-If this property is defined, you will have to use `GET /cache-evict?key=XXX` for the eviction to be performed.
+When caching is enabled, you can use the `DELETE /caches` actuator endpoint to clear all cache entries.
+It is enabled by default (`management.endpoints.web.exposure.include=caches, ...`).
 
 
 **IMPORTANT**: in case you deploy the input api and the output api separately (using profiles), 
@@ -232,9 +232,26 @@ This is the equivalent of `SUDO`: any admin of this group has read/write access 
 
 ## Actuators
 
-### Customizing the `/info` endpoint
+### Management interface
 
-The info endpoint can be customized using properties. 
+Actuators are a way to monitor the API. They can leak sensitive information, so the management interface should
+run on another port as the API, which only administrators have access to.
+
+By default, the actuators will run on the same port (easier for debug, as they will show in openapi), but this is
+definitely unsecure in production. Hence, ensure you select another port for the management interface by setting either:
+```properties
+# 8111 should be protected by firewall or not exposed to the outside
+management.server.port=8111
+```
+or by disabling unsecure actuators, e.g.:
+```properties
+management.endpoints.web.exposure.include=info
+```
+
+### Customizing the `/about` (`/info`) endpoint
+
+The actuator endpoint `/info` is mirrored in the public `/about` endpoint.
+What is actually displayed can be customized using properties.
 
 By default, SpringBoot actuator will add the to the JSON response any property with the prefix `info`.
 For example, to configure the `instance-name`, define the following in your `application.properties`:
@@ -257,17 +274,20 @@ dynamic.info.<JSON-KEY-NAME-WITHOUT-DOTS>=<ANOTHER PROPERTY>
 
 To hide a dynamic property that is displayed, simply redefine it with an empty value, e.g. `dynamic.info.cache-type=`.
 
-### Hidden async task executor endpoint
+### task executor monitoring
 
-By default, and if `sync.enabled=true`, there is a hidden `/tasks` endpoint that returns statistics about the task executor
-(core size, active threads) and the tasks. I is though hidden from the swagger documentation.
-
-To disable this endpoint, see changing exposed actuators.
+By default, and if `sync.enabled=true`, there is a custom `/tasks` actuator that returns statistics about the task executor
+(core size, active threads) and the tasks. To disable this endpoint, change exposed actuators (`id=tasks`).
 
 ### Changing exposed actuators
 
-By default, the exposed actuators are:
+[Spring Boot Actuator](https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html#production-ready)
+
+By default, the exposed actuators are defined in `application.properties`, using the key
+`management.endpoints.web.exposure.include=`. Feel free to change this list as you see fit.
+
+To **turn off** all endpoints, simply add:
 ```properties
-management.endpoints.web.exposure.include=info, health, metrics, tasks
+management.port=
+management.endpoints.web.exposure.include=none
 ```
-Feel free to change this list as you see fit, but remember that they are all public !

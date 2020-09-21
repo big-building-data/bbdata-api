@@ -5,7 +5,7 @@ function fetchDynamicInfo() {
             populateDynamicInfo( JSON.parse(xhr.responseText));
         }
     };
-    xhr.open('GET', '/info');
+    xhr.open('GET', '/about');
     xhr.send();
 }
 

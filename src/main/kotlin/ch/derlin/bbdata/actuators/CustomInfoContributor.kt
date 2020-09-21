@@ -1,4 +1,4 @@
-package ch.derlin.bbdata.output.api
+package ch.derlin.bbdata.actuators
 
 import org.joda.time.DateTime
 import org.springframework.beans.factory.annotation.Autowired
@@ -9,14 +9,16 @@ import org.springframework.core.env.Environment
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 
-
 /**
- * date: 29.12.19
+ * date: 21.09.20
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 @Component
 @ConfigurationProperties(prefix = "dynamic")
 class CustomInfoContributor : InfoContributor {
+    /**
+     * Customize the actuator endpoint /info with dynamic properties and server time
+     */
 
     // any field in the form dynamic.info.key=property
     // the property is the key of another property in the *.properties on the classpath

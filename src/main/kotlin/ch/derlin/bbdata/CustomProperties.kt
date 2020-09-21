@@ -47,16 +47,6 @@ class AsyncProperties {
 }
 
 @Configuration
-@ConfigurationProperties(prefix = "cache.evict")
-class CacheEvictProperties {
-
-    /** Optional secret key to call cache evict: see CacheEvictController */
-    var secretKey: String = ""
-
-    fun matches(key: String?): Boolean = secretKey.isBlank() || key?.equals(secretKey) ?: false
-}
-
-@Configuration
 @ConfigurationProperties(prefix = "datetime")
 class DateTimeFormatProperties {
 
