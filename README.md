@@ -288,6 +288,6 @@ By default, the exposed actuators are defined in `application.properties`, using
 
 To **turn off** all endpoints, simply add:
 ```properties
-management.port=
+management.server.port=
 management.endpoints.web.exposure.include=none
 ```
