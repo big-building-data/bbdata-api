@@ -35,7 +35,7 @@ class TestSecurityScopes {
     companion object {
         val RO_BODY = JsonEntity.empty(HU to REGULAR_USER_ID, HA to APIKEY(REGULAR_USER_ID, ro = true)) // read-only
         val BAD_APIKEY_BODY = JsonEntity.empty(HU to REGULAR_USER_ID, HA to "notanapikey") // wrong
-        val PUBLIC_ENDPOINTS = setOf("/units", "/types", "/login")
+        val PUBLIC_ENDPOINTS = setOf("/about", "/units", "/types", "/login")
 
         // extract the HttpMethod and URL of all registered endpoints, excluding doc
         private fun RequestMappingHandlerMapping.getEndpoints(): Sequence<Pair<HttpMethod?, String>> =
