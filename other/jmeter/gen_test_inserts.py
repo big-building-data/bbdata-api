@@ -6,7 +6,7 @@ TOKEN_START = "01234567890123456789"
 TOKEN_PAD = "a"
 
 def generate_inserts(f, N0, N1, owner=OWNER, unit="V", token_start=TOKEN_START, token_pad=TOKEN_PAD):
-    f.write("INSERT IGNORE INTO objects (id, description, ugrp_id, unit_symbol) VALUES\n")
+    f.write("INSERT IGNORE INTO objects (id, name, ugrp_id, unit_symbol) VALUES\n")
     objects = [f'    ({i}, "{DESCRIPTION_START} object {i}", {owner}, "{unit}")' for i in range(N0, N1+1)]
     f.write(',\n'.join(objects) + ";")
 
