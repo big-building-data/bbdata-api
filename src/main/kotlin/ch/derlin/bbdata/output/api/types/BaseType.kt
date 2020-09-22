@@ -12,10 +12,13 @@ package ch.derlin.bbdata.output.api.types
  */
 
 
+import ch.derlin.bbdata.common.truncate
 import com.fasterxml.jackson.annotation.JsonIdentityInfo
 import com.fasterxml.jackson.annotation.JsonIdentityReference
 import com.fasterxml.jackson.annotation.ObjectIdGenerators
 import org.hibernate.validator.constraints.Length
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import javax.persistence.*
 import javax.validation.constraints.NotEmpty
 
@@ -40,9 +43,12 @@ data class BaseType(
     companion object {
         const val TYPE_MAX = 45
 
+        private val log: Logger = LoggerFactory.getLogger(BaseType::class.java)
+
         fun parseType(value: String, type: String): Any? {
             try {
                 when (type) {
+                    "string" -> return value
                     "float" -> return value.toFloat()
                     "int" -> return value.toInt()
                     "bool" -> {
@@ -52,8 +58,10 @@ data class BaseType(
                             return false
                         return null
                     }
+                    else -> log.error("got an unknown unit type '$type' for value '$value'")
                 }
             } catch (e: Exception) {
+                log.debug("exception while parsing value ${value.truncate()} of type $type: ${e.javaClass.simpleName} ${e.message}")
             }
             return null
         }

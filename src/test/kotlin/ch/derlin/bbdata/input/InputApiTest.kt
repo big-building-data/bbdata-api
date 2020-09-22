@@ -203,6 +203,13 @@ class InputApiTest {
             assertEquals(HttpStatus.OK, resp.statusCode, "good bool false: $v. ${resp.body}")
             assertEquals("false", JsonPath.parse(resp.body).read<String>("$[0].value"))
         }
+
+        // test good string
+        for (v in listOf("False", "12.0", """{\"json\": \"data\", \"works\": 1}""", "  ", true)) {
+            resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 5, value = v))
+            assertEquals(HttpStatus.OK, resp.statusCode, "good string: $v. ${resp.body}")
+            assertEquals(v.toString().replace("\\\"", "\""), JsonPath.parse(resp.body).read<String>("$[0].value"))
+        }
     }
 
     @Test

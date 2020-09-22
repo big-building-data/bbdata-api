@@ -51,7 +51,7 @@ INSERT INTO `objects` (`id`, `name`, `description`, `ugrp_id`, `unit_symbol`, `c
     (2, 'volts box 2', NULL, 2, 'V', '2019-01-01'),
     (3, 'tmp box 1', NULL, 2, 'h', '2019-01-01'),
     (4, 'tmp box 2', NULL, 2, 'Here', DEFAULT),
-    (5, 'caching', NULL, 2, 'V', DEFAULT),
+    (5, 'some free text', NULL, 2, 'char', DEFAULT),
     -- one object owned by the "other" usergroup
     (6, 'owned by other', NULL, 3, 'V', DEFAULT),
     -- objects that have values in cassandra
@@ -92,6 +92,7 @@ INSERT INTO `tokens` (`id`, `token`, `object_id`, `description`) VALUES
     (1, '012345678901234567890123456789a1', 1, 'test'),
     (2, '012345678901234567890123456789a2', 2, 'test'),
     (3, '012345678901234567890123456789a3', 3, 'test'),
-    (4, '012345678901234567890123456789a4', 4, 'test');
+    (4, '012345678901234567890123456789a4', 4, 'test'),
+    (5, '012345678901234567890123456789a5', 5, 'test');
 
 COMMIT;
