@@ -2,9 +2,9 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.springframework.boot.gradle.tasks.bundling.BootJar // for launchScript
 
 plugins {
-    id("org.springframework.boot") version "2.2.1.RELEASE"
-    id("io.spring.dependency-management") version "1.0.8.RELEASE"
-    id("com.gorylenko.gradle-git-properties") version "2.0.0"
+    id("org.springframework.boot") version "2.3.4.RELEASE"
+    id("io.spring.dependency-management") version "1.0.10.RELEASE"
+    id("com.gorylenko.gradle-git-properties") version "2.2.3"
     war
     kotlin("jvm") version "1.4.0"
     kotlin("plugin.spring") version "1.4.0"
@@ -16,12 +16,6 @@ group = "ch.derlin.bbdata.api"
 version = "2.0.0-alpha"
 java.sourceCompatibility = JavaVersion.VERSION_1_8
 
-val developmentOnly by configurations.creating
-configurations {
-    runtimeClasspath {
-        extendsFrom(developmentOnly)
-    }
-}
 
 repositories {
     mavenCentral()
@@ -33,6 +27,7 @@ springBoot {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     // NO HAL REST: implementation("org.springframework.boot:spring-boot-starter-data-rest")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-redis")

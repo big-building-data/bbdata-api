@@ -113,7 +113,7 @@ class AuthInterceptor : HandlerInterceptor {
                 BadApikeyException("Access denied for user $userId : bad apikey")
             }
             // check if write access is necessary
-            if (apikey.isReadOnly && writeRequired) {
+            if (apikey.readOnly && writeRequired) {
                 // check write permissions
                 throw ForbiddenException("Access denied for user $userId : this apikey is read-only")
             }

@@ -58,7 +58,7 @@ class ApikeyController(
         if (optionalUserId.isPresent && apikeyRepository.canLogin(optionalUserId.get(), loginBody.password!!) > 0) {
             return apikeyRepository.saveAndFlush(Apikey(
                     userId = optionalUserId.get(),
-                    isReadOnly = false,
+                    readOnly = false,
                     description = AUTOLOGIN_DESCRIPTION,
                     secret = TokenGenerator.generate(),
                     expirationDate = DateTime().plus(AUTOLOGIN_EXPIRE)
@@ -93,7 +93,7 @@ class ApikeyController(
 
         return apikeyRepository.saveAndFlush(Apikey(
                 userId = userId,
-                isReadOnly = !writable,
+                readOnly = !writable,
                 description = descriptionBean?.description,
                 secret = TokenGenerator.generate(),
                 expirationDate = rawExpire?.let { parseDateOrDuration(it) }
@@ -113,7 +113,7 @@ class ApikeyController(
         val apikey = apikeyRepository.findByIdAndUserId(id, userId).orElseThrow { ItemNotFoundException("apikey (id=$id)") }
 
         bean.expirationDate?.let { apikey.expirationDate = parseDateOrDuration(it) }
-        bean.readOnly?.let { apikey.isReadOnly = it }
+        bean.readOnly?.let { apikey.readOnly = it }
         bean.description?.let { apikey.description = it }
 
         return apikeyRepository.saveAndFlush(apikey)

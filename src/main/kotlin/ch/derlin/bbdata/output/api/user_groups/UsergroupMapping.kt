@@ -3,6 +3,7 @@ package ch.derlin.bbdata.output.api.user_groups
 import ch.derlin.bbdata.output.api.NoUpdateOnCreateEntity
 import ch.derlin.bbdata.output.api.users.User
 import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonUnwrapped
 import java.io.Serializable
 import javax.persistence.*
@@ -37,6 +38,7 @@ data class UsergroupMapping(
         val groupId: Int,
 
         @Column(name = "is_admin")
+        @JsonProperty("admin")
         var isAdmin: Boolean,
 
         @JoinColumn(name = "user_id", referencedColumnName = "id", insertable = false, updatable = false)

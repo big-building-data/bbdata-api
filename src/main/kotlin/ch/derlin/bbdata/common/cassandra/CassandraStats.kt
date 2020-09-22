@@ -1,6 +1,5 @@
 package ch.derlin.bbdata.common.cassandra
 
-import com.datastax.driver.core.DataType
 import com.fasterxml.jackson.annotation.JsonProperty
 import org.joda.time.DateTime
 import org.springframework.data.cassandra.core.mapping.CassandraType
@@ -34,11 +33,11 @@ data class ObjectStatsCounter(
 
         @Column("n_reads")
         @get:JsonProperty("nReads")
-        @CassandraType(type = DataType.Name.COUNTER)
+        @CassandraType(type = CassandraType.Name.COUNTER)
         val nReads: Long = 0,
 
         @Column("n_values")
         @get:JsonProperty("nValues")
-        @CassandraType(type = DataType.Name.COUNTER)
+        @CassandraType(type = CassandraType.Name.COUNTER)
         val nValues: Long = 0
 )

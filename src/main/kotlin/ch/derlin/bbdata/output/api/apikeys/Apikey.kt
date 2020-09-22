@@ -28,7 +28,7 @@ data class Apikey(
         var userId: Int = 0,
 
         @Column(name = "readonly")
-        var isReadOnly: Boolean = false,
+        var readOnly: Boolean = false,
 
         @Column(name = "description")
         var description: String? = null
