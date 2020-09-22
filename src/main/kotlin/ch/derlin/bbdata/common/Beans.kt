@@ -29,5 +29,8 @@ object Beans {
         val description: String? = null
     }
 
-
 }
+
+
+fun String?.truncate(maxLength: Int = 30, ellipsis: String = "[${Typography.ellipsis}]"): String? =
+        if (this != null && this.length > maxLength) this.take(maxLength).plus(ellipsis) else this

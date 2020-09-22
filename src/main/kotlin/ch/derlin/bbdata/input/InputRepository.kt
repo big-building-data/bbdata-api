@@ -30,6 +30,10 @@ class InputRepository(private val em: EntityManager) {
             WHERE o.id = :objectId AND t.token = :token
             """.trimIndent()
         }
+
+        override fun toString(): String {
+            return "MeasureMeta(unitName='$unitName', unitSymbol='$unitSymbol', type='$type', owner=$owner, disabled=$disabled)"
+        }
     }
 
     @Cacheable(Constants.META_CACHE, key = "#objectId.toString().concat(':').concat(#token)", unless = "#result == null")

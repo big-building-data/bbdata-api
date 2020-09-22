@@ -2,6 +2,7 @@ package ch.derlin.bbdata.input
 
 import ch.derlin.bbdata.common.cassandra.RawValue
 import ch.derlin.bbdata.common.cassandra.RawValuePK
+import ch.derlin.bbdata.common.truncate
 import org.joda.time.DateTime
 import org.joda.time.YearMonth
 import javax.validation.constraints.Min
@@ -35,6 +36,7 @@ data class NewValue(
         val comment: String? = null
 ) {
 
+
     fun toRawValue(): RawValue = RawValue(
             key = RawValuePK(
                     objectId = objectId!!.toInt(),
@@ -43,4 +45,9 @@ data class NewValue(
             value = value!!,
             comment = comment
     )
+
+    override fun toString(): String {
+        return "NewValue(objectId=$objectId, token=$token, timestamp=$timestamp, " +
+                "value=${value.truncate()}, comment=${comment?.truncate(10)})"
+    }
 }

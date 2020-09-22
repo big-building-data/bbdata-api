@@ -1,11 +1,13 @@
 package ch.derlin.bbdata.common.exceptions
 
+import java.lang.RuntimeException
+
 /**
  * date: 15.12.19
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
 
-open class AppException(val details: Any) : Throwable() {
+open class AppException(val details: Any) : RuntimeException("$details") {
     val name: String get() = this.javaClass.name.split('.').last()
 }
 

@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.web.bind.annotation.PostMapping
@@ -34,6 +35,8 @@ class InputController(
         private val mapper: ObjectMapper,
         private val kafkaTemplate: KafkaTemplate<String, String> // note: ignore jetbrains [false] warning
 ) {
+
+    private final val log = LoggerFactory.getLogger(InputController::class.java)
 
     // Just for tests, if you don't want to have kafka running, do:
     // export BB_NO_KAFKA=true
@@ -84,6 +87,7 @@ class InputController(
             val measure = if (rawMeasure.timestamp != null) {
                 // check that date is in the past
                 if (rawMeasure.timestamp.millis > now.millis + MAX_LAG) {
+                    log.info("REJECTED: wrong timestamp: ${rawMeasure}")
                     throw WrongParamsException("objectId ${rawMeasure.objectId}: date should be in the past. input='${rawMeasure.timestamp}', now='$now'")
                 }
                 rawMeasure
@@ -94,17 +98,21 @@ class InputController(
 
             // get metadata
             val meta = inputRepository.getMeasureMeta(measure.objectId!!, measure.token!!).orElseThrow {
+                log.info("REJECTED: wrong token: $measure")
                 ItemNotFoundException(msg = "objectId ${measure.objectId}: the pair <objectId, token> does not exist")
             }
             // ensure the object is enabled. This is just a double check, as tokens cannot be created on disabled objects
             if (meta.disabled) {
+                log.info("REJECTED: object is disabled: $rawMeasure")
                 throw ForbiddenException("objectId ${rawMeasure.objectId} is disabled.")
             }
             // ensure the measure matches the type declared, and parse it
             val parsedValue = BaseType.parseType(measure.value!!, meta.type)
-            parsedValue
-                    ?: throw WrongParamsException("objectId ${rawMeasure.objectId}: the value '${measure.value}' does not match " +
-                            "the unit ${meta.unitSymbol} (${meta.type}) declared in the object definition.")
+            if(parsedValue == null) {
+                log.info("REJECTED: wrong value given the unit: $measure, $meta")
+                throw WrongParamsException("objectId ${rawMeasure.objectId}: the value '${measure.value}' does not match " +
+                        "the unit ${meta.unitSymbol} (${meta.type}) declared in the object definition.")
+            }
 
             measure.value = parsedValue.toString()
 
@@ -114,12 +122,14 @@ class InputController(
 
             // ensure no duplicate objectId/timestamp in the data sent
             if (valueKeys.contains(key)) {
+                log.info("REJECTED: duplicate in body: $measure")
                 throw WrongParamsException("objectId ${measure.objectId}: two or more values with the same timestamp")
             }
             valueKeys.add(key)
 
             // ensure it doesn't already exist in cassandra TODO: find a better way ?
             if (rawValueRepository.existsById(rawValue.key)) {
+                log.info("REJECTED: duplicate in cassandra: $measure")
                 throw WrongParamsException("objectId ${rawMeasure.objectId}: " +
                         "a value with the same timestamp (${measure.timestamp}) already exists for this object.")
             }
