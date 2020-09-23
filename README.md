@@ -21,6 +21,7 @@ This repository is the cornerstone of BBData. It contains:
   * [Executing the jar](#executing-the-jar)
   * [Caching](#caching)
   * [Async](#async)
+  * [Logging](#logging)
   * [Monitoring](#monitoring)
 - [Permission system](#permission-system)
 - [Actuators](#actuators)
@@ -150,6 +151,12 @@ java -jar bbdata-api-*.jar
 java -Dspring.profiles.active=unsecured,noc -jar bbdata-api-*.jar
 ```
 
+If you want to use a properties file that do not match the default names (e.g. `development.properties`), 
+set the `spring.config.additional-location` (so it is loaded *alongside* and not *instead of* the default properties):
+```bash
+./bbdata-api-*.jar --spring.config.additional-location=development.properties
+```
+
 ### Caching
 
 Caching is interesting in one part of the application, namely the input endpoint `POST /values`. 
@@ -209,6 +216,100 @@ Under the hood, a `TheadPoolTaskExecutor` is configured through the `spring.task
 in this repo for default values). You can of course override any of those in your properties file.
 
 If you want to **TURN OFF** asynchronous processing, simply set the custom property `async.enabled=false`.
+
+### Logging
+
+*NOTE*: in the default application.properties, I set the following, wich removes the spring banner, forces the
+use of ansi colors, so the output is highlighted even when using `tee` and always log resolved exceptions
+ (feel free to change them if you need to):
+```properties
+spring.main.banner-mode=off
+spring.output.ansi.enabled=ALWAYS
+spring.mvc.log-resolved-exception=true
+```
+
+By default, Spring Boot uses logback. Here are some relevant links and resources:
+
+* [Spring Boot: How-to logging](https://docs.spring.io/spring-boot/docs/current/reference/html/howto.html#howto-logging)
+* [Spring Boot: logback src files](https://github.com/spring-projects/spring-boot/blob/master/spring-boot-project/spring-boot/src/main/resources/org/springframework/boot/logging/logback)
+* [Logback layouts](http://logback.qos.ch/manual/layouts.html)
+* [Logback syslogAppender](http://logback.qos.ch/manual/appenders.html#SyslogAppender)
+
+Typically, in production you want to save everything to a rolling file, and maybe use syslog. You also want to be
+able to change the logging configuration without restarting the app. Here is an example on how to achieve that:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- FILE: logback-spring.xml -->
+<!-- scan and scanPeriod define if and how often this configuration should be scanned for change at runtime -->
+<configuration scan="true" scanPeriod="1 minutes">
+
+    <!-- override default springboot properties -->
+    <!-- To see which are available, scan throught the files at
+         https://github.com/spring-projects/spring-boot/tree/master/spring-boot-project/spring-boot/src/main/resources/org/springframework/boot/logging/logback -->
+    <property name="LOG_FILE" value="./logs/bbdata-api.log" />
+    <property name="LOG_EXCEPTION_CONVERSION_WORD" value="%rEx{5}" />
+
+    <!-- use Spring default values, making CONSOLE and FILE readily available -->
+    <include resource="org/springframework/boot/logging/logback/base.xml" />
+
+    <!-- Add syslog logging TODO: ensure you change the host and port ! -->
+    <appender name="SYSLOG" class="ch.qos.logback.classic.net.SyslogAppender">
+        <syslogHost>127.0.0.1</syslogHost>
+        <facility>SYSLOG</facility>
+        <port>514</port>
+        <throwableExcluded>false</throwableExcluded>
+        <!--<suffixPattern>bbdata %m thread:%t priority:%p category:%c exception:%exception</suffixPattern>-->
+        <suffixPattern>bbdata: %p [%logger, %t] %m%n${LOG_EXCEPTION_CONVERSION_WORD}</suffixPattern>
+    </appender>
+
+    <!-- LOG everything at INFO level -->
+    <root level="info">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+        <appender-ref ref="SYSLOG" />
+    </root>
+
+    <!-- LOG app at TRACE level -->
+    <logger name="ch.derlin.bbdata" level="trace" additivity="false">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+        <appender-ref ref="SYSLOG" />
+    </logger>
+
+</configuration>
+```
+
+In order to load this configuration at runtime, use the option `logging.config`, for example:
+```bash
+# either using java
+java -jar -Dlogging.config=logback-spring.xml
+# or executing the jar directly
+./bbdata-api-*.jar --logging.config=logback-spring.xml
+```
+
+**rsyslog configuration**
+
+When using **SYSLOG**, you need a server with `rsyslog` running. 
+To allow incoming udp requests, define the following in `/etc/rsyslog.conf`:
+```
+$ModLoad imudp
+$UDPServerRun 514
+```
+
+To filter everything from bbdata create a file `/etc/rsyslog.conf/10-bbdata.conf` and add the following:
+```
+if $programname == 'bbdata' then /var/log/bbdata.log
+& stop
+```
+The rule will match any log beginning with `bbdata:` (the default *TAG* defined in SYSLOG, see `<suffixPattern>TAG: ...`). 
+
+It is also possible to put the rule directly in `rsyslog.conf` _at the beginning_ of the rules. 
+If you put it at the end, everything will be logged in `messages` as well.
+
+To deal with tabs, new lines and special characters, also define the following property in `/etc/rsyslog.conf`: 
+```
+$EscapeControlCharactersOnReceive off
+```
 
 ### Monitoring
 
