@@ -21,9 +21,10 @@ This repository is the cornerstone of BBData. It contains:
   * [Executing the jar](#executing-the-jar)
   * [Caching](#caching)
   * [Async](#async)
+  * [Monitoring](#monitoring)
 - [Permission system](#permission-system)
 - [Actuators](#actuators)
-  * [Management interface](#management-interface)
+  * [Management interface (Spring Boot Admin)](#management-interface-spring-boot-admin)
   * [Customizing the `/info` endpoint](#customizing-the-about-info-endpoint)
   * [Task executor monitoring](#task-executor-monitoring)
   * [Changing exposed actuators](#changing-exposed-actuators)
@@ -209,6 +210,10 @@ in this repo for default values). You can of course override any of those in you
 
 If you want to **TURN OFF** asynchronous processing, simply set the custom property `async.enabled=false`.
 
+### Monitoring
+
+See [Spring Boot Admin](#management-interface-spring-boot-admin).
+
 ## Permission system
 
 ‼️ **tldr; IMPORTANT** Ensure that the `userGroup` with ID 1 has a meaningful name in the database (e.g. "admin") and that
@@ -232,8 +237,6 @@ This is the equivalent of `SUDO`: any admin of this group has read/write access 
 
 ## Actuators
 
-### Management interface
-
 Actuators are a way to monitor the API. They can leak sensitive information, so the management interface should
 run on another port as the API, which only administrators have access to.
 
@@ -247,6 +250,27 @@ or by disabling unsecure actuators, e.g.:
 ```properties
 management.endpoints.web.exposure.include=info
 ```
+
+### Management interface (Spring Boot Admin)
+
+In production, the best would be to use [Spring Boot Admin](https://codecentric.github.io/spring-boot-admin/2.3.0/).
+The client is already included in the bbdata-api jar. What you need to do:
+
+1. run a Spring Boot Admin server (see the doc),
+2. set the properties below in your application.properties
+
+````properties
+## Spring Boot Admin
+
+# expose every actuator available, but ensure it runs on another (secured) port !
+management.server.port=8111
+management.endpoints.web.exposure.include=*
+
+# enable spring boot admin client, and provide the server's URL
+spring.boot.admin.client.enabled=true
+spring.boot.admin.client.url=<URL OF THE ADMIN SERVER>
+spring.boot.admin.client.instance.name=BBData test Instance
+````
 
 ### Customizing the `/about` (`/info`) endpoint
 

@@ -69,6 +69,16 @@ dependencies {
     val configurationProcessor = "org.springframework.boot:spring-boot-configuration-processor"
     kapt(configurationProcessor) // for jar
     annotationProcessor(configurationProcessor) // for IntelliJ Idea
+
+    // admin console: client
+    implementation("de.codecentric:spring-boot-admin-starter-client")
+}
+
+// for admin-console: client
+dependencyManagement {
+    imports {
+        mavenBom("de.codecentric:spring-boot-admin-dependencies:2.3.0")
+    }
 }
 
 tasks.withType<Test> {
