@@ -10,6 +10,7 @@ import ch.derlin.bbdata.output.api.apikeys.ApikeyRepository
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_TOKEN
 import ch.derlin.bbdata.output.security.SecurityConstants.HEADER_USER
 import ch.derlin.bbdata.output.security.SecurityConstants.SCOPE_WRITE
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -71,6 +72,7 @@ class AuthInterceptor : HandlerInterceptor {
     @Autowired
     lateinit var apikeyRepository: ApikeyRepository
 
+    private val log: Logger = LoggerFactory.getLogger(AuthInterceptor::class.java)
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
 
@@ -110,12 +112,13 @@ class AuthInterceptor : HandlerInterceptor {
         bbuser.toIntOrNull()?.let { userId ->
             // check valid tokens
             val apikey = apikeyRepository.findValid(userId, bbtoken).orElseThrow {
+                log.info("wrong apikey for userId=$userId token='$bbtoken'")
                 BadApikeyException("Access denied for user $userId : bad apikey")
             }
             // check if write access is necessary
             if (apikey.readOnly && writeRequired) {
                 // check write permissions
-                throw ForbiddenException("Access denied for user $userId : this apikey is read-only")
+                throw ForbiddenException("Access denied for user $userId: this apikey is read-only")
             }
             // every checks passed !
             return true

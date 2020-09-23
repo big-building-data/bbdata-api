@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.joda.time.DateTime
 import org.joda.time.MutablePeriod
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
@@ -31,6 +33,8 @@ import javax.validation.constraints.Size
 class ApikeyController(
         private val apikeyRepository: ApikeyRepository,
         private val userRepository: UserRepository) {
+
+    private val log: Logger = LoggerFactory.getLogger(ApikeyController::class.java)
 
     class LoginBody {
         @NotNull
@@ -64,6 +68,7 @@ class ApikeyController(
                     expirationDate = DateTime().plus(AUTOLOGIN_EXPIRE)
             ))
         }
+        log.info("invalid login for username='${loginBody.username}' password='${loginBody.password}'")
         throw ForbiddenException("Wrong username or password.")
     }
 
