@@ -142,7 +142,7 @@ class InputApiTest {
 
     @Test
     fun `1-2 test get latest measure`() {
-        val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/values/latest", "accept" to "application/json")
+        val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/values/latest")
         assertEquals(HttpStatus.OK, status)
 
         val latestValue = json.read<Map<String, Any>>("$.[0]")
@@ -231,7 +231,7 @@ class InputApiTest {
         assertTrue(resp.body!!.contains("token"), "body should contain token related error ${resp.body}")
 
         // assert the correct measures are not saved
-        val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/values?from=$now&to=$now", "accept" to "application/json")
+        val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/values?from=$now&to=$now")
         assertEquals(HttpStatus.OK, status, "get values $OBJ $now returned ${json.jsonString()}")
         assertEquals(0, json.read<List<Any>>("$[*]").size, "Failed bulk insert saved a value ! ${json.jsonString()}")
 
@@ -250,7 +250,7 @@ class InputApiTest {
         assertEquals(HttpStatus.OK, resp.statusCode, "submit multiple measures returned ${resp.body}")
 
         // assert the measures are saved
-        val (status, json) = restTemplate.getQueryJson("/objects/$oid/values?from=$now&to=$now", "accept" to "application/json")
+        val (status, json) = restTemplate.getQueryJson("/objects/$oid/values?from=$now&to=$now")
         assertEquals(HttpStatus.OK, status, "get values $oid $now returned ${json.jsonString()}")
         assertEquals(1, json.read<List<Any>>("$[*]").size, "bulk insert missing value ${json.jsonString()}")
 

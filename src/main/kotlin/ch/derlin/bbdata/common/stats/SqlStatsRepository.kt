@@ -15,10 +15,4 @@ import org.springframework.transaction.annotation.Transactional
 
 @Profile(Profiles.SQL_STATS)
 @Repository
-interface SqlStatsRepository : JpaRepository<SqlStats, Long> {
-
-    @Transactional
-    @Modifying
-    @Query("UPDATE SqlStats s set s.nReads = s.nReads + 1 WHERE s.objectId = :objectId")
-    fun incrementReadCounter(objectId: Long)
-}
+interface SqlStatsRepository : JpaRepository<SqlStats, Long>

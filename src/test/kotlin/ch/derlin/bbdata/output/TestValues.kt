@@ -3,6 +3,7 @@ package ch.derlin.bbdata.output
 import ch.derlin.bbdata.*
 import ch.derlin.bbdata.common.cassandra.AggregationGranularity
 import ch.derlin.bbdata.common.dates.JodaUtils
+import com.datastax.oss.driver.shaded.guava.common.net.MediaType
 import com.jayway.jsonpath.DocumentContext
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.MethodOrderer
@@ -36,13 +37,14 @@ class TestValues {
 
         val URL_RAW = "/objects/$OID/values?from=$FROM&to=$TO"
         val URL_AGGR = "/objects/$OID/values/aggregated?from=$FROM&to=$TO"
+
+        val CSV_HEADER = "accept" to "text/csv"
     }
 
     @Test
     fun `1-1 get raw values JSON`() {
         // get between
-        val (status, json) = restTemplate.getQueryJson(URL_RAW,
-                "accept" to "application/json")
+        val (status, json) = restTemplate.getQueryJson(URL_RAW)
         assertEquals(HttpStatus.OK, status, "get $URL_RAW returned ${json.jsonString()}")
         json.readList().checkRaw()
     }
@@ -50,22 +52,31 @@ class TestValues {
     @Test
     fun `1-2 get raw values CSV`() {
         // get between
-        val resp = restTemplate.getQueryString(URL_RAW)
+        val resp = restTemplate.getQueryString(URL_RAW, CSV_HEADER)
         assertEquals(HttpStatus.OK, resp.statusCode, "get $URL_RAW returned ${resp.body}")
         resp.body!!.csv2map().checkRaw()
+    }
+
+    @Test
+    fun `1-3 test CSV content-types`() {
+        listOf(MediaType.CSV_UTF_8.toString(), "text/plain", "application/csv", "text/csv").forEach {ct ->
+            val resp = restTemplate.getQueryString(URL_RAW, "accept" to ct)
+            assertEquals(HttpStatus.OK, resp.statusCode, "get $URL_RAW with 'accepts: $ct' returned ${resp.body}")
+            assertEquals(5, resp.body!!.csv2map().count())
+        }
     }
 
     @Test
     fun `2-1 get aggregated values JSON`() {
         // test the default: should be hours
         var url = URL_AGGR
-        val (statusH, jsonH) = restTemplate.getQueryJson(url, "accept" to "application/json")
+        val (statusH, jsonH) = restTemplate.getQueryJson(url)
         assertEquals(HttpStatus.OK, statusH, "get $url returned ${jsonH.jsonString()}")
         jsonH.readList().checkAggr(granularity = AggregationGranularity.hours)
 
         // test the quarters
         url = "$URL_AGGR&granularity=quarters"
-        val (statusQ, jsonQ) = restTemplate.getQueryJson(url, "accept" to "application/json")
+        val (statusQ, jsonQ) = restTemplate.getQueryJson(url)
         assertEquals(HttpStatus.OK, statusQ, "get $url returned ${jsonQ.jsonString()}")
         jsonQ.readList().checkAggr(granularity = AggregationGranularity.quarters)
     }
@@ -74,12 +85,12 @@ class TestValues {
     fun `2-2 get aggregated values CSV`() {
         // test the hours
         var url = "$URL_AGGR&granularity=hours"
-        var resp = restTemplate.getQueryString(url)
-        assertEquals(HttpStatus.OK, resp.statusCode, "get $url returned ${resp.body}")
+        var resp = restTemplate.getQueryString(url, CSV_HEADER)
+        assertEquals(HttpStatus.OK, resp.statusCode, "get $url (text/plain) returned ${resp.body}")
         resp.body!!.csv2map().checkAggr(granularity = AggregationGranularity.hours)
         // test the quarters
         url = "$URL_AGGR&granularity=hours"
-        resp = restTemplate.getQueryString(url)
+        resp = restTemplate.getQueryString(url, CSV_HEADER)
         assertEquals(HttpStatus.OK, resp.statusCode, "get $url returned ${resp.body}")
         resp.body!!.csv2map().checkAggr(granularity = AggregationGranularity.hours)
     }

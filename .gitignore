@@ -31,8 +31,9 @@ out/
 ### VS Code ###
 .vscode/
 
-### Mac ###
+### Mac ###
 .DS_STORE
 
 ### Other ###
 other/cassandra/data
+logs

@@ -62,24 +62,25 @@ class CassandraStatsLogic(private val objectStatsRepository: ObjectStatsReposito
         objectStatsCounterRepository.updateWriteCounter(v.objectId.toInt())
     }
 
-    override fun incrementReadCounter(objectId: Long) =
-            objectStatsCounterRepository.updateReadCounter(objectId.toInt())
+    override fun incrementReadCounter(objectId: Long) {
 
-    override fun getStats(objectId: Long): Stats {
-        var stats: Stats? = null
-        objectStatsRepository.findById(objectId.toInt()).ifPresent { os ->
-            objectStatsCounterRepository.findById(objectId.toInt()).ifPresent { oc ->
-                stats = Stats(
-                        objectId = objectId,
-                        nReads = oc.nReads,
-                        nWrites = oc.nValues,
-                        lastTs = os.lastTimestamp,
-                        avgSamplePeriod = os.avgSamplePeriod.toDouble()
-                )
-            }
-        }
-        return stats ?: Stats(objectId = objectId)
+        objectStatsCounterRepository.updateReadCounter(objectId.toInt())
     }
+
+    override fun getStats(objectId: Long): Stats =
+            objectStatsRepository.findById(objectId.toInt()).let { osp ->
+                val os = if (osp.isPresent) osp.get() else null
+                objectStatsCounterRepository.findById(objectId.toInt()).let { ocp ->
+                    val oc = if (ocp.isPresent) ocp.get() else null
+                    Stats(
+                            objectId = objectId,
+                            nReads = oc?.nReads ?: 0,
+                            nWrites = oc?.nValues ?: 0,
+                            lastTs = os?.lastTimestamp,
+                            avgSamplePeriod = os?.avgSamplePeriod?.toDouble() ?: .0
+                    )
+                }
+            }
 }
 
 @Component
@@ -101,8 +102,11 @@ class SqlStatsLogic(private val statsRepository: SqlStatsRepository) : StatsLogi
         })
     }
 
-    override fun incrementReadCounter(objectId: Long) =
-            statsRepository.incrementReadCounter(objectId)
+    override fun incrementReadCounter(objectId: Long) {
+        val stats = statsRepository.findById(objectId).orElseGet{ SqlStats(objectId = objectId) }
+        stats.nReads += 1
+        statsRepository.save(stats)
+    }
 
     override fun getStats(objectId: Long): Stats {
         var stats: Stats? = null

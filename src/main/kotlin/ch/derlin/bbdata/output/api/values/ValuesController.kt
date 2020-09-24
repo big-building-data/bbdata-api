@@ -39,10 +39,10 @@ class ValuesController(
 
 
     @Protected
-    @GetMapping("/objects/{objectId}/values", produces = ["application/json", "text/plain"])
+    @GetMapping("/objects/{objectId}/values", produces = ["application/json", "text/csv", "text/plain", "application/csv"])
     @ApiResponse(content = [
         Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = RawValue::class))),
-        Content(mediaType = "text/plain", schema = Schema(example = RawValue.csvHeadersString))
+        Content(mediaType = "text/csv", schema = Schema(example = RawValue.csvHeadersString))
     ])
     fun getRawValuesStream(
             @UserId userId: Int,
@@ -64,10 +64,10 @@ class ValuesController(
     }
 
     @Protected
-    @GetMapping("/objects/{objectId}/values/latest", produces = ["application/json", "text/plain"])
+    @GetMapping("/objects/{objectId}/values/latest", produces = ["application/json", "text/csv", "text/plain", "application/csv"])
     @ApiResponse(content = [
         Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = RawValue::class))),
-        Content(mediaType = "text/plain", schema = Schema(example = RawValue.csvHeadersString))])
+        Content(mediaType = "text/csv", schema = Schema(example = RawValue.csvHeadersString))])
     fun getLatestValue(
             @UserId userId: Int,
             @CType contentType: String,
@@ -88,10 +88,10 @@ class ValuesController(
     }
 
     @Protected
-    @GetMapping("/objects/{objectId}/values/aggregated", produces = ["application/json", "text/plain"])
+    @GetMapping("/objects/{objectId}/values/aggregated", produces = ["application/json", "text/csv", "text/plain", "application/csv"])
     @ApiResponse(content = [
         Content(mediaType = "application/json", array = ArraySchema(schema = Schema(implementation = Aggregation::class))),
-        Content(mediaType = "text/plain", schema = Schema(example = Aggregation.csvHeadersString))
+        Content(mediaType = "text/csv", schema = Schema(example = Aggregation.csvHeadersString))
     ])
     fun getQuarterAggregationsStream(
             @UserId userId: Int,

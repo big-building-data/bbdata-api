@@ -14,23 +14,23 @@ import org.springframework.web.client.RestClientException
 
 object JsonEntity {
 
-    fun jsonHeaders(): HttpHeaders {
+    fun jsonHeaders(vararg additionalHeaders: Pair<String, Any?>): HttpHeaders {
         val headers = HttpHeaders()
-        headers.add("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+        if (additionalHeaders.find { it.first.equals("accept", ignoreCase = true) } == null)
+            headers.add("accept", MediaType.APPLICATION_JSON_VALUE)
+        if (additionalHeaders.find { it.first.equals("Content-Type", ignoreCase = true) } == null)
+            headers.add("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+        additionalHeaders.forEach { headers.add(it.first, it.second.toString()) }
         return headers
     }
 
-    fun empty(vararg additionalHeaders: Pair<String, Any?>): HttpEntity<Unit> {
-        val headers = jsonHeaders()
-        additionalHeaders.map { headers.add(it.first, it.second.toString()) }
-        return HttpEntity(Unit, headers)
-    }
+    fun empty(vararg additionalHeaders: Pair<String, Any?>): HttpEntity<Unit> =
+            HttpEntity(Unit, jsonHeaders(*additionalHeaders))
 
-    fun <T> create(body: T, vararg additionalHeaders: Pair<String, Any?>): HttpEntity<T> {
-        val headers = jsonHeaders()
-        additionalHeaders.map { headers.add(it.first, it.second.toString()) }
-        return HttpEntity(body, headers)
-    }
+
+    fun <T> create(body: T, vararg additionalHeaders: Pair<String, Any?>): HttpEntity<T> =
+            HttpEntity(body, jsonHeaders(*additionalHeaders))
+
 }
 
 

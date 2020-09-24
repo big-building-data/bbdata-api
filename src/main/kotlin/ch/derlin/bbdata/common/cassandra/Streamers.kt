@@ -22,7 +22,8 @@ class CassandraObjectStreamer(private val mapper: ObjectMapper) {
                response: HttpServletResponse,
                csvHeaders: List<String>,
                values: Iterable<StreamableCsv>) {
-        if (contentType != null && contentType.contains("text")) {
+        if (contentType != null &&
+                (contentType.contains("text") || contentType.contains("csv"))) {
             response.contentType = "text/csv"
             streamCsv(response.outputStream, csvHeaders, values)
         } else {

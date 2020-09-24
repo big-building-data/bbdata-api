@@ -70,7 +70,7 @@ class TestStats {
     }
 
     @Test
-    fun `1-2 test one value`() {
+    fun `1-2 test write one value`() {
         // post a new measure
         val json = submitAndCheck("12.2")
         assertEquals(.0, json.readPeriod(),
@@ -78,7 +78,7 @@ class TestStats {
     }
 
     @Test
-    fun `1-3 test another value`() {
+    fun `1-3 test write another value`() {
         // post a new measure
         val json = submitAndCheck("6.")
         assertTrue(json.readPeriod() > .0,
@@ -90,7 +90,7 @@ class TestStats {
         val url = "/objects/$OID/values?from=${InputApiTest.tsFmt()}"
         val resp = restTemplate.getQueryString(url)
         assertEquals(HttpStatus.OK, resp.statusCode, "get $url returned ${resp.body}")
-        nReads = +1
+        nReads += 1
         submitAndCheck("6.")
 
     }
@@ -101,6 +101,33 @@ class TestStats {
         val url = "/objects/12352/stats"
         val (status, json) = restTemplate.getQueryJson(url)
         assertNotEquals(HttpStatus.OK, status, "get $url returned ${json.jsonString()}")
+    }
+
+    @Test
+    fun `3-1 test read one value on a new object`() {
+        // create a new object
+        val oid = restTemplate.createObject(owner = REGULAR_USER_ID)
+
+        // read once
+        var url = "/objects/$oid/values?from=2020-01-01&to=2020-01-02"
+        restTemplate.getQueryJson(url).let { (status, json) ->
+            assertEquals(HttpStatus.OK, status, "get $url returned ${json.jsonString()}")
+        }
+
+        // get current stats
+        url = "/objects/$oid/stats"
+        val (status, json) = restTemplate.getQueryJson(url)
+        assertEquals(HttpStatus.OK, status, "get $url returned ${json.jsonString()}")
+
+        listOf(
+                "objectId" to oid,
+                "nReads" to 1,
+                "nWrites" to 0,
+                "avgSamplePeriod" to .0,
+                "lastTs" to null
+        ).forEach { (key, expected) ->
+            assertEquals(expected, json.read("$.$key"), "get $url one read: should have $key=$expected, ${json.jsonString()}")
+        }
     }
 
     // ----------
