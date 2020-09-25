@@ -1,11 +1,12 @@
 package ch.derlin.bbdata.input
 
 import ch.derlin.bbdata.HiddenEnvironmentVariables
+import ch.derlin.bbdata.common.ValidatedList
 import ch.derlin.bbdata.common.cassandra.RawValueRepository
-import ch.derlin.bbdata.common.stats.StatsLogic
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
+import ch.derlin.bbdata.common.stats.StatsLogic
 import ch.derlin.bbdata.output.api.types.BaseType
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.swagger.v3.oas.annotations.Operation
@@ -45,6 +46,7 @@ class InputController(
 
     private val MAX_LAG: Long = 2000 // in millis
 
+
     data class NewValueAugmented(
             val objectId: Long,
             val timestamp: DateTime,
@@ -75,7 +77,7 @@ class InputController(
             "Each objectId/timestamp couple must be unique, both in the body and the database. Hence, any duplicate will make the request fail. " +
             "If you omit to provide a timestamp for any measure, it will be added automatically (server time). " +
             "This request is *atomic*: either *all* measures are valid and saved, or none. ")
-    fun postNewMeasures(@Valid @NotNull @RequestBody rawMeasures: List<NewValue>,
+    fun postNewMeasures(@Valid @NotNull @RequestBody rawMeasures: ValidatedList<NewValue>,
                         @RequestParam("simulate", defaultValue = "false") sim: Boolean): List<NewValueAugmented> {
 
         val now = DateTime()
@@ -83,7 +85,7 @@ class InputController(
         val augmentedJsons = mutableListOf<NewValueAugmented>()
         val valueKeys = mutableSetOf<String>()
 
-        val (measures, rawValues) = rawMeasures.map { rawMeasure ->
+        val (measures, rawValues) = rawMeasures.values.map { rawMeasure ->
             val measure = if (rawMeasure.timestamp != null) {
                 // check that date is in the past
                 if (rawMeasure.timestamp.millis > now.millis + MAX_LAG) {

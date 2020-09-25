@@ -2,6 +2,7 @@ package ch.derlin.bbdata.output.api.objects
 
 import ch.derlin.bbdata.Constants
 import ch.derlin.bbdata.common.Beans
+import ch.derlin.bbdata.common.ValidatedList
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
 import ch.derlin.bbdata.common.exceptions.WrongParamsException
 import ch.derlin.bbdata.output.api.CommonResponses
@@ -14,7 +15,6 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.cache.CacheManager
 import org.springframework.http.ResponseEntity
-import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
 import javax.validation.constraints.Min
@@ -24,7 +24,6 @@ import javax.validation.constraints.Size
  * date: 23.12.19
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
-@Validated
 @RestController
 @RequestMapping("/objects")
 @Tag(name = "Objects Tokens", description = "Manage object tokens")
@@ -75,7 +74,7 @@ class ObjectsTokenController(private val objectsAccessManager: ObjectsAccessMana
             @UserId userId: Int,
             @PathVariable(value = "objectId") objectId: Long,
             @Valid @RequestBody descriptionBody: Beans.Description?): Token =
-            addObjectTokenBulk(userId, listOf(BulkTokenBody(objectId = objectId, description = descriptionBody?.description)))[0]
+            addObjectTokenBulk(userId, ValidatedList(BulkTokenBody(objectId = objectId, description = descriptionBody?.description)))[0]
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
@@ -85,9 +84,9 @@ class ObjectsTokenController(private val objectsAccessManager: ObjectsAccessMana
     @PutMapping("bulk/tokens")
     fun addObjectTokenBulk(
             @UserId userId: Int,
-            @Valid @NotNull @RequestBody tokenBodies: List<@Valid BulkTokenBody>): MutableList<Token> {
+            @Valid @RequestBody tokenBodies: ValidatedList<BulkTokenBody>): MutableList<Token> {
 
-        tokenBodies.forEach {
+        tokenBodies.values.forEach {
             // ensure rights
             val obj = objectsAccessManager.findById(it.objectId, userId, writable = true).orElseThrow {
                 ItemNotFoundException("object ($it.objectId)")
@@ -96,7 +95,7 @@ class ObjectsTokenController(private val objectsAccessManager: ObjectsAccessMana
                 throw WrongParamsException(msg = "Object $it.objectId is disabled.")
         }
 
-        return tokenRepository.saveAll(tokenBodies.map {
+        return tokenRepository.saveAll(tokenBodies.values.map {
             Token.create(it.objectId, it.description)
         })
     }

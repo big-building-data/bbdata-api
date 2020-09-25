@@ -32,6 +32,8 @@ class InputApiTest {
     @Autowired
     private lateinit var restTemplate: TestRestTemplate
 
+    // asynchronous stats update, hence wait a bit (ms)
+    val statsWait: Long = 5000
 
     companion object {
         val OBJ = 1
@@ -65,6 +67,8 @@ class InputApiTest {
             |}""".trimMargin()
             return if (partial) body else "[$body]"
         }
+
+        val failedStatuses = listOf(HttpStatus.BAD_REQUEST, HttpStatus.NOT_FOUND)
     }
 
     @Test
@@ -73,30 +77,30 @@ class InputApiTest {
 
         // test bad timestamps
         var resp = restTemplate.postWithBody(URL, getMeasureBody(ts = "10-01-12T01:00"))
-        assertNotEquals(HttpStatus.OK, resp.statusCode, "year 10AD")
+        assertTrue(failedStatuses.contains(resp.statusCode),  "year 10AD: ${resp.statusCode}, ${resp.body}")
         resp = restTemplate.postWithBody(URL, getMeasureBody(ts = ""))
-        assertNotEquals(HttpStatus.OK, resp.statusCode, "empty ts string")
+        assertTrue(failedStatuses.contains(resp.statusCode),  "empty ts string: ${resp.statusCode}, ${resp.body}")
         resp = restTemplate.postWithBody(URL, getMeasureBody(ts = "null"))
-        assertNotEquals(HttpStatus.OK, resp.statusCode, "null ts string")
+        assertTrue(failedStatuses.contains(resp.statusCode), "null ts string: ${resp.statusCode}, ${resp.body}")
         resp = restTemplate.postWithBody(URL, getMeasureBody(ts = "2080-02-06T12:00"))
-        assertNotEquals(HttpStatus.OK, resp.statusCode, "ts in the future")
+        assertTrue(failedStatuses.contains(resp.statusCode),"ts in the future: ${resp.statusCode}, ${resp.body}")
         // test empty value
         resp = restTemplate.postWithBody(URL, getMeasureBody(value = ""))
-        assertNotEquals(HttpStatus.OK, resp.statusCode, "empty value")
+        assertTrue(failedStatuses.contains(resp.statusCode),"empty value: ${resp.statusCode}, ${resp.body}")
         // test wrong login
         resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 231451345, token = TOKEN(1)))
-        assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong objectId")
+        assertTrue(failedStatuses.contains(resp.statusCode), "wrong objectId: ${resp.statusCode}, ${resp.body}")
         resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 2, token = TOKEN(1)))
-        assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong credentials")
+        assertTrue(failedStatuses.contains(resp.statusCode),"wrong credentials: ${resp.statusCode}, ${resp.body}")
         resp = restTemplate.postWithBody(URL, getMeasureBody(token = "00000000000000000000000000000000"))
-        assertNotEquals(HttpStatus.OK, resp.statusCode, "wrong token")
+        assertTrue(failedStatuses.contains(resp.statusCode),"wrong token: ${resp.statusCode}, ${resp.body}")
         resp = restTemplate.postWithBody(URL, getMeasureBody(token = null))
-        assertNotEquals(HttpStatus.OK, resp.statusCode, "null token")
+        assertTrue(failedStatuses.contains(resp.statusCode),"null token: ${resp.statusCode}, ${resp.body}")
         resp = restTemplate.postWithBody(URL, getMeasureBody(token = ""))
-        assertNotEquals(HttpStatus.OK, resp.statusCode, "empty token")
+        assertTrue(failedStatuses.contains(resp.statusCode),"empty token")
 
         val wc = getWriteCounter()
-        assertEquals(writeCounter, wc, "Counter incremented on failed measures.")
+        assertEquals(writeCounter, wc, "Counter incremented on failed measures.: ${resp.statusCode}, ${resp.body}")
     }
 
 
@@ -149,7 +153,7 @@ class InputApiTest {
         val ts = latestValue.get("timestamp") as String
 
         assertEquals(OBJ, latestValue.get("objectId"))
-        assertEquals(ts, NOW, "$ts <> $NOW")
+        assertEquals(NOW, ts, "$NOW <> $ts")
         assertEquals(RANDOM_VALUE, latestValue.get("value"))
         assertNull(latestValue.get("comment"))
     }
@@ -169,7 +173,7 @@ class InputApiTest {
         // test bad floats
         for (v in listOf("true", "1.2.3")) {
             resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 1, value = v))
-            assertNotEquals(HttpStatus.OK, resp.statusCode, "bad float: $v. ${resp.body}")
+            assertTrue(failedStatuses.contains(resp.statusCode),"bad float: $v. ${resp.statusCode}, ${resp.body}")
         }
         // test good float
         resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 1, value = "1"))
@@ -179,7 +183,7 @@ class InputApiTest {
         // test bad ints
         for (v in listOf("1.5", "1.", 1.4)) {
             resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 3, value = v))
-            assertNotEquals(HttpStatus.OK, resp.statusCode, "bad int: $v. ${resp.body}")
+            assertTrue(failedStatuses.contains(resp.statusCode),"bad int: $v. ${resp.statusCode} ${resp.body}")
         }
         // test good int
         resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 3, value = "1"))
@@ -189,7 +193,7 @@ class InputApiTest {
         // test bad booleans
         for (v in listOf("1.", "2", "oui", "xxx", 1.45)) {
             resp = restTemplate.postWithBody(URL, getMeasureBody(objectId = 4, value = v))
-            assertNotEquals(HttpStatus.OK, resp.statusCode, "bad bool: $v. ${resp.body}")
+            assertTrue(failedStatuses.contains(resp.statusCode),"bad bool: $v. ${resp.body}")
         }
         // test good booleans: true
         for (v in listOf("TRUE", "true", "1", "on", true)) {
@@ -214,9 +218,16 @@ class InputApiTest {
 
     @Test
     fun `3-1 test submit multiple measures fail`() {
-        // duplicate objectId
-        var body = "[" + (1..2).map { getMeasureBodyNoTs(partial = true) }.toList().joinToString(",") + "]"
+        // wrong body (ensure validation still works on lists)
+        var body = """[{"objectId": -1, "token": "1"}]"""
         var resp = restTemplate.postWithBody(URL, body)
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "invalid body returned ${resp.body}")
+        assertTrue(resp.body!!.contains("positive"), "body should contain objectId error ${resp.body}")
+        assertTrue(resp.body!!.contains("32"), "body should contain token length error ${resp.body}")
+
+        // duplicate objectId
+        body = "[" + (1..2).map { getMeasureBodyNoTs(partial = true) }.toList().joinToString(",") + "]"
+        resp = restTemplate.postWithBody(URL, body)
         assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "duplicate objectId/timestamp (no ts) returned ${resp.body}")
         assertTrue(resp.body!!.contains("same timestamp"), "body should contain timestamp related error ${resp.body}")
 
@@ -255,11 +266,31 @@ class InputApiTest {
         assertEquals(1, json.read<List<Any>>("$[*]").size, "bulk insert missing value ${json.jsonString()}")
 
         // object 1 should have incremented by one
-        assertEquals(writeCounter + 1, getWriteCounter(oid), "write counter was not incremented")
+        assertEquals(writeCounter + 1, getWriteCounter(oid), "write counter was not incremented for $oid")
+    }
+
+    @Test
+    fun `3-3 test submit multiple measures with same id ok`() {
+
+        val now = tsFmt(now()).dropLast(2)
+        val writeCounter = getWriteCounter()
+        val n = 4
+
+        val body = "[" + (1..n).map { getMeasureBody(objectId = OBJ, ts = "$now$it", partial = true) }.joinToString(",") + "]"
+        val resp = restTemplate.postWithBody(URL, body)
+        assertEquals(HttpStatus.OK, resp.statusCode, "submit multiple measures returned ${resp.body}")
+
+        // assert the measures are saved
+        val (status, json) = restTemplate.getQueryJson("/objects/$OBJ/values?from=${now}1&to=$now$n")
+        assertEquals(HttpStatus.OK, status, "get values $OBJ $now returned ${json.jsonString()}")
+        assertEquals(n, json.read<List<Any>>("$[*]").size, "bulk insert missing value ${json.jsonString()}")
+
+        // object should have incremented by n
+        assertEquals(writeCounter + n, getWriteCounter(OBJ), "write counter was not incremented for $OBJ")
     }
 
     private fun getWriteCounter(oid: Int = OBJ): Int {
-        Thread.sleep(500) // the stats are updated asynchronously... wait a bit
+        if(statsWait > 0) Thread.sleep(statsWait) // the stats are updated asynchronously... wait a bit
         val (status, json) = restTemplate.getQueryJson("/objects/$oid/stats")
         assertEquals(HttpStatus.OK, status, "Counter: returned a strange status code $status: $json")
         return json.read<Int>("$.nWrites")

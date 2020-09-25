@@ -118,7 +118,26 @@ class TestObjectCreate {
     }
 
     @Test
-    fun `1-2 create objects in bulk`() {
+    fun `2-1 create objects in bulk validation fail`() {
+        // create with empty body
+        var resp = restTemplate.putWithBody("/objects/bulk", "[]")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "put /objects/bulk empty body returned ${resp.body}")
+
+        // create with empty body
+        resp = restTemplate.putWithBody("/objects/bulk", """[{"name": "a", "description": "${"x".repeat(300)}"}]""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "put /objects/bulk wrong fields returned ${resp.body}")
+        val json = JsonPath.parse(resp.body)
+        assertTrue(json.read<String?>("$.details") != null)
+        val details = json.read<Map<String, Any>>("$.details")
+        listOf("description", "owner", "unitSymbol").forEach { problematicFieldName ->
+            assertNotNull(details.keys.find { it.contains(problematicFieldName) },
+                    "should have validation error on field $problematicFieldName : ${json.jsonString()}")
+        }
+    }
+
+
+    @Test
+    fun `2-2 create objects in bulk`() {
         // == create
         val tag = "bulk-tag-${Random.nextInt()}"
         val names = listOf("bulk-${Random.nextInt()}", "bulk-${Random.nextInt()}")

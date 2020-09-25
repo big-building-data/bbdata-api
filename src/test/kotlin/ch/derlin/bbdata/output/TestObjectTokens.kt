@@ -78,7 +78,18 @@ class TestObjectTokens {
     }
 
     @Test
-    fun `1-3 test create token in bulk`() {
+    fun `1-3 test create token in bulk fail`() {
+        // == create
+        var resp = restTemplate.putWithBody("/objects/bulk/tokens", "[]")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "put in bulk: empty body returned ${resp.body}")
+
+        resp = restTemplate.putWithBody("/objects/bulk/tokens", """[{"objectId": -1}]""")
+        assertEquals(HttpStatus.BAD_REQUEST, resp.statusCode, "put in bulk: negative id returned ${resp.body}")
+        assertTrue(resp.body!!.contains("positive"), "put in bulk: body should have objectId positive related error ${resp.body}")
+    }
+
+    @Test
+    fun `1-4 test create token in bulk`() {
         // == create
         val otherId = 2
         val resp = restTemplate.putWithBody("/objects/bulk/tokens", """[
@@ -90,7 +101,7 @@ class TestObjectTokens {
         val putIds = json.read<List<Int>>("$[*].id")
         ids.add(putIds[0]) // add first id, as it has the "proper" objectId
 
-        val lst = json.read<List<Map<String,Any>>>("$[*]") // get second token
+        val lst = json.read<List<Map<String, Any>>>("$[*]") // get second token
         // check some variables
         assertEquals(2, lst.size, "put in bulk: expected two created objects ${resp.body}")
         assertEquals(objectId, lst[0].get("objectId"), "put in bulk: 0 wrong object id ${resp.body}")
@@ -100,10 +111,8 @@ class TestObjectTokens {
         // == get (second only)
         val (status, json2) = restTemplate.getQueryJson("/objects/$otherId/tokens/${lst[1].get("id")}")
         assertEquals(HttpStatus.OK, status)
-        val mp2 = json2.read<Map<String,Any>>("$")
+        val mp2 = json2.read<Map<String, Any>>("$")
         assertTrue(lst[1].equals(mp2), "put in bulk: ${lst[1]} should equal $mp2")
-
-
     }
 
     @Test

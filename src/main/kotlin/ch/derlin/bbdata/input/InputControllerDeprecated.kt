@@ -1,5 +1,6 @@
 package ch.derlin.bbdata.input
 
+import ch.derlin.bbdata.common.ValidatedList
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.web.bind.annotation.PostMapping
@@ -25,11 +26,11 @@ class InputControllerDeprecated(
             "Submit a new measure. This is similar to `/objects/values`, but takes only one measure in the body.")
     fun postNewMeasure(@Valid @NotNull @RequestBody rawMeasure: NewValue,
                        @RequestParam("simulate", defaultValue = "false") sim: Boolean): InputController.NewValueAugmented =
-            inputController.postNewMeasures(listOf(rawMeasure), sim)[0]
+            inputController.postNewMeasures(ValidatedList(rawMeasure), sim)[0]
 
     @PostMapping("input/measures/bulk")
     @Operation(description = "**DEPRECATED**: this endpoint may disappear in newer versions. Please use `/objects/values` instead.")
-    fun postNewMeasureBulk(@Valid @NotNull @RequestBody rawMeasures: List<NewValue>,
+    fun postNewMeasureBulk(@Valid @NotNull @RequestBody rawMeasures: ValidatedList<NewValue>,
                               @RequestParam("simulate", defaultValue = "false") sim: Boolean): List<InputController.NewValueAugmented> =
             inputController.postNewMeasures(rawMeasures, sim)
 

@@ -69,7 +69,7 @@ class ObjectsController(private val objectsAccessManager: ObjectsAccessManager,
     @PutMapping("")
     fun newObject(@UserId userId: Int,
                   @RequestBody @Valid newObject: NewObject
-    ): Objects = newObjectBulk(userId, listOf(newObject))[0]
+    ): Objects = newObjectBulk(userId, ValidatedList(newObject))[0]
 
 
     @Protected(SecurityConstants.SCOPE_WRITE)
@@ -79,11 +79,10 @@ class ObjectsController(private val objectsAccessManager: ObjectsAccessManager,
             "**RESTRICTION**: all objects MUST have the SAME OWNER.")
     @PutMapping("/bulk")
     fun newObjectBulk(@UserId userId: Int,
-                      @RequestBody @Valid newObjects: List<NewObject>
+                      @Valid @NotNull @RequestBody newObjectsList: ValidatedList<NewObject>
     ): List<Objects> {
+        val newObjects = newObjectsList.values
 
-        if (newObjects.size == 0)
-            throw WrongParamsException("object array is empty.")
         if (newObjects.any { it.owner != newObjects[0].owner })
             throw WrongParamsException("cannot create objects in bulk with different owners")
 

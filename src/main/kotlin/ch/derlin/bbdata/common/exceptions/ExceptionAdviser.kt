@@ -2,13 +2,11 @@ package ch.derlin.bbdata.common.exceptions
 
 import io.swagger.v3.oas.annotations.Hidden
 import org.hibernate.exception.ConstraintViolationException
-import org.springframework.boot.web.servlet.error.DefaultErrorAttributes
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.http.converter.HttpMessageNotReadableException
-import org.springframework.stereotype.Component
 import org.springframework.validation.BindException
 import org.springframework.validation.FieldError
 import org.springframework.validation.ObjectError
@@ -18,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
+
 
 
 /**
@@ -34,17 +33,6 @@ open class ExceptionBody(open val exception: String, open val details: Any?) {
                 exception = ex.lastName(),
                 details = ex.message ?: ""
         )
-    }
-}
-
-// for errors thrown at the server-level (404)
-@Component
-class ErrorAttributes : DefaultErrorAttributes() {
-    override fun getErrorAttributes(webRequest: WebRequest, includeStackTrace: Boolean): Map<String, Any?> {
-        val attrs = super.getErrorAttributes(webRequest, false)
-        return mapOf(
-                "exception" to attrs["error"],
-                "details" to attrs["message"])
     }
 }
 
@@ -78,6 +66,15 @@ class GlobalControllerExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(DataIntegrityViolationException::class)
     fun handleDataIntegrityException(ex: DataIntegrityViolationException): ExceptionBody = ex.body()
 
+    /*
+    @ExceptionHandler(javax.validation.ConstraintViolationException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @Hidden
+    fun handleConstraintViolationException(ex: javax.validation.ConstraintViolationException) =
+            // this one is thrown when validating a List<?> in parameters, if you do not use @ValidatedList
+            // but the @Validated on the controller class + @Valid @NotNull @RequestBody newObjects: List<@Valid CLS>...
+            ExceptionBody(ex.lastName(), ex.constraintViolations.map { it.propertyPath.toString() to it.message }.toMap())
+    */
 
     // === unknown exceptions
 

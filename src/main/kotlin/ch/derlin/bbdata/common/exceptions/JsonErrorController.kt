@@ -1,6 +1,8 @@
 package ch.derlin.bbdata.common.exceptions
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.web.error.ErrorAttributeOptions
+import org.springframework.boot.web.servlet.error.DefaultErrorAttributes
 import org.springframework.boot.web.servlet.error.ErrorController
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -17,13 +19,17 @@ import javax.servlet.http.HttpServletResponse
 class JsonErrorController : ErrorController {
 
     @Autowired
-    private lateinit var errorAttributes: ErrorAttributes
+    private lateinit var errorAttributes: DefaultErrorAttributes
 
     @RequestMapping(ERROR_PATH)
     fun error(request: HttpServletRequest, response: HttpServletResponse): Map<String, Any?> {
         // Appropriate HTTP response code (e.g. 404 or 500) is automatically set by Spring.
         // Here we just define response body, which is forced to be JSON (vs whitelabel error page in browser)
-        return errorAttributes.getErrorAttributes(ServletWebRequest(request), false)
+        val attrs = errorAttributes.getErrorAttributes(ServletWebRequest(request), ErrorAttributeOptions.of(
+                ErrorAttributeOptions.Include.MESSAGE, ErrorAttributeOptions.Include.BINDING_ERRORS))
+        return linkedMapOf(
+                "exception" to attrs["error"],
+                "details" to attrs["message"])
     }
 
     override fun getErrorPath(): String {
