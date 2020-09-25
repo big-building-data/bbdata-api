@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
@@ -25,13 +26,15 @@ class InputControllerDeprecated(
     @Operation(description = "**DEPRECATED**: this endpoint may disappear in newer versions. Please use `/objects/values` instead. <br>" +
             "Submit a new measure. This is similar to `/objects/values`, but takes only one measure in the body.")
     fun postNewMeasure(@Valid @NotNull @RequestBody rawMeasure: NewValue,
-                       @RequestParam("simulate", defaultValue = "false") sim: Boolean): InputController.NewValueAugmented =
-            inputController.postNewMeasures(ValidatedList(rawMeasure), sim)[0]
+                       @RequestParam("simulate", defaultValue = "false") sim: Boolean,
+                       request: HttpServletRequest): InputController.NewValueAugmented =
+            inputController.postNewMeasures(ValidatedList(rawMeasure), sim, request)[0]
 
     @PostMapping("input/measures/bulk")
     @Operation(description = "**DEPRECATED**: this endpoint may disappear in newer versions. Please use `/objects/values` instead.")
     fun postNewMeasureBulk(@Valid @NotNull @RequestBody rawMeasures: ValidatedList<NewValue>,
-                              @RequestParam("simulate", defaultValue = "false") sim: Boolean): List<InputController.NewValueAugmented> =
-            inputController.postNewMeasures(rawMeasures, sim)
+                           @RequestParam("simulate", defaultValue = "false") sim: Boolean,
+                           request: HttpServletRequest): List<InputController.NewValueAugmented> =
+            inputController.postNewMeasures(rawMeasures, sim, request)
 
 }

@@ -5,6 +5,7 @@ import ch.derlin.bbdata.common.dates.DurationParser
 import ch.derlin.bbdata.common.dates.JodaUtils
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.ItemNotFoundException
+import ch.derlin.bbdata.common.getIp
 import ch.derlin.bbdata.output.api.CommonResponses
 import ch.derlin.bbdata.output.api.SimpleModificationStatusResponse
 import ch.derlin.bbdata.output.api.users.UserRepository
@@ -19,6 +20,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -57,7 +59,7 @@ class ApikeyController(
     @Operation(description = "Login to the API using username/password. " +
             "It will create and return a writable apikey valid for $AUTOLOGIN_EXPIRE_HOURS hours.<br> " +
             "To access the other endpoints, use your user ID and the 32-char apikey secret returned.")
-    fun login(@Valid @NotNull @RequestBody loginBody: LoginBody): Apikey {
+    fun login(@Valid @NotNull @RequestBody loginBody: LoginBody, request: HttpServletRequest): Apikey {
         val optionalUserId = userRepository.findByName(loginBody.username!!).map { it.id }
         if (optionalUserId.isPresent && apikeyRepository.canLogin(optionalUserId.get(), loginBody.password!!) > 0) {
             return apikeyRepository.saveAndFlush(Apikey(
@@ -68,7 +70,7 @@ class ApikeyController(
                     expirationDate = DateTime().plus(AUTOLOGIN_EXPIRE)
             ))
         }
-        log.info("invalid login for username='${loginBody.username}' password='${loginBody.password}'")
+        log.info("FAILED LOGIN: <IP:${request.getIp()}> username='${loginBody.username}' password='${loginBody.password}'")
         throw ForbiddenException("Wrong username or password.")
     }
 

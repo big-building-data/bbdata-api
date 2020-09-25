@@ -2,6 +2,7 @@ package ch.derlin.bbdata.common
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
+import javax.servlet.http.HttpServletRequest
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.validation.constraints.Size
@@ -56,6 +57,17 @@ class ValidatedList<E> {
     }
 }
 
+/**
+ * Get the client's IP from the request
+ */
+fun HttpServletRequest.getIp(): String {
+    val ip = this.getHeader("X-Forwarded-For") ?: this.remoteAddr
+    return if (ip == "0:0:0:0:0:0:0:1") "127.0.0.1" else ip
 
+}
+
+/**
+ * Ellipsise a string. E.G "1234".truncate(4) = "1234", "1234567".truncate(4) = "1234[...]"
+ */
 fun String?.truncate(maxLength: Int = 30, ellipsis: String = "[${Typography.ellipsis}]"): String? =
         if (this != null && this.length > maxLength) this.take(maxLength).plus(ellipsis) else this
