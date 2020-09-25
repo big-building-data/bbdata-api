@@ -28,16 +28,20 @@ data class Stats(
 )
 
 interface StatsLogic {
-    fun incrementReadCounter(objectId: Long)
+
     fun getStats(objectId: Long): Stats
     fun updateStats(v: NewValue)
+    fun incrementReadCounter(objectId: Long)
+    fun updateAllStats(vs: List<NewValue>) {
+        vs.forEach { updateStats(it) }
+    }
+
+    @Async
+    fun incrementReadCounterAsync(objectId: Long) = incrementReadCounter(objectId)
 
     @Async
     fun updateAllStatsAsync(vs: List<NewValue>) = updateAllStats(vs)
 
-    fun updateAllStats(vs: List<NewValue>) {
-        vs.forEach { updateStats(it) }
-    }
 
 }
 

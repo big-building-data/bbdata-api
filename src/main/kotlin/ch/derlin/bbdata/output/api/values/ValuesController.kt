@@ -55,11 +55,13 @@ class ValuesController(
         checkObject(userId, objectId)
         val to = optionalTo ?: DateTime.now()
         val months = CassandraUtils.monthsBetween(YearMonth(from), YearMonth(to))
+
+        // update stats
+        statsLogic.incrementReadCounterAsync(objectId)
+
         // stream the values
         cassandraObjectStreamer.stream(contentType, response, RawValue.csvHeaders,
                 rawValueRepository.findByTimestampBetween(objectId.toInt(), months, from, to))
-        // update stats
-        statsLogic.incrementReadCounter(objectId)
 
     }
 
@@ -79,12 +81,13 @@ class ValuesController(
         // do the search
         val latest = rawValueRepository.findLatestValue(objectId, obj.creationdate!!, optionalBefore ?: DateTime.now())
 
+        // update stats
+        statsLogic.incrementReadCounterAsync(objectId)
+
         // stream the results
         cassandraObjectStreamer.stream(
                 contentType, response, RawValue.csvHeaders,
                 if (latest == null) listOf() else listOf(latest))
-        // update stats
-        statsLogic.incrementReadCounter(objectId)
     }
 
     @Protected
@@ -107,12 +110,14 @@ class ValuesController(
         val minutes = granularity.minutes
         val to = optionalTo ?: DateTime.now()
         val months = CassandraUtils.monthsBetween(YearMonth(from), YearMonth(to))
+
+        // update stats
+        statsLogic.incrementReadCounterAsync(objectId)
+
         // stream the results
         cassandraObjectStreamer.stream(
                 contentType, response, Aggregation.csvHeaders,
                 aggregationsRepository.findByTimestampBetween(minutes, objectId.toInt(), months, from, to))
-        // update stats
-        statsLogic.incrementReadCounter(objectId)
     }
 
 
