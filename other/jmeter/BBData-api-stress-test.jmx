@@ -33,6 +33,11 @@
             <stringProp name="Argument.value">wr1</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
+          <elementProp name="ramp_up" elementType="Argument">
+            <stringProp name="Argument.name">ramp_up</stringProp>
+            <stringProp name="Argument.value">0.1</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
           <elementProp name="threads_input" elementType="Argument">
             <stringProp name="Argument.name">threads_input</stringProp>
             <stringProp name="Argument.value">4</stringProp>
@@ -55,7 +60,7 @@
           </elementProp>
           <elementProp name="period" elementType="Argument">
             <stringProp name="Argument.name">period</stringProp>
-            <stringProp name="Argument.value">0.1</stringProp>
+            <stringProp name="Argument.value">100</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="id_inc" elementType="Argument">
@@ -173,7 +178,7 @@ prev.setIgnore()</stringProp>
           <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">${__P(@threads_input)}</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">${__P(@period)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(@ramp_up)}</stringProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
         <stringProp name="ThreadGroup.duration">${__P(@duration)}</stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
@@ -249,6 +254,10 @@ vars.put(&quot;bsh_done&quot;, &quot;1&quot;);
           <stringProp name="TestPlan.comments">object_id and token are generated in beanshell script (derived from threadNum), value is set in properties</stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
+          <stringProp name="ConstantTimer.delay">${__P(@period)}</stringProp>
+        </ConstantTimer>
+        <hashTree/>
       </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group: info" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">stoptestnow</stringProp>
@@ -257,7 +266,7 @@ vars.put(&quot;bsh_done&quot;, &quot;1&quot;);
           <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">${__P(@threads_info)}</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">${__P(@period)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(@ramp_up)}</stringProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
         <stringProp name="ThreadGroup.duration">${__P(@duration)}</stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
@@ -283,6 +292,10 @@ vars.put(&quot;bsh_done&quot;, &quot;1&quot;);
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
+          <stringProp name="ConstantTimer.delay">${__P(@period)}</stringProp>
+        </ConstantTimer>
+        <hashTree/>
       </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group: get latest" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">stoptestnow</stringProp>
@@ -291,7 +304,7 @@ vars.put(&quot;bsh_done&quot;, &quot;1&quot;);
           <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">${__P(@threads_get_latest)}</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">${__P(@period)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(@ramp_up)}</stringProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
         <stringProp name="ThreadGroup.duration">${__P(@duration)}</stringProp>
         <stringProp name="ThreadGroup.delay"></stringProp>
@@ -350,6 +363,10 @@ vars.put(&quot;bsh_done&quot;, &quot;1&quot;);</stringProp>
           </HeaderManager>
           <hashTree/>
         </hashTree>
+        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer" enabled="true">
+          <stringProp name="ConstantTimer.delay">${__P(@period)}</stringProp>
+        </ConstantTimer>
+        <hashTree/>
       </hashTree>
       <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree: errors only" enabled="true">
         <boolProp name="ResultCollector.error_logging">true</boolProp>
