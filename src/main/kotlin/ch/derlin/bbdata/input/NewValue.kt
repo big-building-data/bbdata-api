@@ -17,22 +17,22 @@ import javax.validation.constraints.Size
 
 data class NewValue(
 
-        @NotNull
-        @Min(value = 0, message = "objectId must be positive.")
+        @field:NotNull
+        @field:Min(value = 0, message = "objectId must be positive.")
         val objectId: Long? = null,
 
-        @NotNull
-        @Size(min = 32, max = 32, message = "wrong size: should be 32 chars long.")
+        @field:NotNull
+        @field:Size(min = 32, max = 32, message = "wrong size: should be 32 chars long.")
         val token: String? = null,
 
         //@NotNull(message = "Invalid date. Format: YYYY-MM-ddTHH:mm[:ss], range: 2016-01-01T00:00 to 2050-01-01T00:00")
         val timestamp: DateTime? = null,
 
-        @NotNull
-        @NotEmpty
+        @field:NotNull
+        @field:NotEmpty
         var value: String? = null,
 
-        @Size(max = 1024, message = "too long. Maximum set to 1024.")
+        @field:Size(max = 1024, message = "too long. Maximum set to 1024.")
         val comment: String? = null
 ) {
 

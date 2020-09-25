@@ -14,15 +14,17 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.cache.CacheManager
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.*
 import javax.validation.Valid
+import javax.validation.constraints.Min
 import javax.validation.constraints.Size
 
 /**
  * date: 23.12.19
  * @author Lucy Linder <lucy.derlin@gmail.com>
  */
-
+@Validated
 @RestController
 @RequestMapping("/objects")
 @Tag(name = "Objects Tokens", description = "Manage object tokens")
@@ -32,10 +34,11 @@ class ObjectsTokenController(private val objectsAccessManager: ObjectsAccessMana
 
 
     data class BulkTokenBody(
-            @NotNull
+            @field:javax.validation.constraints.NotNull
+            @field:Min(value = 0, message = "objectId must be positive.")
             val objectId: Long = 0,
 
-            @Size(max = Beans.DESCRIPTION_MAX)
+            @field:Size(max = Beans.DESCRIPTION_MAX)
             val description: String? = null
     )
 
@@ -82,7 +85,7 @@ class ObjectsTokenController(private val objectsAccessManager: ObjectsAccessMana
     @PutMapping("bulk/tokens")
     fun addObjectTokenBulk(
             @UserId userId: Int,
-            @Valid @RequestBody tokenBodies: List<BulkTokenBody>): MutableList<Token> {
+            @Valid @NotNull @RequestBody tokenBodies: List<@Valid BulkTokenBody>): MutableList<Token> {
 
         tokenBodies.forEach {
             // ensure rights
