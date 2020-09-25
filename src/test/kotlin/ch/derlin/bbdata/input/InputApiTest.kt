@@ -33,7 +33,7 @@ class InputApiTest {
     private lateinit var restTemplate: TestRestTemplate
 
     // asynchronous stats update, hence wait a bit (ms)
-    val statsWait: Long = 5000
+    val statsWait: Long = 100
 
     companion object {
         val OBJ = 1

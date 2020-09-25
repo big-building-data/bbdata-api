@@ -36,6 +36,7 @@ data class SqlStats(
         @Column(name = "avg_sample_period")
         var avgSamplePeriod: Double = .0
 ) {
+    /** THIS IS NOT USED ANYMORE see SqlStatsRepository for more details
     fun updateWithNewValue(v: NewValue) {
         if (nWrites > 0L) {
             val deltaMs = abs(v.timestamp!!.millis - lastTs!!.millis)
@@ -47,4 +48,6 @@ data class SqlStats(
 
         nWrites += 1
     }
+    */
+
 }

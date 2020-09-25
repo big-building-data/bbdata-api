@@ -52,13 +52,16 @@ class CassandraStatsLogic(private val objectStatsRepository: ObjectStatsReposito
         val objectStats = objectStatsRepository.findById(objectId).orElse(ObjectStats())
         val objectStatsCounter = objectStatsCounterRepository.findById(objectId).orElse(ObjectStatsCounter())
 
-        // compute new stats
-        val deltaMs = abs(v.timestamp!!.millis - (objectStats.lastTimestamp ?: v.timestamp).millis)
-        val nRecords = objectStatsCounter.nValues
-        val newSamplePeriod = if (nRecords > 0) (objectStats.avgSamplePeriod * (nRecords - 1) + deltaMs) / nRecords else .0f
+        // update object stats
+        if (objectStats.lastTimestamp == null || v.timestamp!! > objectStats.lastTimestamp) {
+            // update lastTs and compute sample period only if new value is not a late timestamp
+            val deltaMs = abs(v.timestamp!!.millis - (objectStats.lastTimestamp ?: v.timestamp).millis)
+            val nRecords = objectStatsCounter.nValues
+            val newSamplePeriod = if (nRecords > 0) (objectStats.avgSamplePeriod * (nRecords - 1) + deltaMs) / nRecords else .0f
+            objectStatsRepository.update(v.objectId.toInt(), newSamplePeriod, v.timestamp)
+        }
 
-        // save new stats
-        objectStatsRepository.update(v.objectId.toInt(), newSamplePeriod, v.timestamp)
+        // increment counter
         objectStatsCounterRepository.updateWriteCounter(v.objectId.toInt())
     }
 
@@ -88,30 +91,11 @@ class CassandraStatsLogic(private val objectStatsRepository: ObjectStatsReposito
 class SqlStatsLogic(private val statsRepository: SqlStatsRepository) : StatsLogic {
 
     override fun updateStats(v: NewValue) {
-        val stats = statsRepository.findById(v.objectId!!).orElse(SqlStats(objectId = v.objectId))
-        stats.updateWithNewValue(v)
-        statsRepository.save(stats)
-    }
-
-    override fun updateAllStats(vs: List<NewValue>) {
-        // get all unique objects whose objectIds are in vs
-        val stats = vs.map { it.objectId!! }.toSet().map{ objectId ->
-            objectId to statsRepository.findById(objectId).orElse(SqlStats(objectId = objectId))
-        }.toMap()
-
-        // update each: this will also work when multiple values target the same object
-        vs.forEach {
-            stats[it.objectId]!!.updateWithNewValue(it)
-        }
-
-        // use the bulk save option of MySQL repositories to speed up the process
-        statsRepository.saveAll(stats.values)
+        statsRepository.updateWriteStats(v.objectId!!, v.timestamp!!)
     }
 
     override fun incrementReadCounter(objectId: Long) {
-        val stats = statsRepository.findById(objectId).orElse(SqlStats(objectId = objectId))
-        stats.nReads += 1
-        statsRepository.save(stats)
+        statsRepository.updateReadCounter(objectId)
     }
 
     override fun getStats(objectId: Long): Stats {
