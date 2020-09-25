@@ -94,16 +94,22 @@ class SqlStatsLogic(private val statsRepository: SqlStatsRepository) : StatsLogi
     }
 
     override fun updateAllStats(vs: List<NewValue>) {
+        // get all unique objects whose objectIds are in vs
+        val stats = vs.map { it.objectId!! }.toSet().map{ objectId ->
+            objectId to statsRepository.findById(objectId).orElse(SqlStats(objectId = objectId))
+        }.toMap()
+
+        // update each: this will also work when multiple values target the same object
+        vs.forEach {
+            stats[it.objectId]!!.updateWithNewValue(it)
+        }
+
         // use the bulk save option of MySQL repositories to speed up the process
-        statsRepository.saveAll(vs.map { v ->
-            val stats = statsRepository.findById(v.objectId!!).orElse(SqlStats(objectId = v.objectId))
-            stats.updateWithNewValue(v)
-            stats
-        })
+        statsRepository.saveAll(stats.values)
     }
 
     override fun incrementReadCounter(objectId: Long) {
-        val stats = statsRepository.findById(objectId).orElseGet{ SqlStats(objectId = objectId) }
+        val stats = statsRepository.findById(objectId).orElse(SqlStats(objectId = objectId))
         stats.nReads += 1
         statsRepository.save(stats)
     }
