@@ -64,7 +64,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1601301660761,
+  "iteration": 1601312269924,
   "links": [],
   "panels": [
     {
@@ -140,30 +140,103 @@
       "type": "stat"
     },
     {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
       "datasource": "${DS_PROMETHEUS}",
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "custom": {}
         },
         "overrides": []
       },
+      "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
-        "h": 3,
-        "w": 9,
-        "x": 6,
+        "h": 6,
+        "w": 12,
+        "x": 3,
         "y": 1
       },
-      "id": 23,
-      "options": {
-        "content": "- *rejected measures*: wrong body received in input endpoint,\n- *failed login*: wrong username/password at /login\n- *failed auth*: wrong bbuser/bbtoken \n   (using a read-only apikey on a write endpoint is not counted)",
-        "mode": "markdown"
+      "hiddenSeries": false,
+      "id": 32,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": true,
+        "rightSide": true,
+        "show": true,
+        "total": false,
+        "values": true
       },
-      "pluginVersion": "7.1.0",
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.2.0",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "avg(rate(http_server_requests_seconds_sum{instance=~\"$instance\", uri=~\"(/objects/values)|(/input/.*)\", status=\"200\"}[1m]) / rate(http_server_requests_seconds_count{instance=~\"$instance\", uri=~\"(/objects/values)|(/input/.*)\", status=\"200\"}[1m])) by (uri)",
+          "interval": "",
+          "legendFormat": "{{uri}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
-      "title": "",
-      "type": "text"
+      "title": "Input endpoints: latency",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:1897",
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:1898",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
       "datasource": "${DS_PROMETHEUS}",
@@ -340,13 +413,97 @@
       "type": "stat"
     },
     {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "noValue": "0",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 3,
+        "x": 0,
+        "y": 4
+      },
+      "id": 36,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.2.0",
+      "targets": [
+        {
+          "expr": "sum(http_server_requests_seconds_count{instance=~\"$instance\", status!=\"200\"})",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Exceptions",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 9,
+        "x": 15,
+        "y": 4
+      },
+      "id": 23,
+      "options": {
+        "content": "- *rejected measures*: wrong body received in input endpoint,\n- *failed login*: wrong username/password at /login\n- *failed auth*: wrong bbuser/bbtoken \n   (using a read-only apikey on a write endpoint is not counted)",
+        "mode": "markdown"
+      },
+      "pluginVersion": "7.1.0",
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "",
+      "type": "text"
+    },
+    {
       "collapsed": false,
       "datasource": "${DS_PROMETHEUS}",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 4
+        "y": 7
       },
       "id": 11,
       "panels": [],
@@ -359,7 +516,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_PROMETHEUS}",
-      "description": "Number of HTTP requests that succeeded, across all instances",
+      "description": "Throughput (requests per second): rate(timer_count[10s]) averaged over instances",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -372,7 +529,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 5
+        "y": 8
       },
       "hiddenSeries": false,
       "id": 6,
@@ -414,7 +571,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "HTTP requests: 200 OK",
+      "title": "Throughput (requests per seconds)",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -430,7 +587,8 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "$$hashKey": "object:1821",
+          "format": "reqps",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -438,6 +596,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:1822",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -457,7 +616,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_PROMETHEUS}",
-      "description": "Duration of HTTP requests that succeeded, across all instances",
+      "description": "Average latency: rate(timer_sum[10s])/rate(timer_count[10s]) averaged over instances",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -470,19 +629,19 @@
         "h": 7,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 16
       },
       "hiddenSeries": false,
       "id": 9,
       "legend": {
         "alignAsTable": true,
-        "avg": false,
-        "current": true,
-        "max": false,
-        "min": false,
+        "avg": true,
+        "current": false,
+        "max": true,
+        "min": true,
         "rightSide": true,
         "show": true,
-        "total": true,
+        "total": false,
         "values": true
       },
       "lines": true,
@@ -502,7 +661,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(http_server_requests_seconds_sum{uri!~\".*((actuator)|(docs)).*\", instance=~\"$instance\", status=\"200\"}[1m])) by (method,uri)",
+          "expr": "avg(irate(http_server_requests_seconds_sum{uri!~\".*((actuator)|(docs)).*\", instance=~\"$instance\", status=\"200\"}[1m]) / irate(http_server_requests_seconds_count{uri!~\".*((actuator)|(docs)).*\", instance=~\"$instance\", status=\"200\"}[1m])) by (method,uri)",
           "interval": "",
           "legendFormat": "{{method}} {{uri}}",
           "refId": "A"
@@ -512,7 +671,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Response times: 200 OK",
+      "title": "Average latency",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -528,7 +687,8 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "$$hashKey": "object:1751",
+          "format": "s",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -536,6 +696,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:1752",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -556,7 +717,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 20
+        "y": 23
       },
       "id": 17,
       "panels": [],
@@ -582,7 +743,7 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 21
+        "y": 24
       },
       "hiddenSeries": false,
       "id": 4,
@@ -614,7 +775,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(irate(http_server_requests_seconds_count{instance=~\"$instance\", uri!~\".*((actuator)|(docs)).*\"}[5m]))",
+          "expr": "sum(increase(ch_derlin_input_rejected_count[1m]))",
           "interval": "",
           "legendFormat": "total",
           "refId": "A"
@@ -640,7 +801,8 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "$$hashKey": "object:1709",
+          "format": "req.",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -648,12 +810,13 @@
           "show": true
         },
         {
-          "format": "short",
+          "$$hashKey": "object:1710",
+          "format": "s",
           "label": null,
           "logBase": 1,
           "max": null,
           "min": null,
-          "show": true
+          "show": false
         }
       ],
       "yaxis": {
@@ -667,7 +830,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_PROMETHEUS}",
-      "description": "Number of exceptions raised, summed across all instances.",
+      "description": "Number of requests with non 200 status codes",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -680,7 +843,7 @@
         "h": 6,
         "w": 16,
         "x": 8,
-        "y": 21
+        "y": 24
       },
       "hiddenSeries": false,
       "id": 8,
@@ -712,7 +875,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(rate(http_server_requests_seconds_count{instance=~\"$instance\", uri!~\".*((actuator)|(docs)).*\", status!=\"200\"}[1m])) by (method,uri,exception)",
+          "expr": "sum(increase(http_server_requests_seconds_count{instance=~\"$instance\", uri!~\".*((actuator)|(docs)).*\", status!=\"200\"}[1m])) by (method,uri,exception)",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
@@ -724,7 +887,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Exceptions",
+      "title": "Non 200 status codes",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -740,7 +903,8 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "$$hashKey": "object:1959",
+          "format": "req.",
           "label": null,
           "logBase": 1,
           "max": null,
@@ -748,6 +912,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:1960",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -762,13 +927,68 @@
       }
     },
     {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 11,
+        "x": 13,
+        "y": 30
+      },
+      "id": 34,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.2.0",
+      "targets": [
+        {
+          "expr": "sum(http_server_requests_seconds_count{instance=~\"$instance\", status!=\"200\"}) by (status, exception)",
+          "interval": "",
+          "legendFormat": "{{status}} {{exception}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Exceptions",
+      "type": "bargauge"
+    },
+    {
       "collapsed": true,
       "datasource": "${DS_PROMETHEUS}",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 34
       },
       "id": 29,
       "panels": [
@@ -798,7 +1018,7 @@
             "h": 4,
             "w": 7,
             "x": 0,
-            "y": 2
+            "y": 25
           },
           "id": 25,
           "options": {
@@ -854,7 +1074,7 @@
             "h": 4,
             "w": 8,
             "x": 7,
-            "y": 2
+            "y": 25
           },
           "id": 27,
           "options": {
@@ -874,7 +1094,7 @@
             {
               "expr": "sum(ch_derlin_auth_failed_count{instance=~\"$instance\"}) by (user_id)",
               "interval": "",
-              "legendFormat": "{{user_id}}",
+              "legendFormat": "bbuser: {{user_id}}",
               "refId": "A"
             }
           ],
@@ -910,7 +1130,7 @@
             "h": 4,
             "w": 8,
             "x": 15,
-            "y": 2
+            "y": 25
           },
           "id": 30,
           "options": {
@@ -928,9 +1148,9 @@
           "pluginVersion": "7.2.0",
           "targets": [
             {
-              "expr": "sum(ch_derlin_input_rejected_count{instance=~\"$instance\"}) by (user_id)",
+              "expr": "sum(ch_derlin_input_rejected_count{instance=~\"$instance\"}) by (object_id)",
               "interval": "",
-              "legendFormat": "{{user_id}}",
+              "legendFormat": "object_id: {{object_id}}",
               "refId": "A"
             }
           ],
@@ -978,9 +1198,22 @@
     "from": "now-6h",
     "to": "now"
   },
-  "timepicker": {},
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "15s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ]
+  },
   "timezone": "",
   "title": "BBData dashboard",
   "uid": "037g_cFGk",
-  "version": 10
+  "version": 18
 }
