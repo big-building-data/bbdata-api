@@ -1,6 +1,7 @@
 package ch.derlin.bbdata.input
 
 import ch.derlin.bbdata.HiddenEnvironmentVariables
+import ch.derlin.bbdata.actuators.CustomMetrics
 import ch.derlin.bbdata.common.ValidatedList
 import ch.derlin.bbdata.common.cassandra.RawValueRepository
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
@@ -36,6 +37,8 @@ class InputController(
         private val rawValueRepository: RawValueRepository,
         private val statsLogic: StatsLogic,
         private val mapper: ObjectMapper,
+        private val customMetrics: CustomMetrics,
+        private val httpServletRequest: HttpServletRequest,
         private val kafkaTemplate: KafkaTemplate<String, String> // note: ignore jetbrains [false] warning
 ) {
 
@@ -47,6 +50,11 @@ class InputController(
     private val NO_KAFKA: Boolean = false
 
     private val MAX_LAG: Long = 2000 // in millis
+
+    private fun reject(objectId: Long, message: String) {
+        customMetrics.reject(objectId)
+        log.info("REJECTED: <IP:${httpServletRequest.getIp()}> $message")
+    }
 
     data class NewValueAugmented(
             val objectId: Long,
@@ -73,14 +81,14 @@ class InputController(
         }
     }
 
+
     @PostMapping("objects/values")
     @Operation(description = "Submit new measures. " +
             "Each objectId/timestamp couple must be unique, both in the body and the database. Hence, any duplicate will make the request fail. " +
             "If you omit to provide a timestamp for any measure, it will be added automatically (server time). " +
             "This request is *atomic*: either *all* measures are valid and saved, or none. ")
     fun postNewMeasures(@Valid @NotNull @RequestBody rawMeasures: ValidatedList<NewValue>,
-                        @RequestParam("simulate", defaultValue = "false") sim: Boolean,
-                        request: HttpServletRequest): List<NewValueAugmented> {
+                        @RequestParam("simulate", defaultValue = "false") sim: Boolean): List<NewValueAugmented> {
 
         val now = DateTime()
 
@@ -88,10 +96,12 @@ class InputController(
         val valueKeys = mutableSetOf<String>()
 
         val (measures, rawValues) = rawMeasures.values.map { rawMeasure ->
+            val objectId = rawMeasure.objectId!!
+
             val measure = if (rawMeasure.timestamp != null) {
                 // check that date is in the past
                 if (rawMeasure.timestamp.millis > now.millis + MAX_LAG) {
-                    log.info("REJECTED: <IP:${request.getIp()}> wrong timestamp: ${rawMeasure}")
+                    reject(objectId, "wrong timestamp: ${rawMeasure}")
                     throw WrongParamsException("objectId ${rawMeasure.objectId}: date should be in the past. input='${rawMeasure.timestamp}', now='$now'")
                 }
                 rawMeasure
@@ -102,18 +112,18 @@ class InputController(
 
             // get metadata
             val meta = inputRepository.getMeasureMeta(measure.objectId!!, measure.token!!).orElseThrow {
-                log.info("REJECTED: <IP:${request.getIp()}> wrong token: $measure")
+                reject(objectId, "wrong token: $measure")
                 ItemNotFoundException(msg = "objectId ${measure.objectId}: the pair <objectId, token> does not exist")
             }
             // ensure the object is enabled. This is just a double check, as tokens cannot be created on disabled objects
             if (meta.disabled) {
-                log.info("REJECTED: <IP:${request.getIp()}> object is disabled: $rawMeasure")
+                reject(objectId, "object is disabled: $rawMeasure")
                 throw ForbiddenException("objectId ${rawMeasure.objectId} is disabled.")
             }
             // ensure the measure matches the type declared, and parse it
             val parsedValue = BaseType.parseType(measure.value!!, meta.type)
             if (parsedValue == null) {
-                log.info("REJECTED: <IP:${request.getIp()}> wrong value given the unit: $measure, $meta")
+                reject(objectId, "wrong value given the unit: $measure, $meta")
                 throw WrongParamsException("objectId ${rawMeasure.objectId}: the value '${measure.value}' does not match " +
                         "the unit ${meta.unitSymbol} (${meta.type}) declared in the object definition.")
             }
@@ -126,14 +136,14 @@ class InputController(
 
             // ensure no duplicate objectId/timestamp in the data sent
             if (valueKeys.contains(key)) {
-                log.info("REJECTED: <IP:${request.getIp()}> duplicate in body: $measure")
+                reject(objectId, "duplicate in body: $measure")
                 throw WrongParamsException("objectId ${measure.objectId}: two or more values with the same timestamp")
             }
             valueKeys.add(key)
 
             // ensure it doesn't already exist in cassandra TODO: find a better way ?
             if (rawValueRepository.existsById(rawValue.key)) {
-                log.info("REJECTED: <IP:${request.getIp()}> duplicate in cassandra: $measure")
+                reject(objectId, "duplicate in cassandra: $measure")
                 throw WrongParamsException("objectId ${rawMeasure.objectId}: " +
                         "a value with the same timestamp (${measure.timestamp}) already exists for this object.")
             }

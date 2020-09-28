@@ -36,4 +36,5 @@ out/
 
 ### Other ###
 other/cassandra/data
+other/monitoring/data
 logs

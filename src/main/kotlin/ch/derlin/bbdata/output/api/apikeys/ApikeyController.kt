@@ -1,5 +1,6 @@
 package ch.derlin.bbdata.output.api.apikeys
 
+import ch.derlin.bbdata.actuators.CustomMetrics
 import ch.derlin.bbdata.common.Beans
 import ch.derlin.bbdata.common.dates.DurationParser
 import ch.derlin.bbdata.common.dates.JodaUtils
@@ -34,7 +35,8 @@ import javax.validation.constraints.Size
 @Tag(name = "Authentication", description = "Login/Logout and manage API keys")
 class ApikeyController(
         private val apikeyRepository: ApikeyRepository,
-        private val userRepository: UserRepository) {
+        private val userRepository: UserRepository,
+        private val customMetrics: CustomMetrics) {
 
     private val log: Logger = LoggerFactory.getLogger(ApikeyController::class.java)
 
@@ -70,6 +72,7 @@ class ApikeyController(
                     expirationDate = DateTime().plus(AUTOLOGIN_EXPIRE)
             ))
         }
+        customMetrics.loginFailed(loginBody.username)
         log.info("FAILED LOGIN: <IP:${request.getIp()}> username='${loginBody.username}' password='${loginBody.password}'")
         throw ForbiddenException("Wrong username or password.")
     }

@@ -3,6 +3,7 @@ package ch.derlin.bbdata.output.security
 
 import ch.derlin.bbdata.HiddenEnvironmentVariables
 import ch.derlin.bbdata.Profiles
+import ch.derlin.bbdata.actuators.CustomMetrics
 import ch.derlin.bbdata.common.exceptions.BadApikeyException
 import ch.derlin.bbdata.common.exceptions.ForbiddenException
 import ch.derlin.bbdata.common.exceptions.UnauthorizedException
@@ -67,10 +68,9 @@ class DummyWebMvcConfiguration : WebMvcConfigurer {
 
 @Component
 @Profile(Profiles.NOT_UNSECURED)
-class AuthInterceptor : HandlerInterceptor {
-
-    @Autowired
-    lateinit var apikeyRepository: ApikeyRepository
+class AuthInterceptor(
+        private val apikeyRepository: ApikeyRepository,
+        private val customMetrics: CustomMetrics) : HandlerInterceptor {
 
     private val log: Logger = LoggerFactory.getLogger(AuthInterceptor::class.java)
 
@@ -112,6 +112,7 @@ class AuthInterceptor : HandlerInterceptor {
         bbuser.toIntOrNull()?.let { userId ->
             // check valid tokens
             val apikey = apikeyRepository.findValid(userId, bbtoken).orElseThrow {
+                customMetrics.authFailed(userId)
                 log.info("wrong apikey for userId=$userId token='$bbtoken'")
                 BadApikeyException("Access denied for user $userId : bad apikey")
             }
