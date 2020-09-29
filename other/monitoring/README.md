@@ -2,7 +2,33 @@
 
 This folder contains a docker compose to monitor BBData API instances using Prometheus + Grafana.
 
-**IMPORTANT**: for this to work, the BBData API instances must be launched with the property `management.endpoint.prometheus.enabled=true`.
+**IMPORTANT**: for this to work, the BBData API instances must be launched with the prometheus endpoint enabled (see [prerequisites](#prerequisites)).
+
+- [Prerequisites](#prerequisites)
+- [Setup and Run](#setup-and-run)
+- [prometheus](#prometheus)
+- [Grafana](#grafana)
+    * [First use](#first-use)
+    * [Tips](#tips)
+- [Resources](#resources)
+
+
+## Prerequisites
+
+The BBData-API must expose all the metrics, as well as the `/prometheus` endpoint.
+The best way to do so is to set the following properties:
+```properties
+# IMPORTANT: actuators may be dangerous, so ensure you run it on another port, that is only available to administrators !
+# (in this case, the regular API runs on port 8080 and port 8111 is NOT available from the outside)
+
+# enable ALL actuators and metrics
+management.endpoints.web.exposure.include=*
+management.endpoint.health.show-components=always
+# run management interface on a different port
+management.server.port=8111
+# remove the default /actuator path prefix
+management.endpoints.web.base-path=/
+```
 
 ## Setup and Run
 

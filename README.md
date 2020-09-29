@@ -8,27 +8,28 @@ This repository is the cornerstone of BBData. It contains:
 2. dockerfiles and docker-compose for local testing, including: MySQL, Cassandra, Kafka
 3. the definition of the two databases at the center of BBData: MySQL & Cassandra
 
-
-
 - [Development setup](#development-setup)
-  * [Prerequisites](#prerequisites)
-  * [Setup](#setup)
-  * [Cassandra, MySQL and Kafka](#cassandra-mysql-and-kafka)
-  * [Profiles](#profiles)
-  * [Hidden system variables](#hidden-system-variables)
+    * [Prerequisites](#prerequisites)
+    * [Setup](#setup)
+    * [Cassandra, MySQL and Kafka](#cassandra--mysql-and-kafka)
+    * [Profiles](#profiles)
+    * [Hidden system variables](#hidden-system-variables)
 - [Production](#production)
-  * [Minimal properties to provide](#minimal-properties-to-provide)
-  * [Executing the jar](#executing-the-jar)
-  * [Caching](#caching)
-  * [Async](#async)
-  * [Logging](#logging)
-  * [Monitoring](#monitoring)
+    * [Minimal properties to provide](#minimal-properties-to-provide)
+    * [Executing the jar](#executing-the-jar)
+    * [Caching](#caching)
+    * [Async](#async)
+    * [Logging](#logging)
+    * [Monitoring](#monitoring)
 - [Permission system](#permission-system)
-- [Actuators](#actuators)
-  * [Management interface (Spring Boot Admin)](#management-interface-spring-boot-admin)
-  * [Customizing the `/info` endpoint](#customizing-the-about-info-endpoint)
-  * [Task executor monitoring](#task-executor-monitoring)
-  * [Changing exposed actuators](#changing-exposed-actuators)
+- [Actuators and metrics](#actuators-and-metrics)
+    * [Customizing the `/about` (`/info`) endpoint](#customizing-the---about-----info---endpoint)
+    * [Task executor actuator](#task-executor-actuator)
+    * [Custom metrics](#custom-metrics)
+    * [Changing exposed actuators](#changing-exposed-actuators)
+- [Monitoring](#monitoring)
+    * [Spring Boot Admin](#spring-boot-admin)
+    * [Prometheus + Graffana](#prometheus---graffana)
     
 ## Development setup
 
@@ -311,10 +312,6 @@ To deal with tabs, new lines and special characters, also define the following p
 $EscapeControlCharactersOnReceive off
 ```
 
-### Monitoring
-
-See [Spring Boot Admin](#management-interface-spring-boot-admin).
-
 ## Permission system
 
 ‼️ **tldr; IMPORTANT** Ensure that the `userGroup` with ID 1 has a meaningful name in the database (e.g. "admin") and that
@@ -336,7 +333,9 @@ This is the equivalent of `SUDO`: any admin of this group has read/write access 
 
 (see the documentation for more info)
 
-## Actuators
+## Actuators and metrics
+
+See [Spring Boot Actuator: Production-ready Features](https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html).
 
 Actuators are a way to monitor the API. They can leak sensitive information, so the management interface should
 run on another port as the API, which only administrators have access to.
@@ -352,26 +351,8 @@ or by disabling unsecure actuators, e.g.:
 management.endpoints.web.exposure.include=info
 ```
 
-### Management interface (Spring Boot Admin)
-
-In production, the best would be to use [Spring Boot Admin](https://codecentric.github.io/spring-boot-admin/2.3.0/).
-The client is already included in the bbdata-api jar. What you need to do:
-
-1. run a Spring Boot Admin server (see the doc),
-2. set the properties below in your application.properties
-
-````properties
-## Spring Boot Admin
-
-# expose every actuator available, but ensure it runs on another (secured) port !
-management.server.port=8111
-management.endpoints.web.exposure.include=*
-
-# enable spring boot admin client, and provide the server's URL
-spring.boot.admin.client.enabled=true
-spring.boot.admin.client.url=<URL OF THE ADMIN SERVER>
-spring.boot.admin.client.instance.name=BBData test Instance
-````
+Note that if you want to use one or more monitoring systems (see [Monitoring](#monitoring)), you will need to expose
+all metrics.
 
 ### Customizing the `/about` (`/info`) endpoint
 
@@ -399,20 +380,88 @@ dynamic.info.<JSON-KEY-NAME-WITHOUT-DOTS>=<ANOTHER PROPERTY>
 
 To hide a dynamic property that is displayed, simply redefine it with an empty value, e.g. `dynamic.info.cache-type=`.
 
-### task executor monitoring
+### Task executor actuator
 
 By default, and if `sync.enabled=true`, there is a custom `/tasks` actuator that returns statistics about the task executor
 (core size, active threads) and the tasks. To disable this endpoint, change exposed actuators (`id=tasks`).
+
+### Custom metrics
+
+Custom metrics are:
+
+* Task Executor:
+    - `async.executor` 
+    - `async.executor.active` 
+    - `async.executor.completed` 
+    - `async.executor.idle` 
+    - `async.executor.pool.core` 
+    - `async.executor.pool.max` 
+    - `async.executor.pool.size` 
+    - `async.executor.queue.remaining` 
+    - `async.executor.queued`
+
+* Input:
+    - `ch.derlin.input.rejected`
+    - `ch.derlin.login.failed`
+    - `ch.derlin.auth.failed`
+
+
+**IMPORTANT**: as long as there is no value, the metric won't appear / doesn't exist.
+This means `/metrics/ch.derlin.login.failed` will return `404` as long as no failed login occurred. 
+Likewise, `metrics/async_*` won't appear if `sync.enabled=false` and/or no value has ever been submitted.
 
 ### Changing exposed actuators
 
 [Spring Boot Actuator](https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-features.html#production-ready)
 
 By default, the exposed actuators are defined in `application.properties`, using the key
-`management.endpoints.web.exposure.include=`. Feel free to change this list as you see fit.
+`management.endpoints.web.exposure.include=`. Feel free to change this list as you see fit, or enable all using `*`.
 
 To **turn off** all endpoints, simply add:
 ```properties
 management.server.port=
 management.endpoints.web.exposure.include=none
 ```
+
+## Monitoring
+
+There are two (complementary?) supported monitoring systems: 
+
+* [Spring Boot Admin](https://codecentric.github.io/spring-boot-admin/2.3.0/), 
+  which lets you interact with the actuators from a UI (clear the cache, change logging levels, etc.);
+* [Prometheus](https://prometheus.io/) + [Graffana](https://grafana.com/),
+  which lets you graph and monitor different metrics.
+
+### Spring Boot Admin
+
+Spring Boot Admin needs a server running, as well as a client embedded into the API.
+
+For a basic server implementation, see https://github.com/big-building-data/spring-boot-admin
+ ([nightly release](https://github.com/big-building-data/spring-boot-admin/releases/tag/nightly)).
+
+The client is already included in the bbdata-api jar. What you need to do:
+
+1. run a Spring Boot Admin server,
+2. set the properties below in your application.properties
+
+````properties
+## Spring Boot Admin
+
+# expose every actuator available, but ensure it runs on another (secured) port !
+management.server.port=8111
+management.endpoints.web.exposure.include=*
+
+# enable spring boot admin client, and provide the server's URL
+spring.boot.admin.client.enabled=true
+spring.boot.admin.client.url=<URL OF THE ADMIN SERVER>
+spring.boot.admin.client.instance.name=BBData test Instance
+````
+
+### Prometheus + Graffana
+
+The BBData API ships with `io.micrometer:micrometer-registry-prometheus`. 
+If the property `management.endpoint.prometheus.enabled=true` and `prometheus` is exposed (see `management.endpoints.web.exposure.include`),
+you can see every available metric at http://localhost:8111/prometheus.
+
+See the [other/monitoring's README](https://github.com/big-building-data/bbdata-api/tree/master/other/monitoring) for more info
+on how to setup Prometheus and Graffana.

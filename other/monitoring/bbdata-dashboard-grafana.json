@@ -1,52 +1,4 @@
 {
-  "__inputs": [
-    {
-      "name": "DS_PROMETHEUS",
-      "label": "Prometheus",
-      "description": "",
-      "type": "datasource",
-      "pluginId": "prometheus",
-      "pluginName": "Prometheus"
-    }
-  ],
-  "__requires": [
-    {
-      "type": "panel",
-      "id": "bargauge",
-      "name": "Bar gauge",
-      "version": ""
-    },
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "7.2.0"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": ""
-    },
-    {
-      "type": "datasource",
-      "id": "prometheus",
-      "name": "Prometheus",
-      "version": "1.0.0"
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "text",
-      "name": "Text",
-      "version": "7.1.0"
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -63,13 +15,13 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": null,
-  "iteration": 1601365645731,
+  "id": 2,
+  "iteration": 1601367799878,
   "links": [],
   "panels": [
     {
       "collapsed": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -82,7 +34,7 @@
       "type": "row"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "custom": {},
@@ -144,10 +96,24 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -160,7 +126,7 @@
         "y": 1
       },
       "hiddenSeries": false,
-      "id": 32,
+      "id": 42,
       "legend": {
         "alignAsTable": true,
         "avg": true,
@@ -172,7 +138,7 @@
         "total": false,
         "values": true
       },
-      "lines": true,
+      "lines": false,
       "linewidth": 1,
       "nullPointMode": "null",
       "options": {
@@ -181,7 +147,7 @@
       "percentage": false,
       "pluginVersion": "7.2.0",
       "pointradius": 2,
-      "points": false,
+      "points": true,
       "renderer": "flot",
       "seriesOverrides": [],
       "spaceLength": 10,
@@ -189,9 +155,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "avg(rate(http_server_requests_seconds_sum{instance=~\"$instance\", uri=~\"(/objects/values)|(/input/.*)\", status=\"200\"}[1m]) / rate(http_server_requests_seconds_count{instance=~\"$instance\", uri=~\"(/objects/values)|(/input/.*)\", status=\"200\"}[1m])) by (uri)",
-          "interval": "",
-          "legendFormat": "{{uri}}",
+          "expr": "http_server_requests_seconds_max{instance=~\"$instance\", uri=~\"(/objects/values)|(/input/.*)\", status=\"200\"}",
+          "instant": false,
+          "interval": "2m",
+          "intervalFactor": 1,
+          "legendFormat": "{{instance}} {{uri}}",
           "refId": "A"
         }
       ],
@@ -199,7 +167,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Input endpoints: latency",
+      "title": "Input endpoints: max latency",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -239,7 +207,7 @@
       }
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "custom": {},
@@ -297,7 +265,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "custom": {},
@@ -355,7 +323,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "custom": {},
@@ -413,7 +381,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "custom": {},
@@ -471,7 +439,7 @@
       "type": "stat"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -498,7 +466,7 @@
     },
     {
       "collapsed": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -515,7 +483,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "description": "Throughput (requests per second): rate(timer_count[10s]) averaged over instances",
       "fieldConfig": {
         "defaults": {
@@ -615,7 +583,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "description": "Average latency: rate(timer_sum[10s])/rate(timer_count[10s]) averaged over instances",
       "fieldConfig": {
         "defaults": {
@@ -712,7 +680,7 @@
     },
     {
       "collapsed": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -730,7 +698,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "custom": {},
@@ -756,7 +724,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 7,
-        "w": 6,
+        "w": 9,
         "x": 0,
         "y": 24
       },
@@ -845,7 +813,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "custom": {},
@@ -871,8 +839,8 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 7,
-        "w": 6,
-        "x": 6,
+        "w": 8,
+        "x": 9,
         "y": 24
       },
       "hiddenSeries": false,
@@ -957,7 +925,7 @@
     },
     {
       "collapsed": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -974,7 +942,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "description": "Total number of measures rejected by the input API, summed across all instances",
       "fieldConfig": {
         "defaults": {
@@ -1074,7 +1042,7 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "description": "Number of requests with non 200 status codes",
       "fieldConfig": {
         "defaults": {
@@ -1172,7 +1140,7 @@
       }
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "custom": {},
@@ -1228,7 +1196,7 @@
     },
     {
       "collapsed": false,
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1241,7 +1209,7 @@
       "type": "row"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "fieldConfig": {
         "defaults": {
           "custom": {},
@@ -1296,7 +1264,7 @@
       "type": "bargauge"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "description": "user_id that failed authentication (wrong bbuser/bbtoken)",
       "fieldConfig": {
         "defaults": {
@@ -1352,7 +1320,7 @@
       "type": "bargauge"
     },
     {
-      "datasource": "${DS_PROMETHEUS}",
+      "datasource": null,
       "description": "user_id that failed authentication (wrong bbuser/bbtoken)",
       "fieldConfig": {
         "defaults": {
@@ -1408,7 +1376,7 @@
       "type": "bargauge"
     }
   ],
-  "refresh": "15s",
+  "refresh": false,
   "schemaVersion": 26,
   "style": "dark",
   "tags": [],
@@ -1416,8 +1384,18 @@
     "list": [
       {
         "allValue": "",
-        "current": {},
-        "datasource": "${DS_PROMETHEUS}",
+        "current": {
+          "selected": true,
+          "text": [
+            "10.10.0.204:8111",
+            "10.10.0.205:8111"
+          ],
+          "value": [
+            "10.10.0.204:8111",
+            "10.10.0.205:8111"
+          ]
+        },
+        "datasource": "Prometheus",
         "definition": "label_values(jvm_classes_loaded_classes, instance)",
         "hide": 0,
         "includeAll": false,
@@ -1439,8 +1417,8 @@
     ]
   },
   "time": {
-    "from": "now-6h",
-    "to": "now"
+    "from": "2020-09-29T07:44:24.339Z",
+    "to": "2020-09-29T08:12:55.230Z"
   },
   "timepicker": {
     "refresh_intervals": [
@@ -1459,5 +1437,5 @@
   "timezone": "",
   "title": "BBData dashboard",
   "uid": "037g_cFGk",
-  "version": 20
+  "version": 21
 }
