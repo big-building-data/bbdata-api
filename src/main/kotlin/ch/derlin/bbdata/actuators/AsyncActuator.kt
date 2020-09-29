@@ -17,8 +17,11 @@ import org.springframework.stereotype.Component
 @Component
 @OnAsyncEnabled
 @WebEndpoint(id = "tasks")
-class AsyncMonitor(private val taskExecutor: TaskExecutor? = null) {
-    /** add an optional tasks actuator to monitor async executor (hidden) */
+class AsyncActuator(private val taskExecutor: TaskExecutor? = null) {
+    /**
+     * add an optional tasks actuator to monitor async executor (hidden).
+     * Note: the task executor is already monitored, so we can query those values with prometheus. see AsyncExecutorCustomizer
+     */
 
     @ReadOperation
     @Operation(description = "Actuator web endpoint 'tasks', monitor async tasks execution")

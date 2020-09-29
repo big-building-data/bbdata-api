@@ -64,7 +64,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1601312269924,
+  "iteration": 1601365645731,
   "links": [],
   "panels": [
     {
@@ -244,7 +244,7 @@
         "defaults": {
           "custom": {},
           "mappings": [],
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -285,7 +285,7 @@
       "pluginVersion": "7.2.0",
       "targets": [
         {
-          "expr": "sum(ch_derlin_input_rejected_count{instance=~\"$instance\"})",
+          "expr": "sum(ch_derlin_input_rejected_total{instance=~\"$instance\"})",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -302,7 +302,7 @@
         "defaults": {
           "custom": {},
           "mappings": [],
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -343,7 +343,7 @@
       "pluginVersion": "7.2.0",
       "targets": [
         {
-          "expr": "sum(ch_derlin_login_failed_count{instance=~\"$instance\"})",
+          "expr": "sum(ch_derlin_login_failed_total{instance=~\"$instance\"})",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -360,7 +360,7 @@
         "defaults": {
           "custom": {},
           "mappings": [],
-          "noValue": "0",
+          "noValue": "-",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -401,7 +401,7 @@
       "pluginVersion": "7.2.0",
       "targets": [
         {
-          "expr": "sum(ch_derlin_auth_failed_count{instance=~\"$instance\"})",
+          "expr": "sum(ch_derlin_auth_failed_total{instance=~\"$instance\"})",
           "interval": "",
           "legendFormat": "",
           "refId": "A"
@@ -449,7 +449,7 @@
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
-            "mean"
+            "lastNotNull"
           ],
           "fields": "",
           "values": false
@@ -719,6 +719,251 @@
         "x": 0,
         "y": 23
       },
+      "id": 38,
+      "panels": [],
+      "repeat": null,
+      "title": "Async Executor",
+      "type": "row"
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 0,
+        "y": 24
+      },
+      "hiddenSeries": false,
+      "id": 40,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.2.0",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "repeatDirection": "h",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "async_executor_active_threads{instance=~\"$instance\"}",
+          "interval": "",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Active threads",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:165",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:166",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "noValue": "-",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 6,
+        "y": 24
+      },
+      "hiddenSeries": false,
+      "id": 41,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": false,
+        "rightSide": false,
+        "show": true,
+        "total": true,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.2.0",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "repeatDirection": "h",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "increase(async_executor_completed_tasks_total{instance=~\"$instance\"}[1m])",
+          "interval": "",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Task done",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:165",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:166",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "collapsed": false,
+      "datasource": "${DS_PROMETHEUS}",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
       "id": 17,
       "panels": [],
       "title": "Exceptions",
@@ -743,7 +988,7 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 24
+        "y": 32
       },
       "hiddenSeries": false,
       "id": 4,
@@ -775,7 +1020,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(ch_derlin_input_rejected_count[1m]))",
+          "expr": "sum(increase(ch_derlin_input_rejected_total[1m]))",
           "interval": "",
           "legendFormat": "total",
           "refId": "A"
@@ -843,7 +1088,7 @@
         "h": 6,
         "w": 16,
         "x": 8,
-        "y": 24
+        "y": 32
       },
       "hiddenSeries": false,
       "id": 8,
@@ -952,7 +1197,7 @@
         "h": 4,
         "w": 11,
         "x": 13,
-        "y": 30
+        "y": 38
       },
       "id": 34,
       "options": {
@@ -982,189 +1227,188 @@
       "type": "bargauge"
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "datasource": "${DS_PROMETHEUS}",
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 42
       },
       "id": 29,
-      "panels": [
-        {
-          "datasource": "${DS_PROMETHEUS}",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 7,
-            "x": 0,
-            "y": 25
-          },
-          "id": 25,
-          "options": {
-            "displayMode": "gradient",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showUnfilled": true
-          },
-          "pluginVersion": "7.2.0",
-          "targets": [
-            {
-              "expr": "sum(ch_derlin_login_failed_count{instance=~\"$instance\"}) by (username)",
-              "interval": "",
-              "legendFormat": "{{username}}",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "login failed",
-          "type": "bargauge"
-        },
-        {
-          "datasource": "${DS_PROMETHEUS}",
-          "description": "user_id that failed authentication (wrong bbuser/bbtoken)",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 8,
-            "x": 7,
-            "y": 25
-          },
-          "id": 27,
-          "options": {
-            "displayMode": "gradient",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "last"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showUnfilled": true
-          },
-          "pluginVersion": "7.2.0",
-          "targets": [
-            {
-              "expr": "sum(ch_derlin_auth_failed_count{instance=~\"$instance\"}) by (user_id)",
-              "interval": "",
-              "legendFormat": "bbuser: {{user_id}}",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "auth failed",
-          "type": "bargauge"
-        },
-        {
-          "datasource": "${DS_PROMETHEUS}",
-          "description": "user_id that failed authentication (wrong bbuser/bbtoken)",
-          "fieldConfig": {
-            "defaults": {
-              "custom": {},
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green",
-                    "value": null
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              }
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 4,
-            "w": 8,
-            "x": 15,
-            "y": 25
-          },
-          "id": 30,
-          "options": {
-            "displayMode": "gradient",
-            "orientation": "horizontal",
-            "reduceOptions": {
-              "calcs": [
-                "last"
-              ],
-              "fields": "",
-              "values": false
-            },
-            "showUnfilled": true
-          },
-          "pluginVersion": "7.2.0",
-          "targets": [
-            {
-              "expr": "sum(ch_derlin_input_rejected_count{instance=~\"$instance\"}) by (object_id)",
-              "interval": "",
-              "legendFormat": "object_id: {{object_id}}",
-              "refId": "A"
-            }
-          ],
-          "timeFrom": null,
-          "timeShift": null,
-          "title": "rejected",
-          "type": "bargauge"
-        }
-      ],
+      "panels": [],
       "title": "Custom Metrics: details",
       "type": "row"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 7,
+        "x": 0,
+        "y": 43
+      },
+      "id": 25,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.2.0",
+      "targets": [
+        {
+          "expr": "sum(ch_derlin_login_failed_total{instance=~\"$instance\"}) by (username)",
+          "interval": "",
+          "legendFormat": "{{username}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "login failed",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "user_id that failed authentication (wrong bbuser/bbtoken)",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 7,
+        "y": 43
+      },
+      "id": 27,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.2.0",
+      "targets": [
+        {
+          "expr": "sum(ch_derlin_auth_failed_total{instance=~\"$instance\"}) by (user_id)",
+          "interval": "",
+          "legendFormat": "bbuser: {{user_id}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "auth failed",
+      "type": "bargauge"
+    },
+    {
+      "datasource": "${DS_PROMETHEUS}",
+      "description": "user_id that failed authentication (wrong bbuser/bbtoken)",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 8,
+        "x": 15,
+        "y": 43
+      },
+      "id": 30,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true
+      },
+      "pluginVersion": "7.2.0",
+      "targets": [
+        {
+          "expr": "sum(ch_derlin_input_rejected_total{instance=~\"$instance\"}) by (object_id)",
+          "interval": "",
+          "legendFormat": "object_id: {{object_id}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "rejected",
+      "type": "bargauge"
     }
   ],
-  "refresh": "",
+  "refresh": "15s",
   "schemaVersion": 26,
   "style": "dark",
   "tags": [],
@@ -1215,5 +1459,5 @@
   "timezone": "",
   "title": "BBData dashboard",
   "uid": "037g_cFGk",
-  "version": 18
+  "version": 20
 }

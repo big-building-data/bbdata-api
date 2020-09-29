@@ -39,3 +39,26 @@ Grafana can be accessed on port `3000`.
 * add prometheus data source: *Configuration* > *Add data source* > *Prometheus*, and set URL=`http://prometheus:9090`
 * add an open-source Spring Boot dashboard: *"+"* > *Import*: https://grafana.com/grafana/dashboards/10280
 * add the custom BBData dashboard using the same import wizard and load (or copy-paste) the JSON file `bbdata-dashboard-grafana.json`
+
+### Tips
+
+For all metrics of type *summary* (such as `http_server_requests_seconds_*`), we have three sub counters at our disposal:
+* `_count`: the total number of records
+   For http requests, this means the total number of requests made to each endpoints;
+* `_sum`: the sum of all the records made during a time window.
+    For http requests, it means the total duration of every request for each endpoint;
+
+We can work with those summaries in Prometheus/Graffana using common approaches:
+
+* Average latency: `rate(timer_sum[10s])/rate(timer_count[10s])`
+* Throughput (requests per second): `rate(timer_count[10s])`
+* Count `increase(timer_count)`
+
+For http_server_requests, we also have a `_max`: (gauge, optional) the maximum request during a time window. 
+The value resets to 0 when a new time window starts. 
+
+## Resources
+
+* [SpringDoc: Prometheus](https://docs.spring.io/spring-metrics/docs/current/public/prometheus)
+* [How does a Prometheus Counter work?](https://www.robustperception.io/how-does-a-prometheus-counter-work)
+* [Spring Boot default metrics](https://tomgregory.com/spring-boot-default-metrics/)
