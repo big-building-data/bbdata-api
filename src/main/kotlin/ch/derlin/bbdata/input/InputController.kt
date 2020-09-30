@@ -85,8 +85,10 @@ class InputController(
     @PostMapping("objects/values")
     @Operation(description = "Submit new measures. " +
             "Each objectId/timestamp couple must be unique, both in the body and the database. Hence, any duplicate will make the request fail. " +
-            "If you omit to provide a timestamp for any measure, it will be added automatically (server time). " +
-            "This request is *atomic*: either *all* measures are valid and saved, or none. ")
+            "This request is *atomic*: either *all* measures are valid and saved, or none. " +
+            "If you omit to provide a timestamp for any measure, it will be added automatically (server time).<br><br>" +
+            "In general, it is better to always enclose the value in quotes. DO NOT send arrays or objects without enclosing quotes, " +
+            "but serialize them on the collector in order to avoid surprises !")
     fun postNewMeasures(@Valid @NotNull @RequestBody rawMeasures: ValidatedList<NewValue>,
                         @RequestParam("simulate", defaultValue = "false") sim: Boolean): List<NewValueAugmented> {
 

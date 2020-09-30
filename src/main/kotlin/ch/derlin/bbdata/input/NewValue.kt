@@ -3,6 +3,7 @@ package ch.derlin.bbdata.input
 import ch.derlin.bbdata.common.cassandra.RawValue
 import ch.derlin.bbdata.common.cassandra.RawValuePK
 import ch.derlin.bbdata.common.truncate
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import org.joda.time.DateTime
 import org.joda.time.YearMonth
 import javax.validation.constraints.Min
@@ -30,6 +31,7 @@ data class NewValue(
 
         @field:NotNull
         @field:NotEmpty
+        @field:JsonDeserialize(using = RawStringDeserializer::class)
         var value: String? = null,
 
         @field:Size(max = 1024, message = "too long. Maximum set to 1024.")
