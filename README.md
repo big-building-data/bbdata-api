@@ -29,7 +29,7 @@ This repository is the cornerstone of BBData. It contains:
     * [Changing exposed actuators](#changing-exposed-actuators)
 - [Monitoring](#monitoring)
     * [Spring Boot Admin](#spring-boot-admin)
-    * [Prometheus + Graffana](#prometheus---graffana)
+    * [Prometheus + Grafana](#prometheus---grafana)
     
 ## Development setup
 
@@ -429,7 +429,7 @@ There are two (complementary?) supported monitoring systems:
 
 * [Spring Boot Admin](https://codecentric.github.io/spring-boot-admin/2.3.0/), 
   which lets you interact with the actuators from a UI (clear the cache, change logging levels, etc.);
-* [Prometheus](https://prometheus.io/) + [Graffana](https://grafana.com/),
+* [Prometheus](https://prometheus.io/) + [Grafana](https://grafana.com/),
   which lets you graph and monitor different metrics.
 
 ### Spring Boot Admin
@@ -457,7 +457,7 @@ spring.boot.admin.client.url=<URL OF THE ADMIN SERVER>
 spring.boot.admin.client.instance.name=BBData test Instance
 ````
 
-### Prometheus + Graffana
+### Prometheus + Grafana
 
 The BBData API ships with `io.micrometer:micrometer-registry-prometheus`. 
 If the property `management.endpoint.prometheus.enabled=true` and `prometheus` is exposed (see `management.endpoints.web.exposure.include`),

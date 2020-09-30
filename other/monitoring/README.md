@@ -74,7 +74,7 @@ For all metrics of type *summary* (such as `http_server_requests_seconds_*`), we
 * `_sum`: the sum of all the records made during a time window.
     For http requests, it means the total duration of every request for each endpoint;
 
-We can work with those summaries in Prometheus/Graffana using common approaches:
+We can work with those summaries in Prometheus/Grafana using common approaches:
 
 * Average latency: `rate(timer_sum[10s])/rate(timer_count[10s])`
 * Throughput (requests per second): `rate(timer_count[10s])`
